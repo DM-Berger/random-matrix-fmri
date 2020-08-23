@@ -11,7 +11,7 @@ from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt._filenames import argstrings_from_args, relpath
 from rmt._precompute import precompute_dataset
 from rmt._utilities import _percentile_boot
-from rmt.args import TRIM_IDX, NORMALIZE, UNFOLD_ARGS, FULLPRE, ARGS
+from rmt.args import ARGS
 from rmt.comparisons import Pairings
 from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
 
@@ -288,16 +288,15 @@ def plot_pred_rigidity(
     silent: bool = False,
     force: bool = False,
 ) -> None:
-    global TRIM_IDX
-    global NORMALIZE
-    global UNFOLD_ARGS
     global ARGS
-    global FULLPRE
-    FULLPRE = True
-    for TRIM_IDX in ["(1,-1)", "(1,-20)"]:
+    # ARGS.fullpre = True
+    for trim_idx in ["(1,-1)", "(1,-20)"]:
+        ARGS.trim = trim_idx
         all_pairs = []
-        for NORMALIZE in [False]:
-            for UNFOLD_ARGS["degree"] in unfold:
+        for normalize in [False]:
+            args.normalize = normalize
+            for degree in unfold:
+                ARGS.unfold["degree"] = degree
                 pairings = Pairings(args, dataset_name)
                 pairing = list(filter(lambda p: p.label == comparison, pairings.pairs))
                 if len(pairing) != 1:
@@ -323,7 +322,7 @@ def plot_pred_rigidity(
         fig.text(
             0.1, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
         )  # ylabel
-        plt.suptitle(f"{dataset_name} {TRIM_IDX} - Spectral Rigidity")
+        plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
         plt.show(block=False)
 
 
@@ -335,16 +334,15 @@ def plot_pred_levelvar(
     silent: bool = False,
     force: bool = False,
 ) -> None:
-    global TRIM_IDX
-    global NORMALIZE
-    global UNFOLD_ARGS
     global ARGS
-    global FULLPRE
-    FULLPRE = True
-    for TRIM_IDX in ["(1,-1)", "(1,-20)"]:
+    # ARGS.fullpre = True
+    for trim_idx in ["(1,-1)", "(1,-20)"]:
+        ARGS.trim = trim_idx
         all_pairs = []
-        for NORMALIZE in [False]:
-            for UNFOLD_ARGS["degree"] in unfold:
+        for normalize in [False]:
+            ARGS.normalize = normalize
+            for degree in unfold:
+                ARGS.unfold["degree"] = degree
                 pairings = Pairings(args, dataset_name)
                 pairing = list(filter(lambda p: p.label == comparison, pairings.pairs))
                 if len(pairing) != 1:
@@ -370,31 +368,26 @@ def plot_pred_levelvar(
         fig.text(
             0.1, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
         )  # ylabel
-        plt.suptitle(f"{dataset_name} {TRIM_IDX} - Level Number Variance")
+        plt.suptitle(f"{dataset_name} {ARGS.trim} - Level Number Variance")
         plt.show(block=False)
 
 
 def make_pred_hists(
     args: Any, density: bool = True, normalize: bool = False, silent: bool = False, force: bool = False
 ) -> None:
-    global TRIM_IDX
-    global NORMALIZE
-    global UNFOLD_ARGS
     global ARGS
-    global FULLPRE
-    FULLPRE = True
+    # ARGS.fullpre = True
     dfs = []
 
     def hist_over_trim(trim: str, unfold=[5, 7, 9, 11, 13], normalize=normalize):
-        global TRIM_IDX
-        global NORMALIZE
-        global UNFOLD_ARGS
         global ARGS
-        global FULLPRE
 
-        for TRIM_IDX in [trim]:
-            for NORMALIZE in [normalize]:
-                for UNFOLD_ARGS["degree"] in unfold:
+        for trim_idx in [trim]:
+            ARGS.trim = trim_idx
+            for normalize in [normalize]:
+                ARGS.normalize = normalize
+                for degree in unfold:
+                    ARGS.unfold["degree"] = degree
                     supplemented = supplement_stat_dfs(diffs=None, preds=compute_all_preds_df(args, silent=True))[1]
                     dfs.append(pd.read_csv(supplemented))
         FEATURES = [
@@ -458,8 +451,8 @@ def make_pred_hists(
         fig.text(
             0.1, 0.5, "Density" if density else "Frequency", ha="center", va="center", rotation="vertical"
         )  # ylabel
-        f = " (fullpre)" if FULLPRE else ""
-        n = " (normed)" if NORMALIZE else ""
+        f = " (fullpre)" if ARGS.fullpre else ""
+        n = " (normed)" if ARGS.normalize else ""
         fig.suptitle(f"Trim {trim} unfolds={unfold}{f}{n}")
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         plt.show(block=False)
