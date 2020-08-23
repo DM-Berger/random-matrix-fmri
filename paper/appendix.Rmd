@@ -1,0 +1,410 @@
+---
+title: "Appendix M"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    fig_width: 4
+    fig_height: 4
+    fig_caption: true
+    highlight: tango
+---
+<!-- Run this to compile:
+R -e "rmarkdown::render('appendix.Rmd', rmarkdown::pdf_document(), output_file='appendix.pdf', clean=TRUE)"
+-->
+
+# Basic / Classical RMT with Empirical Data
+
+## Requirements and Overview
+All you *really* need for basic RMT analysis is either:
+
+1. a large (1000x1000) symmetric square matrix
+2. a large sample of smaller symmetric square matrices
+   - e.g. 10 or more 100x100 symmetric matrices
+
+Provided your data / system has $N$ entities, and each entity has a
+series of scalar values associated with them (e.g. you have $S_1, S_2, \dots, S_N$
+where $S_i = \{t_{i_1}, ...\;, t_{i_{M_i}}\}$, $t_{i_j} \in \mathbb{R}$),
+you can always generate a symmetric matrix with any function
+that symmetrically compares the two series. I.e. if we have
+$F$ such that $F(x, y) = F(y, x)$ for real series $x$ and $y$,
+then the matrix $[F(S_i, S_j)]$ will be symmetric. Sensible choices of
+$F$ might be Pearson's correlation coefficient, mutual information,
+cross-correlation (convolution), or other distance / similarity metrics.
+
+However, if you want to be able to actually find anything
+interpretable (or interesting), you probably want a system that can be
+roughly modeled as a number of somewhat distinct but interacting (or
+similar, or connected) entities. E.g. particles bouncing off each
+other, energy levels of a Uranium atom, distances between cars on a
+freeway or in a parking lot, stock prices in a stock market, etc. It
+is not clear how one would make sense of an RMT analysis of the
+correlations of a static system (e.g. correlations between voxels or
+ROIs of a structural MRI image).
+
+The standard RMT procedure is then to compute some curves (metrics),
+and compare (usually by eye) those curves to those predicted by RMT.
+Typically, empirical results are compared to only the Gaussian
+Orthogonal Ensemble (GOE) case, and/or the Poisson case, since each of
+these represent two interpretational extremes.
+
+The GOE is essentially a matrix where each entry is sampled from
+the standard normal distribution. More precisely, it is the set of random
+matrices:
+
+$$A = [a_{ij}] \quad\mathrm{where}\quad A = A^T, \quad a_{ij} ~
+\begin{cases}
+  N(0, 1) &\mathrm{if}\; i \ne j\\
+  \sqrt{2}N(0, 1) &\mathrm{if \; i = j}\\
+\end{cases}
+$$
+
+If your matrix or matrices look like they are coming from a GOE
+ensemble, you conclude the interactions in your system are highly
+chaotic/random/noisy, i.e. that there is no real information (in the
+mathematical and statistical sense) to be extracted there. This is a
+pretty big deal, so if you see GOE behaviour, that's important.
+
+The Poisson case is less clear to me currently, but it represents a
+different kind of physical / mathematical extreme, and seems to represent
+a more *regular* system. E.g. harmonic oscillators (where a particle's
+position depends only on the field and its current position, and
+not the positions of any other particles) produce some RMT metrics
+similar to Poisson systems (Guhr & Mehta, 1998).
+
+## Computational Approach
+1. Compute a symmetric correlation, covariance, similarity, distance, mutual
+   information, convolution, etc. matrix for your system
+2. Compute the eigenvalues of that matrix
+3. Sort the eigenvalues in ascending order
+4. Compute the eigenvalue step / counting function
+5. Unfold the eigenvalues
+   - i.e. fit a smooth curve from the eigenvalues to the step function
+   - use the predicted eigenvalues from this fit as the new unfolded values
+6. Compute the spectral observables (curves) of the unfolded eigenvalues
+7. Compare the computed curves to those predicted by theory
+
+
+
+# Equations
+## Fundamentals
+### Dirac Delta Function
+
+The function $\delta(x-t)$, *Dirac's delta* is informally defined, for constant $t$ as:
+
+$$\delta(x-t) =
+\begin{cases}
+  \infty & \quad \text{if  } x = t \\
+  0 & \quad \text{if  } x \ne t
+\end{cases}$$
+
+and where $\int_{-\infty}^{\infty}\delta(x - t) \;\mathrm{d}x = 1$.
+Mostly it is a clever tool to place an infinitely thin but smooth
+"spike" at a value to allow discrete-valued functions or sums to be
+written continuously. It can be justified formally (as an entity used
+only in integrals, and as the limit of a series of increasingly narrowing
+bump functions with fixed area under the curve).
+
+## Eigenvalue Step Function
+Suppose we have our ordered eigenvalues $\{\lambda_1, ...,
+\lambda_N\}$. Then $\eta(\lambda)$, the number of eigenvalues on
+$[-\infty, \;\lambda]$, the eigenvalue **step** or **staircase
+function** is:
+
+$$\eta(\lambda) = \int_{-\infty}^{\lambda}
+\sum_{n=1}^{N}\delta(\lambda - \lambda_n) \;\mathrm{d}\lambda \;\; =
+\;\; \text{the numbers eigenvalues } \lambda_i \text{ less than
+}\lambda$$
+
+![Step Function for N=10000 GOE Matrix](figures/step_function_zoomed_out.png)
+**Figure 1.** Example step function from a N=10 000 GOE matrix:
+
+![Step Function for N=10000 GOE Matrix](figures/step_function_zoomed_in.png)
+**Figure 2.** Step function fine structure.
+
+In code:
+```python
+def stepFunction(eigs: np.array, x: np.array) -> np.array:
+    if x == eigs:
+        return np.arange(0, len(eigs) + 1)  # shortcut, return [0, 1, ... len(eigs)]
+    steps = np.empty(len(eigs))
+    for i, val in x:
+        steps[i] = len(eigs[eigs <= val])  # count eigs <= each x
+    return steps
+```
+
+## Unfolding
+In order to compare the eigenvalues observed from a system to those
+predicted from theory, we have to "unfold" the eigenvalues so that
+they exist on the same scale / as those of the classical RMT ensembles.
+This is a crucial and necessary step, and can be thought of as roughly
+analagous to denoising (paraphrasing Guhr & Mehta, it is "removing the
+system-specific mean levels to allow comparison of the unversal
+components").
+
+To unfold, we decompose the step function--in practice, by fitting a
+polynomial or spline to $\{\lambda, \eta(\lambda)\}$--into a smooth
+part $\tilde\eta(\lambda)$ and fluctuating part
+$\eta_{\mathrm{fl}}(\lambda)$ such that
+
+$$\eta(\lambda) = \tilde\eta(\lambda) + \eta_{\mathrm{fl}}(\lambda)$$
+
+In certain special cases / systems where the physical model is fully
+specified and understood, the functional forms of these smooth and
+fluctuating parts can be calculated precisely. But for novel systems
+being investigated with RMT, especially when there is no clear or
+explicit underlying model, this unfolding procedure is essentially
+guesswork.
+
+In practice, it is most common to fit a smooth spline, or polynomial
+of degree 5-11 $f$ to $\{\lambda, \eta(\lambda)\}$, and hope that $f$
+is a good approximation to $\tilde\eta$. We then define
+
+$$\{u_i = f(\lambda_i) \;\; | \;\; i = 1, 2, ..., N\}$$
+
+to be the unfolded eigenvalues.
+
+### Unfolding Algorithm
+The essence of the unfolding process is a simple fitting procedure.
+
+```python
+def polynomial_unfold(eigs, degree):
+    steps = np.empty([len(eigs)])  # allocate array for step function values
+    for i, eig in enumerate(eigs):
+        steps[i] = len(eigs[eigs < eig])  # count eigenvalues less than eig
+    # steps = np.arange(0, len(eigs) + 1)  # alternate faster computation
+    fit = polyfit(eigs, steps, degree)
+    unfolded = polyval(eigs, fit)
+    return unfolded
+```
+However, in practice the large eigenvalues of the system may act as anchor
+points during fitting, heavily destroying the ability of the unfolding
+process to extract information from the system. These large eigenvalues
+must be dealt with in some manner (trimmed, fit separately). Additionally,
+more complex unfolding procedures are also possible (using detrending, signal
+processing approaches, and more local fitting).
+
+### Unfolding Issues
+* Long-range spectral observables are wildly sensitive to the unfolding procedure.
+* The unfolding procedure is extremely arbitrary
+  * choice of fitting procedure
+    * e.g. polynomial, spline, EMD, other signal processing methods, detrending or not
+  * fitting parameters
+    * e.g. degree of polynomial / number of knots or type of spline, other fitting parameters
+    * proportion of eigenvalues to fit (e.g. trimming eigenvalues of "large" absolute value)
+    * fit accuracy (e.g. in theory we fit a continuous function $\eta(\lambda)$, but in practice
+      we only evaluate $\eta(\lambda)$ on some grid of our choice
+  * no way to test validity for unknown ensembles / systems
+    * i.e. bad unfolding can make GOE systems look not GOE, or non-GOE systems look GOE (!!)
+
+
+
+
+# Spectral Observables (Empirical Tests of RMT)
+The spectral observables are the statistics of RMT. They are
+statistics in the formal / general sense, i.e. they summarize random
+variables. However, there are very, very few statistical tests in RMT.
+One compares empirical results with RMT theory in the usual way
+physicists do, e.g. via "binocular inspection".
+
+
+## Nearest-Neighbour Spacing Distribution (Short Range)
+Given observed eigenvalues $\{\lambda_1 \le ... \le \lambda_N\}$, we define
+
+$$S_i = \lambda_{i+1} - \lambda_{i}, \qquad i = 1, 2, \dots N-1$$
+
+the distances between the eigenvalues, and
+
+$$D = \langle S_i \rangle$$
+
+the mean distance between them. Then the (relative) level spacings are
+
+$$s_i = S_i / D.$$
+
+From theory, we know $p(s)$, is the probability of the spacings
+between nearest neighboring eigenvalues. For certain cases (matrix
+ensembles, or uncorrelated / Poisson case) the specific form of the
+distribution is known. By computing the histogram (or kernel density
+estimate) based on the empirically observed $s_i$ calculated from the
+unfolded eigenvalues, we can compare our observations to the distribution
+expected from theory.
+
+For the Poisson case:
+
+$$p(s) = \mathrm{exp}(-s)$$
+
+For the GOE, $\beta = 1$,
+
+$$p_1(s) = \frac{\pi}{2}s\;\mathrm{exp}\left(-\frac{\pi}{4}s^2\right)$$
+
+For the GUE, $\beta = 2$,
+
+$$p_2(s) = \frac{32}{\pi^2}s\;\mathrm{exp}\left(-\frac{4}{\pi}s^2\right)$$
+
+For the GSE, $\beta = 4$,
+
+$$p_4(s) = \frac{262144}{729\pi^3}s\;\mathrm{exp}\left(-\frac{64}{9\pi}s^2\right)$$
+
+Note the domain of $p(s)$ is always $[0, \infty]$.
+
+![NNSD](figures/nnsd_curves.png)
+**Figure.** Predicted and actual distributions from a 1000x1000 GOE matrix.
+
+
+
+## Level Number Variance $\Sigma^2(L)$
+
+Let $N(L, c)$ count the number of eigenvalues on the interval $[c,\;c+L]$ "on the unfolded scale", i.e. $u_1 = \tilde\eta(\lambda_1)$. I.e. if we had the eigenvalues $E = \{1, 2, 3, 4.5, 4.7, 5, 6, 7, 8\}$, then:
+
+$$
+\begin{aligned}
+  N(3, 3) \;&=\; |\{\lambda \in E : \lambda \in [3, 6]| &=& \quad|\{3, 4.5, 4.7, 5, 6\}| &= 5 \\
+  N(3, 1.6) \;&=\; |\{\lambda \in E : \lambda \in [3, 4.6]| &=& \quad|\{3, 4.5\}| &= 2 \\
+  N(100, 7) \;&=\; |\{\lambda \in E : \lambda \in [7, 107]| &=& \quad|\{7, 8\}| &= 2 \\
+  N(100, 7) \;&=\; |\{\lambda \in E : \lambda \in [7, 107]| &=& \quad|\{7, 8\}| &= 2 \\
+\end{aligned}
+$$
+
+Then we define:
+
+$$\Sigma^2(L) = \left\langle N(L, c)^2 \right\rangle_c -  \left\langle N(L,c) \right\rangle_c^2,$$
+
+the level number variance.
+
+### $\Sigma^2(L)$ Algorithm
+Algorithmically, for a particular value of $L$, we might compute $\Sigma^2$ like:
+```python
+def sigma_iter(unfolded: np.array, L: float, c_iters: int = 100):
+    # allocate arrays to save counts of levels and square of those counts
+    levels = np.empty((c_iters), dtype=np.float64)
+    levels_sq = np.empty((c_iters), dtype=np.float64)
+
+    # randomly choose c within the unfolded scale, and repeat c_iters times
+    for i in range(c_iters):
+        c_start = np.random.uniform(np.min(unfolded), np.max(unfolded))
+        start, end = c_start - L/2, c_start + L/2
+        # count number of eigenvalues in [start, end]
+        n_within = len(unfolded[(unfolded >= start) & (unfolded <= end)])
+        levels[i], levels_sq[i] = n_within, n_within**2
+
+    ave = np.mean(levels)
+    av_of_levels_sq = ave * ave
+    av_of_sq_levels = np.mean(levels_sq)
+    return av_of_sq_levels - av_of_levels_sq
+```
+
+
+For the classical ensembles and large $L$,
+$\Sigma^2$, $\gamma = 0.5772\dots$ Euler's constant, $\Sigma^2$ has
+approximations (valid to order $1/L$):
+
+
+$$
+\begin{aligned}
+ \Sigma^2_\mathrm{Poisson}(L) =&\;L \\
+ \Sigma^2_\mathrm{GOE}(L) =&\; \frac{2}{\pi^2}\left( \mathrm{ln}(2\pi L) + \gamma + 1 - \frac{\pi^2}{8} \right) \\
+ \Sigma^2_\mathrm{GUE}(L) =&\; \frac{1}{\pi^2}\left( \mathrm{ln}(2\pi L) + \gamma + 1 \right) \\
+ \Sigma^2_\mathrm{GSE}(L) =&\; \frac{1}{2\pi^2}\left( \mathrm{ln}(4\pi L) + \gamma + 1 + \frac{\pi^2}{8} \right) \\
+\end{aligned}
+$$
+
+![Level Variance](figures/levelvar_curves.png)
+**Figure.** Predicted and actual curves from a 1000x1000 GOE matrix.
+
+There are also precise forms that are more accurate for small $L$.
+
+
+
+## Spectral Rigidity $\Delta_3(L)$
+If $\langle f \rangle_{t}$ denotes the average of $f$ over all $t$, and
+$\hat{\eta}(\xi)$ represents the the number of levels on the unfolded scale, then
+
+\begin{equation}
+  \label{eq:delta3}
+  \Delta_3(L) = {\left\langle \min_{A, B} \frac{1}{L} \int_{c}^{c+L}(\hat{\eta}(\lambda) -A\lambda - B)^2 \;\mathrm{d}\lambda\right\rangle}_{c}
+\end{equation}
+
+![Spectral Rigidity](figures/rigidity_calculation.png)
+**Figure.** Average deviation of a section of the staircase function from a straight line.
+
+is the spectral rigidity. Note that $A$ and $B$ may be different for each choice of $c$, $L$. For the motivation, note that if $(\hat{\eta}(\lambda) -A\lambda - B)^2 = 0$ then $\hat\eta$ is linear, i.e. the staircase function is extremely rigid. Also note that if $y = A\lambda + B$ is the least squares linear fit to $\hat\eta(\lambda)$ on $[c, \;c+L]$, then $A$ and $B$ minimize the integral.
+
+### $\Delta_3(L)$ Algorithm
+Algorithmically then, for a particular $L$ and $c$ value, we might calculate $\Delta_3(L)$ as:
+
+```python
+def spectralIter(eigs: np.array, unfolded: np.array, L, c_start, interval_gridsize) -> float:
+    # c_start is in space of eigs
+    grid = np.linspace(c_start - L/2, c_start + L/2, interval_gridsize)
+    # compute step function values for each value in grid
+    steps = stepFunction(eigs, grid)
+    A, B = computeLinearFit(grid, steps)  # get slope A and intercept B from fit
+    fit = A*grid + B                      # fit the line to the step function
+    y = (steps - fit)**2                  # compute squared deviation of fit
+    delta3 = np.trapz(y, grid)            # numerically integrate the values
+    return delta3 / L
+```
+choosing $c$ values randomly and as many times as desired for stability / precision, for each $L$.
+
+For the classical ensembles, the shape of $\Delta_3$ is known, and can be approximated to order $1/L$ by:
+
+$$
+\begin{aligned}
+ \Delta_{3,\mathrm{Pois}son}(L) =&\;L/15 \\
+ \Delta_{3,\mathrm{GOE}}(L) =&\; \frac{1}{\pi^2}\left( \mathrm{ln}(2\pi L) + \gamma - \frac{5}{4} - \frac{\pi^2}{8} \right) \\
+ \Delta_{3,\mathrm{GUE}}(L) =&\; \frac{1}{2\pi^2}\left( \mathrm{ln}(2\pi L) + \gamma - \frac{5}{4} \right) \\
+ \Delta_{3,\mathrm{GSE}}(L) =&\; \frac{1}{4\pi^2}\left( \mathrm{ln}(4\pi L) + \gamma - \frac{5}{4} + \frac{\pi^2}{8} \right) \\
+\end{aligned}
+$$
+
+![Spectral Rigidity](figures/rigidity_curves.png)
+**Figure.** Predicted Spectral Rigidity curves, with points from actual GOE data.
+
+# Theory
+There are two ways to look at RMT and justify its applications in
+fMRI: mathematical and physical. RMT was was ultimately inspired by
+and developed to solve complex, many-body problems in statistical
+quantum mechanics (Guhr & Mehta, 1998). It was only recently with the
+explosion of big data and more powerful computational capacities that
+RMT has started to become relevant to other complex systems (Guhr &
+Mehta, 1998).
+
+## Interpretations
+"The successful application of GRMT to
+data shows that these data fluctuate stochastically in a manner
+consistent with GRMT. Since GRMT can be derived from a maximum entropy
+principle [18], this statement is tantamount to saying that the data
+under study carry no information content" (Guhr & Mehta, 1998, p.202)
+
+### RMT-Deviating Eigenvalues
+"For complex quantum systems, RMT predictions represent an average
+over all possible interactions [8–10]. Deviations from the universal
+predictions of RMT identify system specific, non- random properties of
+the system under consideration, provid- ing clues about the underlying
+interactions [11–13]. Recent studies [14,15] applying RMT methods to
+analyze the properties of C show that ~98% of the eigenvalues of C
+agree with RMT predictions, suggesting a considerable de- gree of
+randomness in the measured cross correlations. It is also found that
+there are deviations from RMT predictions for ~2% of the largest
+eigenvalues. These results prompt the following questions:" (Plerou et
+al., 2002)
+
+This seems to be a promising way to distinguish task from rest.
+
+## Limitations
+"It is clear that *RMT cannot ever reproduce a given data set in its
+full detail*. It can only yield the distribution function of, and the
+correlations between, the data points. An example is the nuclear level
+spectrum at neutron threshold, the first case ever studied in a
+statistically significant fashion. The actual sequence of levels
+observed experimentally remains inaccessible to RMT predictions, while
+the distribution of spacings and the correlations between levels can
+be predicted. The same holds for the stochastic fluctuations of
+nuclear cross sections, for universal conductance fluctu- ations of
+mesoscopic probes, and for all other applications of RMT." (Guhr &
+Mehta, 1998, p.202)
+
+### Practical / Computational Issues
+
+### Issues Related to fMRI

@@ -1,0 +1,32 @@
+[
+	{
+		"path": "$ROOTPATH$/simulate.py",
+		"bookmarks": [
+			{
+				"line": 694,
+				"column": 13,
+				"label": "nnsd"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/group_compare.py",
+		"bookmarks": [
+			{
+				"line": 658,
+				"column": 0,
+				"label": "predicts"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/summarize.py",
+		"bookmarks": [
+			{
+				"line": 59,
+				"column": 0,
+				"label": "sofar"
+			}
+		]
+	}
+]

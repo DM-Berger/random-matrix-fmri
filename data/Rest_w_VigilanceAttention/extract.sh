@@ -1,0 +1,22 @@
+python3 ../../extract.py derivatives/sub-22_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-22_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-22.npy ; 
+python3 ../../extract.py derivatives/sub-21_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-21_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-21.npy ;
+python3 ../../extract.py derivatives/sub-20_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-20_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-20.npy ;
+python3 ../../extract.py derivatives/sub-19_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-19_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-19.npy ;
+python3 ../../extract.py derivatives/sub-18_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-18_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-18.npy ;
+python3 ../../extract.py derivatives/sub-17_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-17_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-17.npy ;
+python3 ../../extract.py derivatives/sub-16_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-16_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-16.npy ;
+python3 ../../extract.py derivatives/sub-15_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-15_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-15.npy ;
+python3 ../../extract.py derivatives/sub-14_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-14_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-14.npy ;
+python3 ../../extract.py derivatives/sub-13_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-13_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-13.npy ;
+python3 ../../extract.py derivatives/sub-12_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-12_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-12.npy ;
+python3 ../../extract.py derivatives/sub-11_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-11_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-11.npy ;
+python3 ../../extract.py derivatives/sub-10_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-10_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-10.npy ;
+python3 ../../extract.py derivatives/sub-09_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-09_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-09.npy ;
+python3 ../../extract.py derivatives/sub-08_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-08_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-08.npy ;
+python3 ../../extract.py derivatives/sub-07_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-07_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-07.npy ;
+python3 ../../extract.py derivatives/sub-06_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-06_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-06.npy ;
+python3 ../../extract.py derivatives/sub-05_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-05_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-05.npy ;
+python3 ../../extract.py derivatives/sub-04_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-04_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-04.npy ;
+python3 ../../extract.py derivatives/sub-03_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-03_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-03.npy ;
+python3 ../../extract.py derivatives/sub-02_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-02_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-02.npy ;
+python3 ../../extract.py derivatives/sub-01_ses-1_task-rest_acq-fullbrain_run-1_stripped.nii.gz derivatives/sub-01_ses-1_task-rest_acq-fullbrain_run-1_stripped_mask.nii.gz rmt/eigs-01.npy

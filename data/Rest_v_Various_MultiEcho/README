@@ -1,0 +1,39 @@
+A multi-echo replication sample of autobiographical memory, prospection and theory of mind reasoning tasks  published in Spreng and Grady (J Cogn. Neurosci. 22, 1112-1123, 2010). 
+
+
+Four task runs and one resting-state run were collected for 31 young adults. Full acquisition parameters are detailed in the accompanying Data Descriptor published at Scientific Data, but are summarized here for ease of use:
+
+
+T1w:
+one 5m25s run 
+repetition time (TR) = 2530 ms 
+echo time (TE) = 3.4 ms
+inversion time = 1100 ms 
+flip angle (FA) = 7° 
+1.0 mm isotropic voxels 
+176 slices 
+
+
+Task:
+four 8m40s runs
+repetition time (TR) = 2000 ms 
+echo time (TE) = 13, 27, and 43 ms 
+flip angle (FA) = 77° 
+matrix size = 64 x 64 
+field of view (FOV) = 240 mm
+slice thickness 3.8 mm 
+33 axial slices 
+
+
+Rest:
+one 10m06s run
+repetition time (TR) = 3000 ms 
+echo time (TE) = 13.7, 30, and 47 ms 
+flip angle (FA) = 83° 
+matrix size = 72 x 72 
+field of view (FOV) = 210 mm 
+3.0 mm isotropic voxels
+46 axial slices 
+
+
+Data are made available under Open Data Commons Public Domain Dedication and License (PDDL) version 1.0, whose full text is available at http://opendatacommons.org/licenses/pddl/. Although not legally required, we hope that all users will follow the Open Data Commons Attribution/Share-Alike Community Norms, available at http://opendatacommons.org/norms/odc-by-sa/. 

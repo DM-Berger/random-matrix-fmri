@@ -1,0 +1,10 @@
+{
+	"RepetitionTime": 2.5,
+	"TaskName": "rest",
+	"Manufacturer": "Siemens",
+	"ManufacturersModelName": "Trio",
+	"MagneticFieldStrength": 3,
+	"PulseSequenceType": "EPI",
+	"EchoTime": 0.03,
+	"FlipAngle": 90
+}
