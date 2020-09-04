@@ -11,6 +11,7 @@ from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt._filenames import preview_precompute_outpaths
 from rmt._precompute import precompute_dataset
 from rmt.args import ARGS
+from rmt.plot_datasets import plot_largest
 from rmt.summarize import compute_all_diffs_dfs, compute_all_preds_df, supplement_stat_dfs
 
 
@@ -303,6 +304,7 @@ filterwarnings("ignore", category=RuntimeWarning)
 filterwarnings("ignore", category=FutureWarning)
 filterwarnings("ignore", category=np.RankWarning)
 get_cmds()
+make_largest_plots()
 # preview_precompute_outpaths(ARGS)
 sys.exit(0)
 

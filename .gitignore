@@ -1,4 +1,8 @@
 **/*.csv
+**/*~lock*
+**/*.pdf
+**/*.docx
+**/*.zip
 data/*.pdf
 data/*.xlsx
 data/*.ods
