@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import seaborn as sbn
 
+from empyricalRMT.brody import brody_dist, fit_brody_mle
 from empyricalRMT.eigenvalues import Eigenvalues
 from empyricalRMT.ensemble import GOE, GDE
 
@@ -316,40 +317,51 @@ def plot_pred_nnsd(
             unf1 = [Eigenvalues(np.load(e)).unfold(**ARGS.unfold) for e in eigs1]
             unf2 = [Eigenvalues(np.load(e)).unfold(**ARGS.unfold) for e in eigs2]
             alpha1, alpha2 = 1 / len(unf1), 1 / len(unf2)
-            alpha_adj = 0.01
+            # alpha_adj = 0.02  # good for just plotting hists, no brody
+            alpha_adj = 0.00
             alpha1 += alpha_adj
             alpha2 += alpha_adj
             for j, unf in enumerate(unf1):
                 spacings = unf.spacings
                 if trim > 0.0:
                     spacings = spacings[spacings <= trim]
+                beta = fit_brody_mle(spacings)
+                brody = brody_dist(spacings, beta)
                 # Generate expected distributions for classical ensembles
                 sbn.distplot(
                     spacings,
                     norm_hist=True,
                     bins=BINS,
                     kde=False,
-                    label=g1 if j == 0 else None,
+                    # label=g1 if j == 0 else None,
                     axlabel="spacing (s)",
                     color="#FD8208",
+                    # hist_kws={"alpha": alpha1, "histtype": "step", "linewidth": 0.5},
                     hist_kws={"alpha": alpha1},
+                    # kde_kws={"alpha": alpha1, "color":"#FD8208"},
                     ax=ax,
                 )
+                sbn.lineplot(spacings, brody, color="#FD8208", ax=ax, alpha=0.9, label=g1 if j == 0 else None, linewidth=0.5)
             for j, unf in enumerate(unf2):
                 spacings = unf.spacings
                 if trim > 0.0:
                     spacings = spacings[spacings <= trim]
+                beta = fit_brody_mle(spacings)
+                brody = brody_dist(spacings, beta)
                 sbn.distplot(
                     spacings,
                     norm_hist=True,
                     bins=BINS,  # doane
                     kde=False,
-                    label=g2 if j == 0 else None,
+                    # label=g2 if j == 0 else None,
                     axlabel="spacing (s)",
                     color="#000000",
+                    # hist_kws={"alpha": alpha2, "histtype": "step", "linewidth": 0.5},
                     hist_kws={"alpha": alpha2},
+                    # kde_kws={"alpha": alpha2, "color":"#000000"},
                     ax=ax,
                 )
+                sbn.lineplot(spacings, brody, color="#000000", ax=ax, alpha=0.9, label=g2 if j==0 else None, linewidth=0.5)
 
             if ensembles:
                 s = np.linspace(0, trim, 10000)
@@ -362,13 +374,13 @@ def plot_pred_nnsd(
             ax.set_xlabel("")
             ax.set_ylabel("")
         axes.flat[-1].legend().set_visible(True)
-        fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
+        fig.text(0.5, 0.04, "spacing (s)", ha="center", va="center")  # xlabel
         fig.text(
-            0.03, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+            0.03, 0.5, "p(s)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
         )  # ylabel
-        fig.set_size_inches(w=12, h=3)
-        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.2)
-        plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
+        fig.set_size_inches(w=16, h=5)
+        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.245)
+        plt.suptitle(f"{dataset_name} {ARGS.trim} - NNSD")
         plt.show(block=False)
 
 
