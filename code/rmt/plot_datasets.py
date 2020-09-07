@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import seaborn as sbn
 
+from empyricalRMT.eigenvalues import Eigenvalues
+from empyricalRMT.ensemble import GOE, GDE
 
 from typing import Any, List
 
@@ -280,11 +282,102 @@ def plot_raw_eigs(args: Any, show: bool = False) -> None:
                 print(f"Largest λ violin plot saved to {relpath(out)}")
 
 
+def plot_pred_nnsd(
+    args: Any,
+    dataset_name: str,
+    comparison: str,
+    unfold: List[int] = [5, 7, 9, 11, 13],
+    ensembles: bool = True,
+    trim: float = 3.0,
+    silent: bool = False,
+    force: bool = False,
+) -> None:
+    global ARGS
+    # ARGS.fullpre = True
+    BINS = np.linspace(0, trim, 20)
+    for trim_idx in ["(1,-1)", "(1,-20)"]:
+        ARGS.trim = trim_idx
+        all_pairs = []
+        for normalize in [False]:
+            args.normalize = normalize
+            for degree in unfold:
+                ARGS.unfold["degree"] = degree
+                pairings = Pairings(args, dataset_name)
+                pairing = list(filter(lambda p: p.label == comparison, pairings.pairs))
+                if len(pairing) != 1:
+                    raise ValueError("Too many pairings, something is wrong.")
+                all_pairs.append(pairing[0])
+        g1, _, g2 = all_pairs[0].label.split("_")  # groupnames
+        fig: plt.Figure
+        fig, axes = plt.subplots(nrows=1, ncols=len(all_pairs), sharex=True)
+        for i, pair in enumerate(all_pairs):
+            ax: plt.Axes = axes.flat[i]
+            eigs1, eigs2 = pair.eigs1, pair.eigs2
+            unf1 = [Eigenvalues(np.load(e)).unfold(**ARGS.unfold) for e in eigs1]
+            unf2 = [Eigenvalues(np.load(e)).unfold(**ARGS.unfold) for e in eigs2]
+            alpha1, alpha2 = 1 / len(unf1), 1 / len(unf2)
+            alpha_adj = 0.01
+            alpha1 += alpha_adj
+            alpha2 += alpha_adj
+            for j, unf in enumerate(unf1):
+                spacings = unf.spacings
+                if trim > 0.0:
+                    spacings = spacings[spacings <= trim]
+                # Generate expected distributions for classical ensembles
+                sbn.distplot(
+                    spacings,
+                    norm_hist=True,
+                    bins=BINS,
+                    kde=False,
+                    label=g1 if j == 0 else None,
+                    axlabel="spacing (s)",
+                    color="#FD8208",
+                    hist_kws={"alpha": alpha1},
+                    ax=ax,
+                )
+            for j, unf in enumerate(unf2):
+                spacings = unf.spacings
+                if trim > 0.0:
+                    spacings = spacings[spacings <= trim]
+                sbn.distplot(
+                    spacings,
+                    norm_hist=True,
+                    bins=BINS,  # doane
+                    kde=False,
+                    label=g2 if j == 0 else None,
+                    axlabel="spacing (s)",
+                    color="#000000",
+                    hist_kws={"alpha": alpha2},
+                    ax=ax,
+                )
+
+            if ensembles:
+                s = np.linspace(0, trim, 10000)
+                poisson = GDE.nnsd(spacings=s)
+                goe = GOE.nnsd(spacings=s)
+                sbn.lineplot(x=s, y=poisson, color="#08FD4F", label="Poisson", ax=ax)
+                sbn.lineplot(x=s, y=goe, color="#0066FF", label="GOE", ax=ax)
+            ax.legend().set_visible(False)
+            ax.set_title(f"Unfolding Degree {unfold[i]}")
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+        axes.flat[-1].legend().set_visible(True)
+        fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
+        fig.text(
+            0.03, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+        )  # ylabel
+        fig.set_size_inches(w=12, h=3)
+        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.2)
+        plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
+        plt.show(block=False)
+
+
 def plot_pred_rigidity(
     args: Any,
     dataset_name: str,
     comparison: str,
     unfold: List[int] = [5, 7, 9, 11, 13],
+    ensembles: bool = True,
     silent: bool = False,
     force: bool = False,
 ) -> None:
@@ -315,13 +408,23 @@ def plot_pred_rigidity(
             ax.fill_between(x=df1.index, y1=boots1["low"], y2=boots1["high"], color="#FD8208", alpha=0.3)
             sbn.lineplot(x=df2.index, y=boots2["mean"], color="#000000", label=g2, ax=ax)
             ax.fill_between(x=df2.index, y1=boots2["low"], y2=boots2["high"], color="#000000", alpha=0.3)
+            if ensembles:
+                L = df1.index
+                poisson = GDE.spectral_rigidity(L=L)
+                goe = GOE.spectral_rigidity(L=L)
+                sbn.lineplot(x=L, y=poisson, color="#08FD4F", label="Poisson", ax=ax)
+                sbn.lineplot(x=L, y=goe, color="#0066FF", label="GOE", ax=ax)
+            ax.legend().set_visible(False)
             ax.set_title(f"Unfolding Degree {unfold[i]}")
             ax.set_xlabel("")
             ax.set_ylabel("")
+        axes.flat[-1].legend().set_visible(True)
         fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
         fig.text(
-            0.1, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+            0.03, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
         )  # ylabel
+        fig.set_size_inches(w=12, h=3)
+        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.2)
         plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
         plt.show(block=False)
 
@@ -331,6 +434,7 @@ def plot_pred_levelvar(
     dataset_name: str,
     comparison: str,
     unfold: List[int] = [5, 7, 9, 11, 13],
+    ensembles: bool = True,
     silent: bool = False,
     force: bool = False,
 ) -> None:
@@ -361,13 +465,29 @@ def plot_pred_levelvar(
             ax.fill_between(x=df1.index, y1=boots1["low"], y2=boots1["high"], color="#FD8208", alpha=0.3)
             sbn.lineplot(x=df2.index, y=boots2["mean"], color="#000000", label=g2, ax=ax)
             ax.fill_between(x=df2.index, y1=boots2["low"], y2=boots2["high"], color="#000000", alpha=0.3)
+            if ensembles:
+                L = df1.index
+                poisson = GDE.spectral_rigidity(L=L)
+                goe = GOE.spectral_rigidity(L=L)
+                sbn.lineplot(x=L, y=poisson, color="#08FD4F", label="Poisson", ax=ax)
+                sbn.lineplot(x=L, y=goe, color="#0066FF", label="GOE", ax=ax)
+            ax.legend().set_visible(False)
             ax.set_title(f"Unfolding Degree {unfold[i]}")
             ax.set_xlabel("")
             ax.set_ylabel("")
+        axes.flat[-1].legend().set_visible(True)
         fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
         fig.text(
-            0.1, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+            0.03,
+            0.5,
+            r"$\Sigma ^2 \left( L \right)$",
+            ha="center",
+            va="center",
+            rotation="vertical",
+            fontdict={"fontname": "DejaVu Sans"},
         )  # ylabel
+        fig.set_size_inches(w=12, h=3)
+        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.24)
         plt.suptitle(f"{dataset_name} {ARGS.trim} - Level Number Variance")
         plt.show(block=False)
 

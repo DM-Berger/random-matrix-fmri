@@ -11,7 +11,7 @@ from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt._filenames import preview_precompute_outpaths
 from rmt._precompute import precompute_dataset
 from rmt.args import ARGS
-from rmt.plot_datasets import plot_largest
+from rmt.plot_datasets import plot_largest, plot_pred_rigidity, plot_pred_levelvar, plot_pred_nnsd
 from rmt.summarize import compute_all_diffs_dfs, compute_all_preds_df, supplement_stat_dfs
 
 
@@ -303,8 +303,13 @@ def get_cmds():
 filterwarnings("ignore", category=RuntimeWarning)
 filterwarnings("ignore", category=FutureWarning)
 filterwarnings("ignore", category=np.RankWarning)
-get_cmds()
-make_largest_plots()
+# plot_pred_rigidity(ARGS, "OSTEO", "duloxetine_v_nopain", ensembles=True, silent=True, force=False)
+# plot_pred_levelvar(ARGS, "OSTEO", "duloxetine_v_nopain", ensembles=True,
+# silent=True, force=False)
+plot_pred_nnsd(ARGS, "OSTEO", "duloxetine_v_nopain", trim=4.0, ensembles=True, silent=True, force=False)
+plt.show()
+# get_cmds()
+# make_largest_plots()
 # preview_precompute_outpaths(ARGS)
 sys.exit(0)
 
@@ -342,15 +347,14 @@ sys.exit(0)
 #     normalize=False,
 #     silent=True,
 # )
-all_pred_means_by_algo(ARGS, subtract_guess=True, normalize=True, fullpre=True, silent=True)
-all_pred_means_by_algo(ARGS, subtract_guess=True, normalize=False, fullpre=True, silent=True)
+# all_pred_means_by_algo(ARGS, subtract_guess=True, normalize=True, fullpre=True, silent=True)
+# all_pred_means_by_algo(ARGS, subtract_guess=True, normalize=False, fullpre=True, silent=True)
 # make_pred_means(ARGS, dataset_name="OSTEO", comparison="duloxetine_v_nopain", silent=True)
 # make_pred_hists(ARGS, density=True, silent=True)
 # make_pred_hists(ARGS, normalize=True, density=True, silent=True)
 # make_pred_hists(ARGS, normalize=False, density=True, silent=True)
 # make_marchenko_plots(ARGS, shifted=True)
 # make_largest_plots(ARGS)
-# plot_pred_rigidity(ARGS, "OSTEO", "duloxetine_v_nopain", silent=True, force=False)
 # plot_pred_rigidity(ARGS, "PSYCH_TASK_ATTENTION_SES-1", "high_v_low", silent=True, force=False)
 # plot_pred_rigidity(ARGS, "PARKINSONS", "control_v_parkinsons", silent=True, force=False)
 # plot_pred_levelvar(ARGS, "PARKINSONS", "control_v_parkinsons", silent=True, force=False)
