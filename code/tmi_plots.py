@@ -1,16 +1,25 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import seaborn as sbn
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Union
 from typing_extensions import Literal
 
 from rmt.args import ARGS
 from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
 
+Fmt = Literal["svg", "png"]
+
+TMI_FOLDER = Path(__file__).resolve().parent.parent / "paper/paper/TMI/figures"
+SUPPLEMENTARY = TMI_FOLDER / "supplementary/figures"
+if not TMI_FOLDER.exists():
+    os.makedirs(TMI_FOLDER)
+if not SUPPLEMENTARY.exists():
+    os.makedirs(SUPPLEMENTARY)
 
 # fmt: off
 FEATURES = [
@@ -97,15 +106,17 @@ def make_stacked_accuracy_histograms(
     args: Any,
     features: List[str] = FEATURES,
     fullpre: bool = True,
+    trim: Literal["1", "20"] = "1",
+    unfolds: List[int] = UNFOLDS,
     density: bool = True,
     normalize: bool = False,
     silent: bool = True,
     force: bool = False,
     nrows: int = 3,
     ncols: int = 6,
-    fignum: int = 0,
-    savefolder: Path = Path.home() / "Desktop",
-    fmt: Literal["svg", "png"] = "png",
+    fignum: str = "0",
+    fmt: Union[Fmt, List[Fmt]] = "png",
+    show: bool = False,
 ) -> None:
     """Generate the multi-part figure where each subplot is a dataset, and those subplots contain
     the stacked histograms of mean LOOCV accuracies across classifiers, unfoldings, and trimmings.
@@ -121,6 +132,9 @@ def make_stacked_accuracy_histograms(
     fullpre: bool
         Whether or not to generate histograms for the fully preprocessed data.
 
+    trim: int
+        If "1", trim largest only. If "20", trim largest 20 eigenvalues.
+
     density: bool
         Whether the final histogram should be frequency based. If False, will be count based.
 
@@ -132,6 +146,9 @@ def make_stacked_accuracy_histograms(
 
     force: bool
         If True, recompute all LOOCV accuracies.
+
+    fignum: str
+        Figure number as appearing in paper. If prepended with "s", is saved to supplementary.
     """
     global ARGS
     if nrows * ncols < N_SUBPLOTS:
@@ -139,7 +156,7 @@ def make_stacked_accuracy_histograms(
     # ARGS.fullpre = True
     dfs = []
 
-    def hist_over_trim(trim: str, unfold=UNFOLDS, fullpre=fullpre, normalize=normalize):
+    def hist_over_trim(trim: str, unfold=UNFOLDS, fullpre=fullpre, normalize=normalize, fmt=fmt):
         global ARGS
 
         # collect relevant accuracy data
@@ -203,19 +220,25 @@ def make_stacked_accuracy_histograms(
         fig.text(0.025, 0.5, "Total Density" if density else "Frequency", rotation="vertical", **text)  # ylabel
         fig.text(0.5, 0.99, hist_suptitle(trim, unfold, fullpre, normalize), **text)
         fig.subplots_adjust(top=0.905, bottom=0.105, left=0.065, right=0.975, hspace=0.6, wspace=0.35)
-        # plt.show(block=False)
-        outfile = savefolder / f"levma{fignum}.{fmt}"
-        fig.savefig(outfile, dpi=600, pad_inches=0.0)
+        if show:
+            plt.show(block=False)
+        else:
+            if not isinstance(fmt, list):
+                fmt = [fmt]
+            for f in fmt:
+                savefolder = SUPPLEMENTARY if fignum.lower()[0] == "s" else TMI_FOLDER
+                outfile = savefolder / f"levma{fignum.replace('s', '')}.{f}"
+                fig.savefig(outfile, dpi=600, pad_inches=0.0)
+                print(f"Stacked histogram plot saved to {outfile}")
+            plt.close()
 
-    for FULLPRE in [True]:
-        # for unfold in [[5, 7], [11, 13]]:
-        for unfold in [[5, 7, 9, 11, 13]]:
-            hist_over_trim(trim="(1,-1)", normalize=normalize, unfold=unfold)
-            # hist_over_trim(trim="(1,-20)", normalize=normalize, unfold=unfold)
+    if trim not in ["1", "20"]:
+        raise ValueError("Invalid trim.")
+    hist_over_trim(trim=f"(1,-{trim})", fullpre=fullpre, normalize=normalize, unfold=unfolds)
 
 
 if __name__ == "__main__":
     set_tmi_style()
-    make_stacked_accuracy_histograms(ARGS)
-    plt.show()
+    make_stacked_accuracy_histograms(ARGS, trim="1", fignum="1", fmt=["png", "svg"])
+    make_stacked_accuracy_histograms(ARGS, trim="20", fignum="s1", fmt=["png", "svg"])
     # plt.show()  # This should be after all plotting calls
