@@ -1,9 +1,12 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sbn
 
+from pathlib import Path
 from typing import Any, List
+from typing_extensions import Literal
 
 from rmt.args import ARGS
 from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
@@ -33,7 +36,61 @@ HCOLORS = [
 COLORDICT = dict(zip(FEATURES, HCOLORS))
 RAWEIGS_COLOR = ["#777777"]
 UNFOLDS = [5, 7, 9, 11, 13]
+N_SUBPLOTS = 17
 # fmt: on
+
+# see bottom of https://matplotlib.org/tutorials/introductory/customizing.html for all options
+FONT_RC = {
+    "family": "sans-serif",
+    "style": "normal",
+    "variant": "normal",  # "small-caps" is other
+    "weight": "normal",
+    "size": 8.0,
+    "serif": "Times New Roman",
+    "sans-serif": "Arial",
+}
+LINES_RC = {"linewidth": 1.0, "markeredgewidth": 0.5}
+AXES_RC = {"linewidth": 0.5, "titlesize": "medium"}
+PATCHES_RC = {"linewidth": 0.5}
+TEXT_RC = {}
+
+
+def set_tmi_style():
+    mpl.rc("lines", **LINES_RC)
+    mpl.rc("patch", **PATCHES_RC)
+    mpl.rc("font", **FONT_RC)
+    mpl.rc("axes", **AXES_RC)
+
+
+def shorten_title(title: str) -> str:
+    REPLACEMENTS = {
+        "LEARNING": "LEARN",
+        "duloxetine": "dulox",
+        "PSYCH_": "PSY-",
+        "VIGILANCE": "VIG",
+        "TASK_ATTENTION": "TASK_ATT",
+        "WEEKLY_ATTENTION": "WEEK_ATT",
+        "SES-": "s",
+        "PARKINSONS": "PARK",
+        "parkinsons": "park",
+        "control": "ctrl",
+        "SUMMED": "SUM",
+        "INTERLEAVED": "INTER",
+        "--": "\n",
+    }
+    for long, short in REPLACEMENTS.items():
+        title = title.replace(long, short)
+    return title
+
+
+def hist_suptitle(trim: str, unfold: List[str], fullpre: bool, normalize: bool) -> str:
+    trim1 = "trimming largest eigenvalue"
+    trim20 = "trimming 20 largest eigenvalues"
+    t = trim1 if trim == "(1,-1)" else trim20
+    u = str(unfold).replace("[", "{").replace("]", "}")
+    f = " (fullpre)" if fullpre else ""
+    n = " (normed)" if normalize else ""
+    return f"Accuracies across all classifiers and unfolding degrees {u}, {t}{f}{n}"
 
 
 def make_stacked_accuracy_histograms(
@@ -46,6 +103,9 @@ def make_stacked_accuracy_histograms(
     force: bool = False,
     nrows: int = 3,
     ncols: int = 6,
+    fignum: int = 0,
+    savefolder: Path = Path.home() / "Desktop",
+    fmt: Literal["svg", "png"] = "png",
 ) -> None:
     """Generate the multi-part figure where each subplot is a dataset, and those subplots contain
     the stacked histograms of mean LOOCV accuracies across classifiers, unfoldings, and trimmings.
@@ -74,10 +134,12 @@ def make_stacked_accuracy_histograms(
         If True, recompute all LOOCV accuracies.
     """
     global ARGS
+    if nrows * ncols < N_SUBPLOTS:
+        raise ValueError(f"Requires `nrows` * `ncols` >= {N_SUBPLOTS}.")
     # ARGS.fullpre = True
     dfs = []
 
-    def hist_over_trim(trim: str, unfold=UNFOLDS, normalize=normalize):
+    def hist_over_trim(trim: str, unfold=UNFOLDS, fullpre=fullpre, normalize=normalize):
         global ARGS
 
         # collect relevant accuracy data
@@ -104,7 +166,7 @@ def make_stacked_accuracy_histograms(
                 hist_info.append(hist_data)
                 bins_all.append(bins)
                 guesses.append(all_algo_compare["Guess"].iloc[0])
-                titles.append(f"{dataset}--{comparison}")
+                titles.append(shorten_title(f"{dataset}--{comparison}"))
 
         if len(features) == 1 and features[0] == "Raw Eigs":
             hcolors = RAWEIGS_COLOR
@@ -113,6 +175,7 @@ def make_stacked_accuracy_histograms(
         fig: plt.Figure
         axes: plt.Axes
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False)
+        fig.set_size_inches(w=7.16, h=5)
         for i, (hist_data, bins, guess, title) in enumerate(zip(hist_info, bins_all, guesses, titles)):
             sbn.set_style("ticks")
             sbn.set_palette("Accent")
@@ -125,25 +188,24 @@ def make_stacked_accuracy_histograms(
                 histtype="bar",
                 label=hist_data.columns,
                 color=hcolors,
+                linewidth=0.5,
             )
             ax.axvline(x=guess, color="black", label="Guess")
             if i == 0:
-                # ax.legend()
                 handles, labels = ax.get_legend_handles_labels()
             ax.set_title(title, fontdict={"fontsize": 8})
-
         # tidy up, adjust, add legend
-        fig.delaxes(axes[nrows - 1][ncols - 1])  # remove last plot
-        fig.legend(handles, labels, loc=[0.8, 0.11], fontsize=8, labelspacing=0.4)
-        fig.text(0.5, 0.04, "Feature Prediction Accuracy", ha="center", va="center")  # xlabel
-        fig.text(
-            0.1, 0.5, "Density" if density else "Frequency", ha="center", va="center", rotation="vertical"
-        )  # ylabel
-        f = " (fullpre)" if ARGS.fullpre else ""
-        n = " (normed)" if ARGS.normalize else ""
-        fig.suptitle(f"Trim {trim} unfolds={unfold}{f}{n}")
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        plt.show(block=False)
+        for i in range(N_SUBPLOTS, nrows * ncols):
+            fig.delaxes(axes.flat[i])  # remove last plots, regardless of nrows, ncols
+        text = dict(ha="center", va="center", fontsize=8)
+        fig.legend(handles, labels, loc=[0.84, 0.08], fontsize=8, labelspacing=0.4)
+        fig.text(0.5, 0.04, "Feature Prediction Accuracy", **text)  # xlabel
+        fig.text(0.025, 0.5, "Total Density" if density else "Frequency", rotation="vertical", **text)  # ylabel
+        fig.text(0.5, 0.99, hist_suptitle(trim, unfold, fullpre, normalize), **text)
+        fig.subplots_adjust(top=0.905, bottom=0.105, left=0.065, right=0.975, hspace=0.6, wspace=0.35)
+        # plt.show(block=False)
+        outfile = savefolder / f"levma{fignum}.{fmt}"
+        fig.savefig(outfile, dpi=600, pad_inches=0.0)
 
     for FULLPRE in [True]:
         # for unfold in [[5, 7], [11, 13]]:
@@ -153,5 +215,7 @@ def make_stacked_accuracy_histograms(
 
 
 if __name__ == "__main__":
+    set_tmi_style()
     make_stacked_accuracy_histograms(ARGS)
-    plt.show()  # This should be after all plotting calls
+    plt.show()
+    # plt.show()  # This should be after all plotting calls
