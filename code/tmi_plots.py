@@ -5,12 +5,16 @@ import os
 import pandas as pd
 import seaborn as sbn
 
+from empyricalRMT.ensemble import GOE, GDE
 from pathlib import Path
 from typing import Any, List, Union
 from typing_extensions import Literal
 
 from rmt.args import ARGS
+from rmt.comparisons import Pairings
+from rmt.plot_datasets import plot_largest, plot_pred_levelvar, plot_pred_nnsd
 from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
+from rmt._utilities import _percentile_boot
 
 Fmt = Literal["svg", "png"]
 
@@ -44,9 +48,10 @@ HCOLORS = [
 ]
 COLORDICT = dict(zip(FEATURES, HCOLORS))
 RAWEIGS_COLOR = ["#777777"]
+# fmt: on
+
 UNFOLDS = [5, 7, 9, 11, 13]
 N_SUBPLOTS = 17
-# fmt: on
 
 # see bottom of https://matplotlib.org/tutorials/introductory/customizing.html for all options
 FONT_RC = {
@@ -62,6 +67,7 @@ LINES_RC = {"linewidth": 1.0, "markeredgewidth": 0.5}
 AXES_RC = {"linewidth": 0.5, "titlesize": "medium"}
 PATCHES_RC = {"linewidth": 0.5}
 TEXT_RC = {}
+FIGWIDTH = 7.16  # inches
 
 
 def set_tmi_style():
@@ -100,6 +106,29 @@ def hist_suptitle(trim: str, unfold: List[str], fullpre: bool, normalize: bool) 
     f = " (fullpre)" if fullpre else ""
     n = " (normed)" if normalize else ""
     return f"Accuracies across all classifiers and unfolding degrees {u}, {t}{f}{n}"
+
+
+def rigidity_suptitle(dataset_name: str, trim: str, fullpre: bool, normalize: bool) -> str:
+    trim1 = "trimming largest eigenvalue"
+    trim20 = "trimming 20 largest eigenvalues"
+    t = trim1 if trim == "(1,-1)" else trim20
+    f = " (fullpre)" if fullpre else ""
+    n = " (normed)" if normalize else ""
+    return f"{shorten_title(dataset_name)} Spectral Rigidity - {t}{f}{n}"
+
+
+def make_plot(fig: plt.Figure, show: bool, fmt: Union[Fmt, List[Fmt]], fignum: str) -> None:
+    if show:
+        plt.show(block=False)
+    else:
+        if not isinstance(fmt, list):
+            fmt = [fmt]
+        for f in fmt:
+            savefolder = SUPPLEMENTARY if fignum.lower()[0] == "s" else TMI_FOLDER
+            outfile = savefolder / f"levma{fignum.replace('s', '')}.{f}"
+            fig.savefig(outfile, dpi=600, pad_inches=0.0)
+            print(f"Plot saved to {outfile}")
+        plt.close()
 
 
 def make_stacked_accuracy_histograms(
@@ -153,13 +182,14 @@ def make_stacked_accuracy_histograms(
     global ARGS
     if nrows * ncols < N_SUBPLOTS:
         raise ValueError(f"Requires `nrows` * `ncols` >= {N_SUBPLOTS}.")
-    # ARGS.fullpre = True
+    ARGS.fullpre = fullpre
     dfs = []
 
     def hist_over_trim(trim: str, unfold=UNFOLDS, fullpre=fullpre, normalize=normalize, fmt=fmt):
         global ARGS
 
         # collect relevant accuracy data
+        # we need to use and modify the global ARGS because I did this poorly
         for trim_idx in [trim]:
             ARGS.trim = trim_idx
             ARGS.normalize = normalize
@@ -192,7 +222,7 @@ def make_stacked_accuracy_histograms(
         fig: plt.Figure
         axes: plt.Axes
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=False)
-        fig.set_size_inches(w=7.16, h=5)
+        fig.set_size_inches(w=FIGWIDTH, h=5)
         for i, (hist_data, bins, guess, title) in enumerate(zip(hist_info, bins_all, guesses, titles)):
             sbn.set_style("ticks")
             sbn.set_palette("Accent")
@@ -220,25 +250,83 @@ def make_stacked_accuracy_histograms(
         fig.text(0.025, 0.5, "Total Density" if density else "Frequency", rotation="vertical", **text)  # ylabel
         fig.text(0.5, 0.99, hist_suptitle(trim, unfold, fullpre, normalize), **text)
         fig.subplots_adjust(top=0.905, bottom=0.105, left=0.065, right=0.975, hspace=0.6, wspace=0.35)
-        if show:
-            plt.show(block=False)
-        else:
-            if not isinstance(fmt, list):
-                fmt = [fmt]
-            for f in fmt:
-                savefolder = SUPPLEMENTARY if fignum.lower()[0] == "s" else TMI_FOLDER
-                outfile = savefolder / f"levma{fignum.replace('s', '')}.{f}"
-                fig.savefig(outfile, dpi=600, pad_inches=0.0)
-                print(f"Stacked histogram plot saved to {outfile}")
-            plt.close()
+        make_plot(fig, show, fmt, fignum)
 
     if trim not in ["1", "20"]:
         raise ValueError("Invalid trim.")
     hist_over_trim(trim=f"(1,-{trim})", fullpre=fullpre, normalize=normalize, unfold=unfolds)
 
 
+def plot_pred_rigidity(
+    args: Any,
+    dataset_name: str,
+    comparison: str,
+    fullpre: bool = True,
+    unfold: List[int] = [5, 7, 9, 11, 13],
+    ensembles: bool = True,
+    silent: bool = True,
+    force: bool = False,
+    fignum: str = "0",
+    fmt: Union[Fmt, List[Fmt]] = "png",
+    show: bool = False,
+) -> None:
+    global ARGS
+    ARGS.fullpre = fullpre
+    for trim_idx in ["(1,-1)", "(1,-20)"]:
+        ARGS.trim = trim_idx
+        all_pairs = []
+        for normalize in [False]:
+            args.normalize = normalize
+            for degree in unfold:
+                ARGS.unfold["degree"] = degree
+                pairings = Pairings(args, dataset_name)
+                pairing = list(filter(lambda p: p.label == comparison, pairings.pairs))
+                if len(pairing) != 1:
+                    raise ValueError("Too many pairings, something is wrong.")
+                all_pairs.append(pairing[0])
+        g1, _, g2 = all_pairs[0].label.split("_")  # groupnames
+        fig: plt.Figure
+        fig, axes = plt.subplots(nrows=1, ncols=len(all_pairs), sharex=True)
+        fig.set_size_inches(w=FIGWIDTH, h=2)
+        for i, pair in enumerate(all_pairs):
+            ax: plt.Axes = axes.flat[i]
+            df1 = pd.read_pickle(pair.rigidity[0]).set_index("L")
+            df2 = pd.read_pickle(pair.rigidity[1]).set_index("L")
+            boots1 = _percentile_boot(df1)
+            boots2 = _percentile_boot(df2)
+            sbn.lineplot(x=df1.index, y=boots1["mean"], color="#FD8208", label=g1, ax=ax)
+            ax.fill_between(x=df1.index, y1=boots1["low"], y2=boots1["high"], color="#FD8208", alpha=0.3)
+            sbn.lineplot(x=df2.index, y=boots2["mean"], color="#000000", label=g2, ax=ax)
+            ax.fill_between(x=df2.index, y1=boots2["low"], y2=boots2["high"], color="#000000", alpha=0.3)
+            if ensembles:
+                L = df1.index
+                poisson = GDE.spectral_rigidity(L=L)
+                goe = GOE.spectral_rigidity(L=L)
+                sbn.lineplot(x=L, y=poisson, color="#08FD4F", label="Poisson", ax=ax)
+                sbn.lineplot(x=L, y=goe, color="#0066FF", label="GOE", ax=ax)
+            ax.legend().set_visible(False)
+            ax.set_title(f"Unfolding Degree {unfold[i]}")
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+        axes.flat[0].legend(fontsize=8, labelspacing=0.2, framealpha=0.0).set_visible(True)
+        text = dict(ha="center", va="center", fontsize=8)
+        fig.text(0.5, 0.04, "L", **text)  # xlabel
+        fig.text(
+            0.03, 0.5, "Spectral Rigidity, ∆₃(L)", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}, **text
+        )  # ylabel
+        fig.subplots_adjust(top=0.83, bottom=0.17, left=0.085, right=0.98, hspace=0.2, wspace=0.34)
+        # plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
+        fig.text(0.5, 0.97, rigidity_suptitle(dataset_name, ARGS.trim, fullpre, normalize), **text)  # suptitle
+        make_plot(fig, show, fmt, fignum)
+
+
 if __name__ == "__main__":
     set_tmi_style()
-    make_stacked_accuracy_histograms(ARGS, trim="1", fignum="1", fmt=["png", "svg"])
-    make_stacked_accuracy_histograms(ARGS, trim="20", fignum="s1", fmt=["png", "svg"])
-    # plt.show()  # This should be after all plotting calls
+    # make_stacked_accuracy_histograms(ARGS, trim="1", fignum="1", fmt=["png", "svg"])
+    # make_stacked_accuracy_histograms(ARGS, trim="20", fignum="s1", fmt=["png", "svg"])
+    plot_pred_rigidity(ARGS, "OSTEO", "duloxetine_v_nopain", show=True)
+    # plot_pred_levelvar(ARGS, "OSTEO", "duloxetine_v_nopain", ensembles=True,
+    # plot_pred_rigidity(ARGS, "PARKINSONS", "control_v_parkinsons", ensembles=True, silent=True, force=False)
+    # plot_pred_levelvar(ARGS, "PARKINSONS", "control_v_parkinsons", ensembles=True, silent=True, force=False)
+    # plot_pred_nnsd(ARGS, "OSTEO", "duloxetine_v_nopain", trim=4.0, ensembles=True, silent=True, force=False)
+    plt.show()  # This should be after all plotting calls
