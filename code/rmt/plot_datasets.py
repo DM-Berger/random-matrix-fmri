@@ -341,7 +341,9 @@ def plot_pred_nnsd(
                     # kde_kws={"alpha": alpha1, "color":"#FD8208"},
                     ax=ax,
                 )
-                sbn.lineplot(spacings, brody, color="#FD8208", ax=ax, alpha=0.9, label=g1 if j == 0 else None, linewidth=0.5)
+                sbn.lineplot(
+                    spacings, brody, color="#FD8208", ax=ax, alpha=0.9, label=g1 if j == 0 else None, linewidth=0.5
+                )
             for j, unf in enumerate(unf2):
                 spacings = unf.spacings
                 if trim > 0.0:
@@ -361,7 +363,9 @@ def plot_pred_nnsd(
                     # kde_kws={"alpha": alpha2, "color":"#000000"},
                     ax=ax,
                 )
-                sbn.lineplot(spacings, brody, color="#000000", ax=ax, alpha=0.9, label=g2 if j==0 else None, linewidth=0.5)
+                sbn.lineplot(
+                    spacings, brody, color="#000000", ax=ax, alpha=0.9, label=g2 if j == 0 else None, linewidth=0.5
+                )
 
             if ensembles:
                 s = np.linspace(0, trim, 10000)
@@ -522,27 +526,29 @@ def make_pred_hists(
                     ARGS.unfold["degree"] = degree
                     supplemented = supplement_stat_dfs(diffs=None, preds=compute_all_preds_df(args, silent=True))[1]
                     dfs.append(pd.read_csv(supplemented))
+        # fmt: off
         FEATURES = [
             "Raw Eigs",
-            # "Largest",
-            # "Largest20",
-            # "Noise",
-            # "Noise (shift)",
-            # "Brody",
-            # "Rigidity",
-            # "Levelvar",
+            "Largest",
+            "Largest20",
+            "Noise",
+            "Noise (shift)",
+            "Brody",
+            "Rigidity",
+            "Levelvar",
         ]
         HCOLORS = [
-            "#777777",  # Raw Eigs
-            # "#000000",  # Raw Eigs
-            # "#c10000",  # Largest
-            # "#a80000",  # Largest20
-            # "#06B93A",  # Noise
-            # "#058C2C",  # Noise (shift)
-            # "#EA00FF",  # brody
-            # "#FD8208",  # rigidity
-            # "#D97007",  # levelvar
+            # "#777777",  # Raw Eigs
+            "#000000",  # Raw Eigs
+            "#c10000",  # Largest
+            "#a80000",  # Largest20
+            "#06B93A",  # Noise
+            "#058C2C",  # Noise (shift)
+            "#EA00FF",  # brody
+            "#FD8208",  # rigidity
+            "#D97007",  # levelvar
         ]
+        # fmt: on
 
         orig = pd.concat(dfs)
         hist_info, bins_all, guesses, titles = [], [], [], []
