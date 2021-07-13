@@ -1,0 +1,25 @@
+/* Adding CTA to indiv journal pages */
+
+
+/*CTA Buttons*/
+
+
+
+cta-button.a    {
+    color: #1a1a1a;
+}
+
+.cta-button {
+    background-color: #c7bfb7;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 1rem;
+    box-sizing: border-box;
+    height: 100px;
+}
+
+/*Journal Homepage Hero Background Color*/
+.pg_Index .theme-homepage-layout .hero-row.light-background {
+    background-color: #f5f5f5;
+}
+ 

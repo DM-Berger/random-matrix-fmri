@@ -1,0 +1,52 @@
+/* HOMEPAGE - Hero Background Image & Gradient Overlay
+ 
+- How to Change Image: Upload Image through SiteBuilder Image Assets either w/ the same filename as existing, or a different filename and update background-image URL with new file name
+ 
+- How to Change Color Gradient Overlay (note: this is optional; can be deleted from CSS): use HEX to RGBA converter for the appropriate format, first rgba() value is top color, second value is bottom color, use last digit in each for opacity (.75 = 75%).
+
+- background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.0)), url('/data/SiteBuilderAssetsOriginals/Live/Images/umbrella/hero-bg-umbrella.jpg');
+    
+*/
+ 
+.pg_Index .home-row1 .home-hero-feature .widget-instance-journals_home-hero-feature {
+    background-image: url('');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size:cover;
+    min-height:350px;
+}
+
+/*  
+.pg_Index .home-row1 .home-self-serve-content-new .widget-instance-journals_home-self-serve-content-new {
+	border-left: 1px solid #d0d2d3;
+}*/
+
+.theme-homepage-layout div[class*=home-row]>.widget-dynamic-inner-wrap>div {
+    background-color: black;
+}
+
+
+.pg_Index .home-row1 .home-hero-feature h1 {
+	font-size:2.5rem;
+	font-weight:400;
+	margin-top:200px;
+}
+
+.pg_Index .homepage-panel-text {
+	background-color: rgba(255, 255, 255, 0.8);
+}
+
+.pg_Index .home-row1 .home-hero-feature h1 span {
+	color:#b33331;	
+}
+
+@media (max-width: 599px) {
+	.pg_Index .home-row1 .home-hero-feature h1 {
+		font-size:2rem;
+		line-height: 1.3;
+	}
+
+}
+
+
+ 

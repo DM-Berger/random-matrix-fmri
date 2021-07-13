@@ -1,0 +1,78 @@
+ /*Neue Haas Grotesk Display - Headings*/ 
+@font-face {
+    font-family: "NeueHaasGroteskDisp";
+    font-style: normal;
+    font-weight: 300;
+    src: url("Fonts/d5211394-289b-4a20-a4c5-69e82b7f1cdc.eot?#iefix");
+    src: url("Fonts/d5211394-289b-4a20-a4c5-69e82b7f1cdc.eot?#iefix") format("eot"),url("Fonts/fcd607c0-74ab-4cb5-90c3-db118b1ad287.woff2") format("woff2"),url("Fonts/5f644ac3-aa3c-43a7-ae6e-79075f4766df.woff") format("woff"),url("Fonts/88228648-8c26-4d51-a51b-f92564a92392.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskDisp";
+    font-style: normal;
+    font-weight: 400;
+    src: url("Fonts/c34970a0-5fd3-4c92-b10d-b8dbd145f0e6.eot?#iefix");
+    src: url("Fonts/c34970a0-5fd3-4c92-b10d-b8dbd145f0e6.eot?#iefix") format("eot"),url("Fonts/1d2142cb-3e68-48df-b188-f1ac45a47a8b.woff2") format("woff2"),url("Fonts/9dc6c76b-0260-4292-af1d-0bc9eecbded2.woff") format("woff"),url("Fonts/ed18aa48-557e-4d1f-a53c-58399a7c1bc4.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskDisp";
+    font-style: italic;
+    font-weight: 400;
+    src: url("Fonts/016417eb-25bd-4b80-a60d-2dacbb7f648b.eot?#iefix");
+    src: url("Fonts/016417eb-25bd-4b80-a60d-2dacbb7f648b.eot?#iefix") format("eot"),url("Fonts/a28c06ea-8829-467a-a7be-4ffdfba4247b.woff2") format("woff2"),url("Fonts/3293834c-c7fe-4d69-a914-f94198711fe4.woff") format("woff"),url("Fonts/65b936e2-311a-4b71-bf88-b03362853c0f.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskDisp";
+    font-style: normal;
+    font-weight: 700;
+    src: url("Fonts/83d6b8f7-bd47-4e8d-a359-27b74d3100f6.eot?#iefix");
+    src: url("Fonts/83d6b8f7-bd47-4e8d-a359-27b74d3100f6.eot?#iefix") format("eot"),url("Fonts/75e1af8f-1a4c-475a-8b53-f27e52822b6b.woff2") format("woff2"),url("Fonts/2ba6fbd5-9c17-4733-af15-f49fbecc5c15.woff") format("woff"),url("Fonts/7dcf6c37-4fb4-4211-9808-6a39bfa89e0d.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskDisp";
+    font-style: italic;
+    font-weight: 700;
+    src: url("Fonts/48906e2a-bd50-495b-b01c-e197d63ffa16.eot?#iefix");
+    src: url("Fonts/48906e2a-bd50-495b-b01c-e197d63ffa16.eot?#iefix") format("eot"),url("Fonts/57974581-bbc7-4288-9512-600df67cfe32.woff2") format("woff2"),url("Fonts/071a68ca-9b4b-44c3-a81f-5e63580800b8.woff") format("woff"),url("Fonts/3465d745-f731-442a-bd61-8749897a3002.ttf") format("truetype");
+}
+/* Neue Haas Grotesk Text - Body */
+@font-face {
+    font-family: "NeueHaasGroteskText";
+    font-style: normal;
+    font-weight: 400;
+    src: url("Fonts/d24ae558-ac0f-4a43-96da-dd49b68947f5.eot?#iefix");
+    src: url("Fonts/d24ae558-ac0f-4a43-96da-dd49b68947f5.eot?#iefix") format("eot"),url("Fonts/a14594bf-73de-4b5f-9792-9566994a021d.woff2") format("woff2"),url("Fonts/bb4a10bb-155d-4c1a-a813-c65e10fac36c.woff") format("woff"),url("Fonts/53812a68-b352-4951-b19c-fe964db7ffe2.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskText";
+    font-style: italic;
+    font-weight: 400;
+    src: url("Fonts/baa1ea73-44ac-4bb5-a6af-b7fc486d335f.eot?#iefix");
+    src: url("Fonts/baa1ea73-44ac-4bb5-a6af-b7fc486d335f.eot?#iefix") format("eot"),url("Fonts/dc9df9ed-36b9-4522-8e57-1a899ed2c224.woff2") format("woff2"),url("Fonts/ff571a3a-fb16-42b1-a691-23d8955aa35e.woff") format("woff"),url("Fonts/4e756bdf-4269-4158-aad4-70a09c5eed5c.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskText";
+    font-style: normal;
+    font-weight: 700;
+    src: url("Fonts/fca16206-1413-42b5-b3dd-ce6499d2bd3f.eot?#iefix");
+    src: url("Fonts/fca16206-1413-42b5-b3dd-ce6499d2bd3f.eot?#iefix") format("eot"),url("Fonts/34ae0cd2-c49c-4df4-8270-fcda21c1b715.woff2") format("woff2"),url("Fonts/9e666926-4bc9-4013-849e-dffa25a41dbd.woff") format("woff"),url("Fonts/37e13425-7daf-407c-ba41-43ebd7d30855.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NeueHaasGroteskText";
+    font-style: italic;
+    font-weight: 700;
+    src: url("Fonts/a0bf86e3-a9f2-4579-8187-62d3f2386821.eot?#iefix");
+    src: url("Fonts/a0bf86e3-a9f2-4579-8187-62d3f2386821.eot?#iefix") format("eot"),url("Fonts/c951fbb4-1116-47e5-b057-5691a20747eb.woff2") format("woff2"),url("Fonts/cfaf1c42-858f-4acc-88d8-f0fd7d3e6295.woff") format("woff"),url("Fonts/602dde2d-6c6d-491a-b06e-6b1d3e3d6939.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "NHaasGroteskDSW01-65Md";
+    src: url("Fonts/83d6b8f7-bd47-4e8d-a359-27b74d3100f6.eot?#iefix");
+    src: url("Fonts/83d6b8f7-bd47-4e8d-a359-27b74d3100f6.eot?#iefix") format("eot"),url("Fonts/75e1af8f-1a4c-475a-8b53-f27e52822b6b.woff2") format("woff2"),url("Fonts/2ba6fbd5-9c17-4733-af15-f49fbecc5c15.woff") format("woff"),url("Fonts/7dcf6c37-4fb4-4211-9808-6a39bfa89e0d.ttf") format("truetype");
+}
