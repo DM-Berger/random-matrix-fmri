@@ -1,0 +1,607 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+Allen%
+\ \protect \BOthers {.}}{%
+Allen%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2012}}%
+}]{%
+allen2012tracking}
+\APACinsertmetastar {%
+allen2012tracking}%
+\begin{APACrefauthors}%
+Allen, E\BPBI A.%
+, Damaraju, E.%
+, Plis, S\BPBI M.%
+, Erhardt, E\BPBI B.%
+, Eichele, T.%
+\BCBL {}\ \BBA {} Calhoun, V\BPBI D.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2012}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Tracking whole-brain connectivity dynamics in the
+  resting state} {Tracking whole-brain connectivity dynamics in the resting
+  state}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Cerebral Cortex}{}{}{bhs352}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Bullmore%
+\ \BBA {} Sporns%
+}{%
+Bullmore%
+\ \BBA {} Sporns%
+}{%
+{\protect \APACyear {2009}}%
+}]{%
+bullmore2009complex}
+\APACinsertmetastar {%
+bullmore2009complex}%
+\begin{APACrefauthors}%
+Bullmore, E.%
+\BCBT {}\ \BBA {} Sporns, O.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2009}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Complex brain networks: graph theoretical analysis of
+  structural and functional systems} {Complex brain networks: graph theoretical
+  analysis of structural and functional systems}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Nature Reviews Neuroscience}{10}{3}{186--198}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Calhoun%
+, Miller%
+, Pearlson%
+\BCBL {}\ \BBA {} Adal{\i}%
+}{%
+Calhoun%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2014}}%
+}]{%
+calhoun2014chronnectome}
+\APACinsertmetastar {%
+calhoun2014chronnectome}%
+\begin{APACrefauthors}%
+Calhoun, V\BPBI D.%
+, Miller, R.%
+, Pearlson, G.%
+\BCBL {}\ \BBA {} Adal{\i}, T.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The chronnectome: time-varying connectivity networks as
+  the next frontier in {fMRI} data discovery} {The chronnectome: time-varying
+  connectivity networks as the next frontier in {fMRI} data discovery}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Neuron}{84}{2}{262--274}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Damaraju%
+\ \protect \BOthers {.}}{%
+Damaraju%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2014}}%
+}]{%
+damaraju2014dynamic}
+\APACinsertmetastar {%
+damaraju2014dynamic}%
+\begin{APACrefauthors}%
+Damaraju, E.%
+, Allen, E.%
+, Belger, A.%
+, Ford, J.%
+, McEwen, S.%
+, Mathalon, D.%
+\BDBL {}others%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Dynamic functional connectivity analysis reveals
+  transient states of dysconnectivity in schizophrenia} {Dynamic functional
+  connectivity analysis reveals transient states of dysconnectivity in
+  schizophrenia}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{NeuroImage: Clinical}{5}{}{298--308}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+de Pasquale%
+\ \protect \BOthers {.}}{%
+de Pasquale%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2012}}%
+}]{%
+de2012cortical}
+\APACinsertmetastar {%
+de2012cortical}%
+\begin{APACrefauthors}%
+de Pasquale, F.%
+, Della~Penna, S.%
+, Snyder, A\BPBI Z.%
+, Marzetti, L.%
+, Pizzella, V.%
+, Romani, G\BPBI L.%
+\BCBL {}\ \BBA {} Corbetta, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2012}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {A cortical core for dynamic integration of functional
+  networks in the resting human brain} {A cortical core for dynamic integration
+  of functional networks in the resting human brain}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Neuron}{74}{4}{753--764}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Fisher%
+}{%
+Fisher%
+}{%
+{\protect \APACyear {1915}}%
+}]{%
+fisher1915frequency}
+\APACinsertmetastar {%
+fisher1915frequency}%
+\begin{APACrefauthors}%
+Fisher, R\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1915}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Frequency distribution of the values of the correlation
+  coefficient in samples from an indefinitely large population} {Frequency
+  distribution of the values of the correlation coefficient in samples from an
+  indefinitely large population}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Biometrika}{}{}{507--521}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Fortunato%
+\ \BBA {} Barth{\'e}lemy%
+}{%
+Fortunato%
+\ \BBA {} Barth{\'e}lemy%
+}{%
+{\protect \APACyear {2007}}%
+}]{%
+fortunato2007resolution}
+\APACinsertmetastar {%
+fortunato2007resolution}%
+\begin{APACrefauthors}%
+Fortunato, S.%
+\BCBT {}\ \BBA {} Barth{\'e}lemy, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2007}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Resolution limit in community detection} {Resolution
+  limit in community detection}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Proceedings of the National Academy of
+  Sciences}{104}{1}{36--41}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+G{\'o}mez%
+, Jensen%
+\BCBL {}\ \BBA {} Arenas%
+}{%
+G{\'o}mez%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2009}}%
+}]{%
+gomez2009analysis}
+\APACinsertmetastar {%
+gomez2009analysis}%
+\begin{APACrefauthors}%
+G{\'o}mez, S.%
+, Jensen, P.%
+\BCBL {}\ \BBA {} Arenas, A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2009}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Analysis of community structure in networks of
+  correlated data} {Analysis of community structure in networks of correlated
+  data}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Physical Review E}{80}{1}{016114}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Gonzalez-Castillo%
+\ \protect \BOthers {.}}{%
+Gonzalez-Castillo%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2014}}%
+}]{%
+gonzalez2014spatial}
+\APACinsertmetastar {%
+gonzalez2014spatial}%
+\begin{APACrefauthors}%
+Gonzalez-Castillo, J.%
+, Handwerker, D\BPBI A.%
+, Robinson, M\BPBI E.%
+, Hoy, C\BPBI W.%
+, Buchanan, L\BPBI C.%
+, Saad, Z\BPBI S.%
+\BCBL {}\ \BBA {} Bandettini, P\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The spatial structure of resting state connectivity
+  stability on the scale of minutes} {The spatial structure of resting state
+  connectivity stability on the scale of minutes}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Frontiers in Neuroscience}{8}{}{138}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Hutchison%
+, Womelsdorf%
+, Gati%
+, Everling%
+\BCBL {}\ \BBA {} Menon%
+}{%
+Hutchison%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2013}}%
+}]{%
+hutchison2013resting}
+\APACinsertmetastar {%
+hutchison2013resting}%
+\begin{APACrefauthors}%
+Hutchison, R\BPBI M.%
+, Womelsdorf, T.%
+, Gati, J\BPBI S.%
+, Everling, S.%
+\BCBL {}\ \BBA {} Menon, R\BPBI S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2013}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Resting-state networks show dynamic functional
+  connectivity in awake humans and anesthetized macaques} {Resting-state
+  networks show dynamic functional connectivity in awake humans and
+  anesthetized macaques}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Human Brain Mapping}{34}{9}{2154--2177}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Liegeois%
+\ \protect \BOthers {.}}{%
+Liegeois%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2015}}%
+}]{%
+liegeois2014cerebral}
+\APACinsertmetastar {%
+liegeois2014cerebral}%
+\begin{APACrefauthors}%
+Liegeois, R.%
+, Ziegler, E.%
+, Geurts, P.%
+, Gomez, F.%
+, Bahri, M\BPBI A.%
+, Phillips, C.%
+\BDBL {}Sepulchre, R.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2015}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Cerebral functional connectivity periodically (de)
+  synchronizes with anatomical constraints} {Cerebral functional connectivity
+  periodically (de) synchronizes with anatomical constraints}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Brain Structure and Function}{}{}{}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Liu%
+\ \BBA {} Duyn%
+}{%
+Liu%
+\ \BBA {} Duyn%
+}{%
+{\protect \APACyear {2013}}%
+}]{%
+liu2013time}
+\APACinsertmetastar {%
+liu2013time}%
+\begin{APACrefauthors}%
+Liu, X.%
+\BCBT {}\ \BBA {} Duyn, J\BPBI H.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2013}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Time-varying functional network information extracted
+  from brief instances of spontaneous brain activity} {Time-varying functional
+  network information extracted from brief instances of spontaneous brain
+  activity}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Proceedings of the National Academy of Sciences
+  USA}{110}{11}{4392--4397}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Nooner%
+\ \protect \BOthers {.}}{%
+Nooner%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2012}}%
+}]{%
+nooner2012nki}
+\APACinsertmetastar {%
+nooner2012nki}%
+\begin{APACrefauthors}%
+Nooner, K\BPBI B.%
+, Colcombe, S\BPBI J.%
+, Tobe, R\BPBI H.%
+, Mennes, M.%
+, Benedict, M\BPBI M.%
+, Moreno, A\BPBI L.%
+\BDBL {}others%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2012}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The NKI-Rockland sample: a model for accelerating the
+  pace of discovery science in psychiatry} {The nki-rockland sample: a model
+  for accelerating the pace of discovery science in psychiatry}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Frontiers in Neuroscience}{6}{}{152}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Power%
+\ \protect \BOthers {.}}{%
+Power%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2014}}%
+}]{%
+power2014methods}
+\APACinsertmetastar {%
+power2014methods}%
+\begin{APACrefauthors}%
+Power, J\BPBI D.%
+, Mitra, A.%
+, Laumann, T\BPBI O.%
+, Snyder, A\BPBI Z.%
+, Schlaggar, B\BPBI L.%
+\BCBL {}\ \BBA {} Petersen, S\BPBI E.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Methods to detect, characterize, and remove motion
+  artifact in resting state fMRI} {Methods to detect, characterize, and remove
+  motion artifact in resting state fmri}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Neuroimage}{84}{}{320--341}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Reichardt%
+\ \BBA {} Bornholdt%
+}{%
+Reichardt%
+\ \BBA {} Bornholdt%
+}{%
+{\protect \APACyear {2006}}%
+}]{%
+reichardt2006statistical}
+\APACinsertmetastar {%
+reichardt2006statistical}%
+\begin{APACrefauthors}%
+Reichardt, J.%
+\BCBT {}\ \BBA {} Bornholdt, S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2006}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Statistical mechanics of community detection}
+  {Statistical mechanics of community detection}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Physical Review E}{74}{1}{016110}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Rubinov%
+\ \BBA {} Sporns%
+}{%
+Rubinov%
+\ \BBA {} Sporns%
+}{%
+{\protect \APACyear {2011}}%
+}]{%
+rubinov2011weight}
+\APACinsertmetastar {%
+rubinov2011weight}%
+\begin{APACrefauthors}%
+Rubinov, M.%
+\BCBT {}\ \BBA {} Sporns, O.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2011}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Weight-conserving characterization of complex functional
+  brain networks} {Weight-conserving characterization of complex functional
+  brain networks}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Neuroimage}{56}{4}{2068--2079}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Scheeringa%
+, Petersson%
+, Kleinschmidt%
+, Jensen%
+\BCBL {}\ \BBA {} Bastiaansen%
+}{%
+Scheeringa%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2012}}%
+}]{%
+scheeringa2012eeg}
+\APACinsertmetastar {%
+scheeringa2012eeg}%
+\begin{APACrefauthors}%
+Scheeringa, R.%
+, Petersson, K\BPBI M.%
+, Kleinschmidt, A.%
+, Jensen, O.%
+\BCBL {}\ \BBA {} Bastiaansen, M\BPBI C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2012}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {EEG alpha power modulation of FMRI resting-state
+  connectivity} {Eeg alpha power modulation of fmri resting-state
+  connectivity}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Brain connectivity}{2}{5}{254--264}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Smith%
+\ \protect \BOthers {.}}{%
+Smith%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2009}}%
+}]{%
+smith2009correspondence}
+\APACinsertmetastar {%
+smith2009correspondence}%
+\begin{APACrefauthors}%
+Smith, S\BPBI M.%
+, Fox, P\BPBI T.%
+, Miller, K\BPBI L.%
+, Glahn, D\BPBI C.%
+, Fox, P\BPBI M.%
+, Mackay, C\BPBI E.%
+\BDBL {}others%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2009}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Correspondence of the brain's functional architecture
+  during activation and rest} {Correspondence of the brain's functional
+  architecture during activation and rest}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Proceedings of the National Academy of
+  Sciences}{106}{31}{13040--13045}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Sporns%
+}{%
+Sporns%
+}{%
+{\protect \APACyear {2011}}%
+}]{%
+sporns2011networks}
+\APACinsertmetastar {%
+sporns2011networks}%
+\begin{APACrefauthors}%
+Sporns, O.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{2011}.
+\newblock
+\APACrefbtitle {Networks of the Brain} {Networks of the brain}.
+\newblock
+\APACaddressPublisher{}{MIT press}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Sporns%
+\ \BBA {} Betzel%
+}{%
+Sporns%
+\ \BBA {} Betzel%
+}{%
+{\protect \APACyear {2016}}%
+}]{%
+sporns2015modular}
+\APACinsertmetastar {%
+sporns2015modular}%
+\begin{APACrefauthors}%
+Sporns, O.%
+\BCBT {}\ \BBA {} Betzel, R\BPBI F.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Modular brain networks} {Modular brain networks}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Annual review of
+  psychology}{67}{1}{10.1146/annurev-psych-122414-033634}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Tagliazucchi%
+, Von~Wegner%
+, Morzelewski%
+, Brodbeck%
+\BCBL {}\ \BBA {} Laufs%
+}{%
+Tagliazucchi%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2012}}%
+}]{%
+tagliazucchi2012dynamic}
+\APACinsertmetastar {%
+tagliazucchi2012dynamic}%
+\begin{APACrefauthors}%
+Tagliazucchi, E.%
+, Von~Wegner, F.%
+, Morzelewski, A.%
+, Brodbeck, V.%
+\BCBL {}\ \BBA {} Laufs, H.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2012}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Dynamic BOLD functional connectivity in humans and its
+  electrophysiological correlates} {Dynamic bold functional connectivity in
+  humans and its electrophysiological correlates}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Frontiers in Human Neuroscience}{6}{}{339}.
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}

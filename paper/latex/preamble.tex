@@ -1,0 +1,25 @@
+\documentclass{article} % This command is used to set the type of document you are working on such as an article, book, or presentation
+
+\usepackage{geometry} % This package allows the editing of the page layout
+\usepackage{amsmath}  % This package allows the use of a large range of mathematical formula, commands, and symbols
+\usepackage{graphicx}  % This package allows the importing of images
+
+\newcommand{\question}[2][]{
+    \begin{flushleft}
+    \textbf{Question #1}: \textit{#2}
+    \end{flushleft}
+}
+\newcommand{\sol}{\textbf{Solution}:} %Use if you want a boldface solution line
+\newcommand{\maketitletwo}[2][]{
+    \begin{center}
+        \Large{\textbf{Assignment #1}}
+
+        Course Title
+
+        \vspace{5pt}
+        \normalsize{Matthew Frenkel}
+
+        \today
+        \vspace{15pt}
+    \end{center}
+}
