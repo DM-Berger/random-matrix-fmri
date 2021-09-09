@@ -1,8 +1,8 @@
 # Overview
 
-Our TMI article: ~6500 words (excl. refs and captions). I cannot and will not use Microsoft Word
-(due to my operating systems and costs), so any journal that requires that and has no LaTeX option
-is out (unless someone wants to handle tidying up a Word file I export from LibreOffice).
+Our TMI article: ~6500 words (excl. refs and captions). I can't/won't use Microsoft Word
+(due to my operating systems and costs), so any journal that requires Word and has no LaTeX option
+is out (unless someone wants to handle tidying up a file I export from LibreOffice into Word).
 
 ## Medical Image Analysis (IF = 8.545)
 
