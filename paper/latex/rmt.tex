@@ -46,38 +46,41 @@ of interest (ROIs) within the brain.
 
 Whether in the presence of experimental stimuli, or the relative absence, as in a resting state,
 complex functional connectivity networks are ubiquitous
-(\cite{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013})
-[1]–[4]. This complexity suggests fMRI is a candidate to be studied using Random Matrix Theory
-(RMT), a set of mathematical tools originally developed some 50 years ago to solve complex problems
-in nuclear physics [5], [6]. In various physical systems where nuclei can have different possible
-states, precisely modeling the entirety of the interactions between nuclei is often intractable. For
-such large, complex systems, the eigenvalues (or spectra) efficiently summarize the totality of the
-interactions between components of the system, and RMT describes the expected behaviour of such
-eigenvalues. By analysing the spectrum statistically, complex systems can be investigated by
-comparison to the universal properties predicted by RMT.
+(\cite{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}).
+This complexity suggests fMRI is a candidate to be studied using Random Matrix Theory (RMT), a set
+of mathematical tools originally developed some 50 years ago to solve complex problems in nuclear
+physics (\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}). In various
+physical systems where nuclei can have different possible states, precisely modeling the entirety of
+the interactions between nuclei is often intractable. For such large, complex systems, the
+eigenvalues (or spectra) efficiently summarize the totality of the interactions between components
+of the system, and RMT describes the expected behaviour of such eigenvalues. By analysing the
+spectrum statistically, complex systems can be investigated by comparison to the universal
+properties predicted by RMT.
 
 \begin{sloppypar}
 These universal properties have been observed in diverse phenomena. In small-scale systems, RMT
 universalities have been observed in quantum chaotic systems, complex nuclei, atoms, molecules and
-disordered mesoscopic systems [5]–[11], and at larger scales, RMT has been applied to atmospheric
-physics [12], stock cross-correlations [13], social networks [14], random networks [15],
-network-formation in liquids [16], [17] and amorphous clusters [18]–[21]. Within biological systems,
-RMT has also been used to successfully model aspects of  amino acid functional relationships [22],
-synchrony in epileptic seizures [23], and in protein-protein interactions both in different species
-[24] and breast cancer [25].
+disordered mesoscopic systems \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001}, and at larger scales, RMT has been applied to atmospheric
+physics (\cite{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations \cite{plerouRandomMatrixApproach2002} , social networks \cite{jalanUncoveringRandomnessSuccess2014}, random networks \cite{bandyopadhyayUniversalityComplexNetworks2007},
+network-formation in liquids (\cite{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009})  and amorphous clusters (\cite{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}). Within biological systems,
+RMT has also been used to successfully model aspects of  amino acid functional relationships (\cite{bhadolaTargetingFunctionalMotifs2016}),
+synchrony in epileptic seizures (\cite{osorioPhasesynchronizationRandommatrixBased2011}), and in protein-protein interactions both in different species (\cite{agrawalQuantifyingRandomnessProtein2014}) and breast cancer (\cite{raiRandomnessPreservedPatterns2015}).
 \end{sloppypar}
 
 In recent years, RMT analyses have been applied to study brain functioning.  The earliest  study
 demonstrated that spectra of the correlations between electroencephalographic (EEG) signals closely
-resemble those of the Gaussian Orthogonal Ensemble (GOE) [26].  Somewhat more recently, RMT was used
-to evaluate the quality of whole brain features extracted from fMRI data [27], [28]. RMT has also
+resemble those of the Gaussian Orthogonal Ensemble (GOE) (\cite{sebaRandomMatrixAnalysis2003}).
+Somewhat more recently, RMT was used to evaluate the quality of whole brain features extracted from
+fMRI data (\cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}). RMT has also
 been used in diffusion MRI to aid in the selection of the number of components to employ in
-principal-component reduction analysis and denoising [29]–[31].
+principal-component reduction analysis and denoising
+(\cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}).
 
 Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to investigate
-differences between rest and task states [32], between subjects with and without ADHD [33], and
-between pain and non-pain states [34]. Across these three studies, the spectra of resting or
-low-attention states exhibited properties closest to the GOE.
+differences between rest and task states (\cite{wangSpectralPropertiesTemporal2015}), between
+subjects with and without ADHD (\cite{wangRandomMatrixTheory2016}), and between pain and non-pain
+states (\cite{matharooSpontaneousBackpainAlters2020}). Across these three studies, the spectra of
+resting or low-attention states exhibited properties closest to the GOE.
 
 These findings suggest that certain aspects of psychological processes might be characterized, in
 part, by features computed from the eigenvalues of fMRI correlation matrices, and that these
@@ -98,11 +101,12 @@ variety of data, and not to decisively put forward or refute any specific hypoth
 psychological processes, we examine a wide selection of fMRI datasets available on the OpenNeuro
 platform [36].  This allows for a broad assessment of the potential of voxelwise RMT features.
 
-However, since previous studies employing RMT for feature extraction [33], [34] have partially
-interpreted their findings with respect to attentional processes, we have elected to use datasets
-that involve attention in some way. This includes measures of attention or vigilance, or comparisons
-between a condition involving more attention and focus (e.g. a task state) or conditions which
-should involve considerably less attention or focus (e.g. resting-state).
+However, since previous studies employing RMT for feature extraction
+(\cite{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}) have partially interpreted
+their findings with respect to attentional processes, we have elected to use datasets that involve
+attention in some way. This includes measures of attention or vigilance, or comparisons between a
+condition involving more attention and focus (e.g. a task state) or conditions which should involve
+considerably less attention or focus (e.g. resting-state).
 
 \begin{center}
 \texttt{\textbf{INSERT TABLE 1 HERE}}
@@ -115,99 +119,107 @@ below only those aspects relevant to the current paper.
 
 \subsubsection{Dataset 1}
 Dataset 1 (referred to in Fig. and tables with the label "PSYCH") has detailed and extensive
-information available in  [37]. Subjects completed a battery of psychological measurements, and
-various resting-state fMRI (rs-fMRI) images were obtained. Only the whole-brain 7-Tesla rs-fMRI
-scans were used for the current paper, to make the results comparable to the other included
-datasets. For the purpose of keeping with the "attention" theme of the analyses in this paper, three
-pairings of subgroups were constructed via z-score splits of the various sum-scores of scale items
-involving concepts closely related to attention.
+information available in \cite{gorgolewskiHighResolution7Tesla2015}. Subjects completed a battery of
+psychological measurements, and various resting-state fMRI (rs-fMRI) images were obtained. Only the
+whole-brain 7-Tesla rs-fMRI scans were used for the current paper, to make the results comparable to
+the other included datasets. For the purpose of keeping with the "attention" theme of the analyses
+in this paper, three pairings of subgroups were constructed via z-score splits of the various
+sum-scores of scale items involving concepts closely related to attention.
 
 \paragraph{Trait Attention}
-The PANAS-X [38] is a 9-point Likert-type self-report measure that queries the extent to which
-subjects agree particular affective terms have applied to them over a recent time period (e.g. a few
-weeks). An ad hoc (i.e. face-valid) sum-score was constructed from the scale items: "attentive",
-"alert", "interested", "concentrating", and reverse-scored items "sluggish", "tired", "sleepy",
-"drowsy". Subjects with a z-score greater / less than zero on this sum-score were placed in the high
-/ low "trait attention" category
+The PANAS-X (\cite{watsonPANASXManualPositive1994}) is a 9-point Likert-type self-report measure
+that queries the extent to which subjects agree particular affective terms have applied to them over
+a recent time period (e.g. a few weeks). An ad hoc (i.e. face-valid) sum-score was constructed from
+the scale items: "attentive", "alert", "interested", "concentrating", and reverse-scored items
+"sluggish", "tired", "sleepy", "drowsy". Subjects with a z-score greater / less than zero on this
+sum-score were placed in the high / low "trait attention" category
 
 \paragraph{Task Attention}
-The Conjunctive Continuous Performance Task (CCPT [39]) is a behavioural measure of sustained
-attention where subjects must react only if they see a red square among other different coloured
-figures. For this paper, a sum score was constructed by subtracting the number of false positive and
-false negative responses from the number of success responses, and subjects with a z-score greater /
-less than zero on this scale were placed in high / low "task attention" category.
+The Conjunctive Continuous Performance Task (CCPT;
+\cite{shalevConjunctiveContinuousPerformance2011}) is a behavioural measure of sustained attention
+where subjects must react only if they see a red square among other different coloured figures. For
+this paper, a sum score was constructed by subtracting the number of false positive and false
+negative responses from the number of success responses, and subjects with a z-score greater / less
+than zero on this scale were placed in high / low "task attention" category.
 
 \paragraph{Vigilance}
 The Mini New York cognition questionnaire assesses various elements of the subject's cognitive
 state, e.g. "my thoughts involved other people", "I thought about something positive" (translated
-from German) [40]. One question assesses alertness ("I was fully awake" / "war ich vollkommen wach")
-and was used to create high / low "vigilance" conditions in the same manner as the previous two splits.
+from German) \cite{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
+alertness ("I was fully awake" / "war ich vollkommen wach") and was used to create high / low
+"vigilance" conditions in the same manner as the previous two splits.
 
 \subsubsection{Dataset 2}
-Dataset 2 (referred to in Fig. and tables with the label "OSTEO") is detailed in [41]. Subjects
-included healthy controls ("nopain" condition) and individuals with knee osteoarthritis ("pain"
-condition) treated for 2 weeks with either placebo ("pain" condition) or duloxetine ("duloxetine"
-condition). An additional grouping was also created with both the placebo and duloxetine data
-("allpain" condition), allowing for six subgroup comparisons. All subjects were imaged with
-whole-brain rs-fMRI. Scan parameters are documented in Table I. The use of rs-fMRI and RMT for
-examining pain makes this dataset complementary to [34].
+Dataset 2 (referred to in Fig. and tables with the label "OSTEO") is detailed in
+\cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls ("nopain"
+condition) and individuals with knee osteoarthritis ("pain" condition) treated for 2 weeks with
+either placebo ("pain" condition) or duloxetine ("duloxetine" condition). An additional grouping was
+also created with both the placebo and duloxetine data ("allpain" condition), allowing for six
+subgroup comparisons. All subjects were imaged with whole-brain rs-fMRI. Scan parameters are
+documented in Table I. The use of rs-fMRI and RMT for examining pain makes this dataset
+complementary to \cite{matharooSpontaneousBackpainAlters2020}.
 
 \subsubsection{Dataset 3}
 Dataset 3  (referred to here with the label "REFLECT", due to the "reflective” nature of the
-cognitive tasks) is described in full detail by DuPre, Luh and Spreng [42]. Both multi-echo rs- and
-task-fMRI scans were conducted with scan parameters summarized in Table II. Tasks involved viewing
-various affective images (see [43] for details) and performing tasks related to autobiographical
-memory, prospection, or theory-of-mind reasoning. Continuing with the theme of broadly comparing
-high versus low attention throughout this paper, the different tasks were simply treated generically
-as "attending", in contrast to the non-attentive resting-state scans. This resulted in four task
-state scans and one resting-state scan per subject.
+cognitive tasks) is described in full detail by \cite{dupreMultiechoFMRIReplication2016}. Both
+multi-echo rs- and task-fMRI scans were conducted with scan parameters summarized in Table II. Tasks
+involved viewing various affective images (see \cite{sprengPatternsBrainActivity2010} for details)
+and performing tasks related to autobiographical memory, prospection, or theory-of-mind reasoning.
+Continuing with the theme of broadly comparing high versus low attention throughout this paper, the
+different tasks were simply treated generically as "attending", in contrast to the non-attentive
+resting-state scans. This resulted in four task state scans and one resting-state scan per subject.
 
 In order to combine the multi-echo data into a single, usable matrix, two methods were employed. In
 the "summed" condition, echoes were combined via summation, a method which has value in providing an
-image with overall increased contrast [44]. In the "interleave" condition, echoes were interleaved
-at each voxel: that is, if we denote the voxel's ith signal value from echo j as , then the
-interleaved voxel of the new image has the time-series
-\([t_{1,1}, t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
+image with overall increased contrast (\cite{kunduMultiechoFMRIReview2017}). In the "interleave"
+condition, echoes were interleaved at each voxel: that is, if we denote the voxel's ith signal value
+from echo j as , then the interleaved voxel of the new image has the time-series \([t_{1,1},
+t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
 
-This creates a physically-meaningful 4D
-image that contains the full, original multi-echo fMRI time-series data without any alterations. It
-should be noted that the purpose of these combination methods is not to create a 4D volume that
-allows optimal detection of the purely task-linked BOLD signal, but to ensure all scan information
-was used with minimal additional analytic assumptions.
+This creates a physically-meaningful 4D image that contains the full, original multi-echo fMRI
+time-series data without any alterations. It should be noted that the purpose of these combination
+methods is not to create a 4D volume that allows optimal detection of the purely task-linked BOLD
+signal, but to ensure all scan information was used with minimal additional analytic assumptions.
 
 \subsubsection{Dataset 4}
 Dataset 4 (referred to in Fig. and tables with the label "PARK" or "PARKINSONS") is documented and
-described in detail in [45]. Scan parameters are documented in Table I. Subjects with non-demented
-Parkinson’s Disease (PD) and healthy controls performed a number of repetitions of the Attention
-Network Task (ANT) [46]. Subgroup details are available in Table I. As the ANT task demands high
-attention, it is not as straightforward to create "high" or "low" attention groups. Instead, since
-attention presumably is high and varies little in this dataset, and subgroups instead differ by
-virtue of the presence or absence of PD, any results here serve as a useful comparison point for the
-results from studies that should clearly involve attentional differences. This dataset also included
-extensively preprocessed scans, which were included in analyses to examine the effects of
-preprocessing on the extracted RMT features.
+described in detail in \cite{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
+in Table I. Subjects with non-demented Parkinson’s Disease (PD) and healthy controls performed a
+number of repetitions of the Attention Network Task (ANT)
+(\cite{fanActivationAttentionalNetworks2005}). Subgroup details are available in Table I. As the ANT
+task demands high attention, it is not as straightforward to create "high" or "low" attention
+groups. Instead, since attention presumably is high and varies little in this dataset, and subgroups
+instead differ by virtue of the presence or absence of PD, any results here serve as a useful
+comparison point for the results from studies that should clearly involve attentional differences.
+This dataset also included extensively preprocessed scans, which were included in analyses to
+examine the effects of preprocessing on the extracted RMT features.
 
 \subsubsection{Dataset 5}
 Dataset 5 (referred to in Fig. and tables with the label "LEARN") is documented and described in
-detail in [47]. In this study, both rs-fMRI and task fMRI scans were available for all subjects,
-allowing for within-subject comparisons. The complex task involved multiple phases, wherein subjects
-were exposed to named, black-and-white outlined satellite images related by family-resemblance of
-the components (see Fig. 1 of [47]). After this learning task, subjects were tested on their memory
-of the various learned features. Scans corresponding to both the initial learning and subsequent
-testing phase were included in the high-attention "task" subgroup for the purposes of the analysis
-of this paper. Resting state scans were included in the low-attention "rest" subgroup.
+detail in \cite{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
+were available for all subjects, allowing for within-subject comparisons. The complex task involved
+multiple phases, wherein subjects were exposed to named, black-and-white outlined satellite images
+related by family-resemblance of the components (see Fig. 1 of
+\cite{schapiroHumanHippocampalReplay2018}). After this learning task, subjects were tested on their
+memory of the various learned features. Scans corresponding to both the initial learning and
+subsequent testing phase were included in the high-attention "task" subgroup for the purposes of the
+analysis of this paper. Resting state scans were included in the low-attention "rest" subgroup.
 
 \subsection{Preprocessing}
 Some consideration should be given to whether it is appropriate to apply standard preprocessing
 steps before extracting RMT features, as preprocessing steps should be developed, tested, and
 employed always with respect to a set of inferential goals and a specific analytic framework.
 However, these preprocessing steps are increasingly recognized to have complex effects on fMRI
-analyses [48]. For example, spatial smoothing has clear benefits when employing a general linear
-model [49]–[51], but is less motivated in functional network analyses with small ROIs, where the
-effect of smoothing can be considerable [50], [52], [53], with these effects interacting complexly
-with factors like field strength and image resolution [54]. Similarly, image registration is usually
-required to allow comparisons across (or even within) subjects, but the choice of registration
-strategy can have dramatic effects on functional network analyses [55].
+analyses (\cite{parkerBenefitSliceTiming2019}). For example, spatial smoothing has clear benefits
+when employing a general linear model
+(\cite{miklEffectsSpatialSmoothing2008,alakorkkoEffectsSpatialSmoothing2017,worsleyAnalysisFMRITimeSeries1995}),
+but is less motivated in functional network analyses with small ROIs, where the effect of smoothing
+can be considerable
+(\cite{alakorkkoEffectsSpatialSmoothing2017,goelmanMaximizingNegativeCorrelations2014,trianaEffectsSpatialSmoothing2020},
+with these effects interacting complexly with factors like field strength and image resolution
+(\cite{triantafyllouEffectSpatialSmoothing2006}). Similarly, image registration is usually required
+to allow comparisons across (or even within) subjects, but the choice of registration strategy can
+have dramatic effects on functional network analyses (\cite{magalhaesImpactNormalizationSegmentation2014}).
 
 The RMT features extracted here are based on functional correlations rather than ROI activations,
 and are completely insensitive to voxel location (spatial re-arrangement of an image’s voxels does
