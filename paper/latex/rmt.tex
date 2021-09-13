@@ -108,21 +108,79 @@ attention in some way. This includes measures of attention or vigilance, or comp
 condition involving more attention and focus (e.g. a task state) or conditions which should involve
 considerably less attention or focus (e.g. resting-state).
 
-\begin{center}
-\texttt{\textbf{INSERT TABLE 1 HERE}}
-\end{center}
+\begin{table}[h!]
+\small
+\centering
+\begin{tabular}{ c c c c c c c }
+\hline
+\textbf{ID}  & \textbf{FOV (mm)}  & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} & \textbf{Time (s)} \\
+\hline
+PSYCH   &  192              & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0 & 300 & 15 \\
+OSTEO   &  -                & 64 x 64 x 36   & 3.4 x 3.4 x 3.0 & 2.5 & 300 & 12.5 \\
+REFLECT &  210              & 72 x 72 x 46   & 3.0 x 3.0 x 3.0 & 2.5 & 204 & 10.2 \\
+REFLECT &  240              & 64 x 64 x 33   & 3.8 x 3.8 x 3.8 & 2.0 & 260 & 8.7 \\
+PARK    &  240 x 240 x 129  & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4 & 149 & 5.96 \\
+LEARN   &  -                & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0 & 196 & 6.5 \\
+\hline
+\end{tabular}
+\caption{
+    ID = Identifier for paper. FOV = Field of View. TR = Time of Repetition (seconds).
+    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
+    indicate P slices with dimensions M x N.
+}
+\label{table:1}
+\end{table}
+
 
 Dataset scan parameters and acquisition details are summarized in Table I, and sample and subgroup
 sizes are summarized in Table II. For all datasets, we use the raw (unpreprocessed) scans, and
 perform our own preprocessing (detailed later). Given the complexity of these datasets, we highlight
 below only those aspects relevant to the current paper.
 
+\begin{table}[h!]
+\small
+\centering
+\begin{tabular}{ l l c c c }
+\hline
+\textbf{ID}  & \textbf{Subgroup / Condition}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
+\hline
+PSYCH   &  high\_vigilance    & 12 / 11 & resting-state                    & 2 \\
+        &  low\_vigilance     & 10 / 11 & resting-state                    & 2 \\
+        &  trait\_attend      & 12 / 15 & resting-state                    & 2 \\
+        &  trait\_non-attend  & 10 / 7  & resting-state                    & 2 \\
+        &  task\_attend       & 13 / 15 & resting-state                    & 2 \\
+        &  task\_nonattend    &  9 / 7  & resting-state                    & 2 \\
+\hline
+LEARN   &  task              & 24      & learn image sketches & 16 \\
+        &  rest              & 24      & resting-state                    & 2 \\
+\hline
+REFLECT &  control (no pain) & 20      & resting-state                    & 1 \\
+        &  duloxetine        & 19      & resting-state                    & 1 \\
+        &  placebo           & 37      & resting-state                    & 1 \\
+        &  allpain (duloxetine + placebo) & 56         & resting-state    & 1 \\
+\hline
+PARK    &  Parkinson's       & 17      & ANT                              & 6 \\
+        &  control           & 17      & ANT                              & 6 \\
+\hline
+ECHO    &  summed/interleave & 31      & resting-state                    & 1 \\
+        &  summed/interleave & 31      & imagery/reflection               & 4 \\
+\hline
+\end{tabular}
+\caption{
+    ID = Identifier for paper. FOV = Field of View. TR = Time of Repetition (seconds).
+    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
+    indicate P slices with dimensions M x N.
+}
+\label{table:2}
+\end{table}
+
+
 \subsubsection{Dataset 1}
-Dataset 1 (referred to in Fig. and tables with the label "PSYCH") has detailed and extensive
+Dataset 1 (referred to in Fig. and tables with the label ``PSYCH'') has detailed and extensive
 information available in \cite{gorgolewskiHighResolution7Tesla2015}. Subjects completed a battery of
 psychological measurements, and various resting-state fMRI (rs-fMRI) images were obtained. Only the
 whole-brain 7-Tesla rs-fMRI scans were used for the current paper, to make the results comparable to
-the other included datasets. For the purpose of keeping with the "attention" theme of the analyses
+the other included datasets. For the purpose of keeping with the ``attention'' theme of the analyses
 in this paper, three pairings of subgroups were constructed via z-score splits of the various
 sum-scores of scale items involving concepts closely related to attention.
 
@@ -130,9 +188,9 @@ sum-scores of scale items involving concepts closely related to attention.
 The PANAS-X (\cite{watsonPANASXManualPositive1994}) is a 9-point Likert-type self-report measure
 that queries the extent to which subjects agree particular affective terms have applied to them over
 a recent time period (e.g. a few weeks). An ad hoc (i.e. face-valid) sum-score was constructed from
-the scale items: "attentive", "alert", "interested", "concentrating", and reverse-scored items
-"sluggish", "tired", "sleepy", "drowsy". Subjects with a z-score greater / less than zero on this
-sum-score were placed in the high / low "trait attention" category
+the scale items: ``attentive'', ``alert'', ``interested'', ``concentrating'', and reverse-scored items
+``sluggish'', ``tired'', ``sleepy'', ``drowsy''. Subjects with a z-score greater / less than zero on this
+sum-score were placed in the high / low ``trait attention'' category
 
 \paragraph{Task Attention}
 The Conjunctive Continuous Performance Task (CCPT;
@@ -140,38 +198,38 @@ The Conjunctive Continuous Performance Task (CCPT;
 where subjects must react only if they see a red square among other different coloured figures. For
 this paper, a sum score was constructed by subtracting the number of false positive and false
 negative responses from the number of success responses, and subjects with a z-score greater / less
-than zero on this scale were placed in high / low "task attention" category.
+than zero on this scale were placed in high / low ``task attention'' category.
 
 \paragraph{Vigilance}
 The Mini New York cognition questionnaire assesses various elements of the subject's cognitive
-state, e.g. "my thoughts involved other people", "I thought about something positive" (translated
-from German) \cite{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
-alertness ("I was fully awake" / "war ich vollkommen wach") and was used to create high / low
-"vigilance" conditions in the same manner as the previous two splits.
+state, e.g. ``my thoughts involved other people'', ``I thought about something positive'' (translated
+from German; \cite{gorgolewskiCorrespondenceIndividualDifferences2014}). One question assesses
+alertness (``I was fully awake'' / ``war ich vollkommen wach'') and was used to create high / low
+``vigilance'' conditions in the same manner as the previous two splits.
 
 \subsubsection{Dataset 2}
-Dataset 2 (referred to in Fig. and tables with the label "OSTEO") is detailed in
-\cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls ("nopain"
-condition) and individuals with knee osteoarthritis ("pain" condition) treated for 2 weeks with
-either placebo ("pain" condition) or duloxetine ("duloxetine" condition). An additional grouping was
-also created with both the placebo and duloxetine data ("allpain" condition), allowing for six
+Dataset 2 (referred to in Fig. and tables with the label ``OSTEO'') is detailed in
+\cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls (``nopain''
+condition) and individuals with knee osteoarthritis (``pain'' condition) treated for 2 weeks with
+either placebo (``pain'' condition) or duloxetine (``duloxetine'' condition). An additional grouping was
+also created with both the placebo and duloxetine data (``allpain'' condition), allowing for six
 subgroup comparisons. All subjects were imaged with whole-brain rs-fMRI. Scan parameters are
 documented in Table I. The use of rs-fMRI and RMT for examining pain makes this dataset
 complementary to \cite{matharooSpontaneousBackpainAlters2020}.
 
 \subsubsection{Dataset 3}
-Dataset 3  (referred to here with the label "REFLECT", due to the "reflective” nature of the
+Dataset 3  (referred to here with the label ``REFLECT'', due to the ``reflective” nature of the
 cognitive tasks) is described in full detail by \cite{dupreMultiechoFMRIReplication2016}. Both
 multi-echo rs- and task-fMRI scans were conducted with scan parameters summarized in Table II. Tasks
 involved viewing various affective images (see \cite{sprengPatternsBrainActivity2010} for details)
 and performing tasks related to autobiographical memory, prospection, or theory-of-mind reasoning.
 Continuing with the theme of broadly comparing high versus low attention throughout this paper, the
-different tasks were simply treated generically as "attending", in contrast to the non-attentive
+different tasks were simply treated generically as ``attending'', in contrast to the non-attentive
 resting-state scans. This resulted in four task state scans and one resting-state scan per subject.
 
 In order to combine the multi-echo data into a single, usable matrix, two methods were employed. In
-the "summed" condition, echoes were combined via summation, a method which has value in providing an
-image with overall increased contrast (\cite{kunduMultiechoFMRIReview2017}). In the "interleave"
+the ``summed'' condition, echoes were combined via summation, a method which has value in providing an
+image with overall increased contrast (\cite{kunduMultiechoFMRIReview2017}). In the ``interleave''
 condition, echoes were interleaved at each voxel: that is, if we denote the voxel's ith signal value
 from echo j as , then the interleaved voxel of the new image has the time-series \([t_{1,1},
 t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
@@ -182,12 +240,12 @@ methods is not to create a 4D volume that allows optimal detection of the purely
 signal, but to ensure all scan information was used with minimal additional analytic assumptions.
 
 \subsubsection{Dataset 4}
-Dataset 4 (referred to in Fig. and tables with the label "PARK" or "PARKINSONS") is documented and
+Dataset 4 (referred to in Fig. and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
 described in detail in \cite{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
 in Table I. Subjects with non-demented Parkinson’s Disease (PD) and healthy controls performed a
 number of repetitions of the Attention Network Task (ANT)
 (\cite{fanActivationAttentionalNetworks2005}). Subgroup details are available in Table I. As the ANT
-task demands high attention, it is not as straightforward to create "high" or "low" attention
+task demands high attention, it is not as straightforward to create ``high'' or ``low'' attention
 groups. Instead, since attention presumably is high and varies little in this dataset, and subgroups
 instead differ by virtue of the presence or absence of PD, any results here serve as a useful
 comparison point for the results from studies that should clearly involve attentional differences.
@@ -195,15 +253,15 @@ This dataset also included extensively preprocessed scans, which were included i
 examine the effects of preprocessing on the extracted RMT features.
 
 \subsubsection{Dataset 5}
-Dataset 5 (referred to in Fig. and tables with the label "LEARN") is documented and described in
+Dataset 5 (referred to in Fig. and tables with the label ``LEARN'') is documented and described in
 detail in \cite{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
 were available for all subjects, allowing for within-subject comparisons. The complex task involved
 multiple phases, wherein subjects were exposed to named, black-and-white outlined satellite images
 related by family-resemblance of the components (see Fig. 1 of
 \cite{schapiroHumanHippocampalReplay2018}). After this learning task, subjects were tested on their
 memory of the various learned features. Scans corresponding to both the initial learning and
-subsequent testing phase were included in the high-attention "task" subgroup for the purposes of the
-analysis of this paper. Resting state scans were included in the low-attention "rest" subgroup.
+subsequent testing phase were included in the high-attention ``task'' subgroup for the purposes of the
+analysis of this paper. Resting state scans were included in the low-attention ``rest'' subgroup.
 
 \subsection{Preprocessing}
 Some consideration should be given to whether it is appropriate to apply standard preprocessing
@@ -265,7 +323,7 @@ not known, and so must be approximated
 (\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}). Typically, a polynomial is
 chosen (\cite{abul-magdUnfoldingSpectrumChaotic2014}).
 
-A number of statistics (or "spectral observables"; \cite{mehtaRandomMatrices2004}) can then be
+A number of statistics (or ``spectral observables''; \cite{mehtaRandomMatrices2004}) can then be
 computed from this unfolded spectrum. In the literature, the two most common points of comparison
 for these unfolded features are typically the features of the Poisson or Gaussian Diagonal Ensemble
 (GDE) and the GOE (see e.g.
@@ -319,7 +377,7 @@ where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and
 and \(\langle \cdot \rangle_c\) are as above (\cite{guhrRandommatrixTheoriesQuantum1998a}). Both the
 spectral rigidity and level number variance are also computed and investigated in this study.
 
-In addition to the unfolded features suggested by RMT, there are some potential "raw" features that
+In addition to the unfolded features suggested by RMT, there are some potential ``raw'' features that
 do not require an unfolding procedure. The entire eigenvalue spectrum likely contains important
 information related to the system, and is also investigated as an RMT-inspired feature.
 
@@ -436,7 +494,7 @@ The sorted, raw eigenvalues, however, more consistently contained information th
 separation of subgroups. Averaging across all datasets and comparisons, the raw eigenvalues
 consistently demonstrated predictive utility (Tables S7--8). As visible in Fig. S13, the eigenvalues
 had the most consistent predictive value for distinguishing individuals with Parkinson's from
-controls, or distinguishing those with osteopathic pain taking duloxetine from controls ("nopain" in
+controls, or distinguishing those with osteopathic pain taking duloxetine from controls (``nopain'' in
 Fig. S13). The raw eigenvalues sometimes had predictive value for the PSYCH data, most notably in
 comparing those differing in self-reported vigilance and high vs. low scorers in the attention task
 (Table S7--8).
@@ -446,10 +504,10 @@ prediction considerably improved prediction accuracy (Tables S9-12).
 
 \paragraph{Role of Classifer}
 The raw eigenvalues generally had the most predictive utility when employing either an SVM
-classifier or KNN classifier with k > 3 (Table S11, first row). When the raw eigenvalues were first
-min-max normalized prior to prediction, an SVM classifier was clearly the most consistent in
-predicting subgroup memberships (Table S12), however without normalization, KNN with k = 8 or k = 9
-generally best predicted subgroup membership across datasets (Table S11).
+classifier or KNN classifier with \(k > 3\) (Table S11, first row). When the raw eigenvalues were
+first min-max normalized prior to prediction, an SVM classifier was clearly the most consistent in
+predicting subgroup memberships (Table S12), however without normalization, KNN with \(k = 8\) or
+\(k = 9\) generally best predicted subgroup membership across datasets (Table S11).
 
 \subsection{Unfolded Features}
 The Brody parameter rarely resulted in predictions exceeding naïve accuracies in these comparisons:
@@ -494,8 +552,10 @@ variable than the spectral rigidity (Table S4).
 In this study, certain features inspired by RMT and derived from the sorted eigenvalues of the full,
 whole-brain voxelwise correlation matrix were found to contain information with the potential to
 meaningfully differentiate between different neuropsychological phenomena. In addition to evidence
-from previous studies [26], [33], [34], this suggests RMT may be a useful analytic and theoretical
-tool for understanding functional connectivity.
+from previous studies
+(\cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020})
+this suggests RMT may be a useful analytic and theoretical tool for understanding functional
+connectivity.
 
 Although the choice of unfolding and trimming often had nontrivial effects on the overall shape and
 values of the various spectral observables, and thus the predictive utility, in cases where there
@@ -522,14 +582,17 @@ the interval [0, 1] also resulted in comparable prediction accuracies (Table S4)
 
 For comparison, for small datasets of rs- or task-fMRI data, binary classification using whole-brain
 features is challenging. For subject level classification, state of the art deep learning methods
-improve upon guessing by 17\% for autism [71] or 3-30\% for ADHD [72], 16\% for severe depression [73],
-and 23\% for obsessive compulsive disorder [74]. Manual feature engineering with more separable
-conditions (e.g. schizophrenia) can result in classification accuracies well above 90\% [75], and
-with very large data, sophisticated custom feature extraction methods can achieve near perfect
-accuracies at classifying task vs. rest [76]. However, for functional connectivity data and with
-classical machine learning algorithms (such as SVM) we in general only expect large prediction
-accuracies (e.g. greater than 80\%) when the group functional connectivities are already strongly
-separated (e.g. Cohen’s d > 1.0 [77]).
+improve upon guessing by 17\% for autism (\cite{bengs4DSpatioTemporalDeep2020}) or 3-30\% for ADHD
+(\cite{riazDeepFMRIEndtoendDeep2020}), 16\% for severe depression
+(\cite{ramasubbuAccuracyAutomatedClassification2016}), and 23\% for obsessive compulsive disorder
+(\cite{takagiNeuralMarkerObsessiveCompulsive2017}). Manual feature engineering with more separable
+conditions (e.g. schizophrenia) can result in classification accuracies well above 90\%
+(\cite{duHighClassificationAccuracy2012}), and with very large data, sophisticated custom feature
+extraction methods can achieve near perfect accuracies at classifying task vs. rest
+(\cite{zhangCharacterizingDifferentiatingTaskbased2016}). However, for functional connectivity data
+and with classical machine learning algorithms (such as SVM) we in general only expect large
+prediction accuracies (e.g. greater than 80\%) when the group functional connectivities are already
+strongly separated (e.g. Cohen’s d > 1.0; \cite{dansereauStatisticalPowerPrediction2017}).
 
 Nevertheless, the features extracted in this study are somewhat unique in that they are small,
 spatially-insensitive summaries of the complete fMRI data. In particular, reducing the functional
@@ -542,12 +605,14 @@ should perhaps be regarded themselves as signatures of functional connectivity p
 While some of the RMT features allowed some classifiers to nearly perfectly separate conditions for
 the REFLECT dataset, this should almost certainly be regarded as an artifact of the differing scan
 parameters between task and rest conditions (Table II). The size of the largest eigenvalue of a
-correlation matrix is primarily determined by such differences in dimensions [78], as are the noise
-ratios, which include these dimensions in their definitions [29], [30]. Likewise, similar strong
-separation was observed in the PARK data when comparing the minimally pre-processed to fully
-pre-processed data (Fig. S1-4). The pre-processing in this case involved numerous steps (spike
-removal, spatial smoothing, co-registration to larger T1 image [45]) which will also almost
-certainly alter the size of the largest eigenvalue.
+correlation matrix is primarily determined by such differences in dimensions
+(\cite{yinLimitLargestEigenvalue1988}), as are the noise ratios, which include these dimensions in
+their definitions (\cite{veraartDiffusionMRINoise2016,veraartDenoisingDiffusionMRI2016}). Likewise,
+similar strong separation was observed in the PARK data when comparing the minimally pre-processed
+to fully pre-processed data (Fig. S1-4). The pre-processing in this case involved numerous steps
+(spike removal, spatial smoothing, co-registration to larger T1 image;
+\cite{madhyasthaDynamicConnectivityRest2015}) which will also almost certainly alter the size of the
+largest eigenvalue.
 
 When there was predictive utility in the unfolded features,	 this utility was dependent on the
 unfolding procedure and choice of classifier. For example, the highest nontrivial LOOCV mean
@@ -574,10 +639,11 @@ separated based on such a reduction.
 
 However, that there are not consistently strong differences in these unidimensional features between
 subgroups across various datasets (Fig. S8-10) also suggests that employing these features in, e.g.
-noise-reduction procedures (such as [29], [30]), is unlikely to introduce bias into subsequent
-analyses. It perhaps also suggests these scalar features might be useful for quality control within
-a dataset: if there are differences between subgroups or individuals on one of the individual RMT
-features, then perhaps this is cause for more careful investigation.
+noise-reduction procedures (such as
+\cite{veraartDiffusionMRINoise2016,veraartDenoisingDiffusionMRI2016}), is unlikely to introduce bias
+into subsequent analyses. It perhaps also suggests these scalar features might be useful for quality
+control within a dataset: if there are differences between subgroups or individuals on one of the
+individual RMT features, then perhaps this is cause for more careful investigation.
 
 The unfolded features (spectral rigidity and level number variance) were more promising, however
 their sensitivity to the unfolding procedure means that great caution must be employed if they are
@@ -602,14 +668,17 @@ prediction accuracy due to the choices of unfolding and classifier.
 
 \subsection{Comparison with Previous Studies}
 
-We generally find different results from previous studies [26], [33], [34] which have used the
-spectral rigidity or level number variance to differentiate between attention conditions. As [26]
-extracted rigidity curves from the correlations of electroencephalographic (EEG) signals, and [34]
-and [33] extracted spectral observables from the correlations of the mean signals of anatomical
-ROIs, these differences are to be expected. A single voxel signal amalgamates information from far
-fewer neurons than an EEG or mean ROI signal, and it is possible that any broad connections between
-RMT spectral observables and attention arise only at higher levels of organization, or after certain
-pre-processing steps (e.g. spatial smoothing) not performed in this study.
+We generally find different results from previous studies
+(\cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}
+which have used the spectral rigidity or level number variance to differentiate between attention
+conditions. As \cite{sebaRandomMatrixAnalysis2003} extracted rigidity curves from the correlations
+of electroencephalographic (EEG) signals, and \cite{wangRandomMatrixTheory2016} and
+\cite{matharooSpontaneousBackpainAlters2020} extracted spectral observables from the correlations of
+the mean signals of anatomical ROIs, these differences are to be expected. A single voxel signal
+amalgamates information from far fewer neurons than an EEG or mean ROI signal, and it is possible
+that any broad connections between RMT spectral observables and attention arise only at higher
+levels of organization, or after certain pre-processing steps (e.g. spatial smoothing) not performed
+in this study.
 
 We do find some modest evidence of greater overall correlation in high attention conditions: there
 was a slight tendency for the largest eigenvalue to be smaller when attention is low (Fig. S8).
