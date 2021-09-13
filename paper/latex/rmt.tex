@@ -242,10 +242,11 @@ voxels, motion correction is necessary to allow proper brain extraction, and bot
 and slice-time correction simplify the interpretation of voxel-voxel correlations across voxel
 locations. Whereas physiological noise regression and bias field correction would perhaps be
 appropriate here, there is insufficient data to perform these steps for all datasets (Table II).
-Thus, motion-correction was performed with FSL's MCFLIRT [56], slicetime correction with the default
-method in FSL, and brain extraction was performed with BET [57]. Due to differences in the size of
-the REFLECT data, the higher-resolution resting-state data was interpolated to have the same spatial
-dimensions as the task data.
+Thus, motion-correction was performed with FSL's MCFLIRT
+(\cite{jenkinsonImprovedOptimizationRobust2002}), slicetime correction with the default method in
+FSL, and brain extraction was performed with BET (\cite{smithFastRobustAutomated2002}). Due to
+differences in the size of the REFLECT data, the higher-resolution resting-state data was
+interpolated to have the same spatial dimensions as the task data.
 
 \subsection{RMT-Derived Features}
 This paper examines features informed by various aspects of RMT, and which can be extracted from
@@ -254,28 +255,34 @@ extracted only from the eigenvalues of the matrices of correlations between all 
 
 Two classes of features were examined in this study: those that require unfolding, and those that do
 not. In order to compare the observed eigenvalue distribution to some theoretical predictions, the
-eigenvalues must be unfolded [5], [6]. The details and motivation behind the unfolding procedure are
-well documented in [5]. Practically, the unfolding process can be viewed as a smoothing and
-rescaling procedure where the originally observed spectrum \(\lambda_1 \le \dots \le \lambda_n\) is
-smoothly mapped to the unfolded spectrum \(e_1, \dots, e_n\), such that \(\sum d_i/n \approx 1\),
-if \(d_i = e_{i+1} - e_i \). For most empirical data, the true smoothing function is not known, and
-so must be approximated [5], [6]. Typically, a polynomial is chosen [58].
+eigenvalues must be unfolded (\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}).
+The details and motivation behind the unfolding procedure are well documented in
+\cite{guhrRandommatrixTheoriesQuantum1998a}. Practically, the unfolding process can be viewed as a
+smoothing and rescaling procedure where the originally observed spectrum \(\lambda_1 \le \dots \le
+\lambda_n\) is smoothly mapped to the unfolded spectrum \(e_1, \dots, e_n\), such that \(\sum d_i/n
+\approx 1\), if \(d_i = e_{i+1} - e_i \). For most empirical data, the true smoothing function is
+not known, and so must be approximated
+(\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}). Typically, a polynomial is
+chosen (\cite{abul-magdUnfoldingSpectrumChaotic2014}).
 
-A number of statistics (or "spectral observables" [6]) can then be computed from this unfolded
-spectrum. In the literature, the two most common points of comparison for these unfolded features
-are typically the features of the Poisson or Gaussian Diagonal Ensemble (GDE) and the GOE (see e.g.
-[12], [14], [15], [24]–[26], [32], [33]). The GOE (or GDE) consists of real, symmetric matrices
-where entries (or only diagonal entries) are normal random variables with zero mean and unit
-variance. When the empirically observed features are close to those of the GOE, this is usually
-interpreted as indicating a high degree of randomness and statistical independence in the data, and
-when the observed features are closer to those expected in the GDE or Poisson case, this is
-interpreted as indicating a high degree of coherence or dependence [12], [14], [15], [24]–[26],
-[32]–[34].
+A number of statistics (or "spectral observables"; \cite{mehtaRandomMatrices2004}) can then be
+computed from this unfolded spectrum. In the literature, the two most common points of comparison
+for these unfolded features are typically the features of the Poisson or Gaussian Diagonal Ensemble
+(GDE) and the GOE (see e.g.
+\cite{santhanamStatisticsAtmosphericCorrelations2001,jalanUncoveringRandomnessSuccess2014,bandyopadhyayUniversalityComplexNetworks2007,agrawalQuantifyingRandomnessProtein2014,raiRandomnessPreservedPatterns2015,
+sebaRandomMatrixAnalysis2003,wangSpectralPropertiesTemporal2015,wangRandomMatrixTheory2016}). The
+GOE (or GDE) consists of real, symmetric matrices where entries (or only diagonal entries) are
+normal random variables with zero mean and unit variance. When the empirically observed features are
+close to those of the GOE, this is usually interpreted as indicating a high degree of randomness and
+statistical independence in the data, and when the observed features are closer to those expected in
+the GDE or Poisson case, this is interpreted as indicating a high degree of coherence or dependence
+(\cite{santhanamStatisticsAtmosphericCorrelations2001,jalanUncoveringRandomnessSuccess2014,bandyopadhyayUniversalityComplexNetworks2007,agrawalQuantifyingRandomnessProtein2014,raiRandomnessPreservedPatterns2015,
+sebaRandomMatrixAnalysis2003,wangSpectralPropertiesTemporal2015,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}).
 
 The Nearest-Neighbours Spacings Distribution (NNSD) is the most basic RMT feature, and is the
 distribution of the spacings (differences) of adjacent unfolded eigenvalues. Normally, the NNSD is
 analysed visually via a histogram of the distribution of spacings, however it is also possible to
-analyse it more formally by fitting the Brody distribution [59]:
+analyse it more formally by fitting the Brody distribution (\cite{brodyStatisticalMeasureRepulsion1973}):
 
 \[
 p(s) = \alpha (1 + \beta) s^\alpha \exp({\beta s^{\alpha+1}}),
@@ -289,8 +296,9 @@ report the Brody parameter, \(\beta\), as an important unfolded feature to inves
 
 Whereas the NNSD and Brody parameter characterize the local properties of eigenvalues close on the
 spectrum, the long-range properties relating eigenvalues distant on the spectrum can be
-characterized by both the spectral rigidity and level number variance [5], [6]. The spectral
-rigidity, \(\Delta_3(L)\), is calculated for any real value \(L\) as:
+characterized by both the spectral rigidity and level number variance
+(\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. The spectral rigidity,
+\(\Delta_3(L)\), is calculated for any real value \(L\) as:
 
 \[
 \Delta_3(L) = \left \langle \min_{A,B} \frac{1}{L} \int_c^{c+L} \left(  \eta(\lambda) -A \lambda - B \right)^2 \right \rangle_c
@@ -299,24 +307,25 @@ rigidity, \(\Delta_3(L)\), is calculated for any real value \(L\) as:
 where \(\eta(\lambda)\) is the number of unfolded eigenvalues less than or equal to \(\lambda\),
 \(\langle \cdot \rangle_c\) denotes the average with respect to all starting points \(c\), and where
 \(A\) and \(B\) denote the slope and intercept, respectively, of the least squares fit of a straight
-line to \(\eta(\lambda)\) on \([c, c+L]\) [5]. The level number variance, \(\Sigma^2(L)\), is
-closely related to the spectral rigidity [6], and is calculated as:
+line to \(\eta(\lambda)\) on \([c, c+L]\) \cite{guhrRandommatrixTheoriesQuantum1998a}. The level
+number variance, \(\Sigma^2(L)\), is closely related to the spectral rigidity
+(\cite{mehtaRandomMatrices2004}), and is calculated as:
 
 \[
 \Sigma^2(L) = \left\langle \eta^2(L, c) \right\rangle_c - \left\langle \eta(L, c) \right\rangle^2_c
 \]
 
 where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and where \(c\), \(L\),
-and \(\langle \cdot \rangle_c\) are as above [5]. Both the spectral rigidity and level number
-variance are also computed and investigated in this study.
+and \(\langle \cdot \rangle_c\) are as above (\cite{guhrRandommatrixTheoriesQuantum1998a}). Both the
+spectral rigidity and level number variance are also computed and investigated in this study.
 
 In addition to the unfolded features suggested by RMT, there are some potential "raw" features that
 do not require an unfolding procedure. The entire eigenvalue spectrum likely contains important
 information related to the system, and is also investigated as an RMT-inspired feature.
 
 The distribution of eigenvalues of large rectangular matrices with finite-variance, independent and
-identically distributed (\textit{i.i.d.}) entries also converges to the Marchenko-Pastur (MP) distribution
-[60], [61]:
+identically distributed (\textit{i.i.d.}) entries also converges to the Marchenko-Pastur (MP)
+distribution (\cite{marcenkoDISTRIBUTIONEIGENVALUESSETS1967,yaoLargeSampleCovariance2015}):
 
 \[
 \rho(\lambda) =
@@ -331,10 +340,12 @@ While real-world data will not, in general, be i.i.d., the extent to which spect
 are well-described by the MP distribution has been used to guide analytical decisions regarding the
 relevance of empirically observed eigenvalues. That is, since the majority of the eigenvalues of
 random correlation matrices will fall within \([\lambda_{-}, \lambda_{+}]\), eigenvalues observed to
-fall within this region are typically considered to be the result of noise [29]–[31], [62]. We
-examine as a potential feature the proportion of eigenvalues that fall within this range, and call
-this the noise ratio. In addition, we calculate a broader, shifted noise ratio, based on the
-adjustments of [63] which takes into account the larger degree of correlation in empirical data.
+fall within this region are typically considered to be the result of noise
+(\cite{veraartDenoisingDiffusionMRI2016,veraartDiffusionMRINoise2016,ulfarssonDimensionEstimationNoisy2008,macmahonCommunityDetectionCorrelation2015}).
+We examine as a potential feature the proportion of eigenvalues that fall within this range, and
+call this the noise ratio. In addition, we calculate a broader, shifted noise ratio, based on the
+adjustments of \cite{almogUncoveringFunctionalSignature2019} which takes into account the larger
+degree of correlation in empirical data.
 
 \subsection{RMT Feature Extraction}
 The entire 4-dimensional \(m \times n \times n \times p \times t\) scan array for each run,
@@ -344,16 +355,18 @@ identified as non-brain via preprocessing, was flattened to a two-dimensional \(
 value of \(t\) for a scan can be inferred from the number of volumes in Table I. The various RMT
 features mentioned above were then extracted via the empyricalRMT library [64] developed and made
 publicly available as part of this study, as well as via specific code for this paper (which is
-documented and available online [65]).
+documented and available online (\cite{bergerderekm.DMBergerRandommatrixfmriV02020}).
 
 As both the spectral rigidity and level number variance can be highly sensitive to the choice of
-smoothing procedure used in the unfolding method [58], [66]–[69], all unfolded features in this
-study were calculated using polynomials of degree 5, 7, 9, 11, and 13 as the smoothing technique. As
-much of the variance in the unfolded spectral statistics can be due to the largest eigenvalues
-acting as anchor points during smoothing [66], [69], all unfolded features were also calculated
-twice (in addition to each polynomial degree) to examine the effects of trimming on spectral
-observables: once with only the largest eigenvalue omitted, and once with the largest 20 eigenvalues
-omitted.
+smoothing procedure used in the unfolding method
+(\cite{abul-magdUnfoldingSpectrumChaotic2014,moralesImprovedUnfoldingDetrending2011,abueleninSpectralUnfoldingChaotic2018,fossionRandommatrixSpectraTime2013,abueleninEffectUnfoldingSpectral2012}),
+all unfolded features in this study were calculated using polynomials of degree 5, 7, 9, 11, and 13
+as the smoothing technique. As much of the variance in the unfolded spectral statistics can be due
+to the largest eigenvalues acting as anchor points during smoothing
+(\cite{moralesImprovedUnfoldingDetrending2011,abueleninEffectUnfoldingSpectral2012}), all unfolded
+features were also calculated twice (in addition to each polynomial degree) to examine the effects
+of trimming on spectral observables: once with only the largest eigenvalue omitted, and once with
+the largest 20 eigenvalues omitted.
 
 \subsection{Feature Evaluation}
 To evaluate the extracted RMT features, for each possible pairing of subgroups in each dataset, each
@@ -366,11 +379,12 @@ for the PSYCH dataset, where psychological measurements, and thus subgroups, dif
 to session.
 
 A wide variety of standard, out-of-the-box classifiers available in the Python scikit-learn library
-[70] were then employed to gauge the predictive value of the RMT features. To allow for a wide range
-of flexibilities, classifiers employing k-nearest neighbours (KNN), with k values in \(\{1, 2, 3,
-\dots, 10, 20\}\), logistic regression (LR), linear discriminant analysis (LDA), and a
-support-vector machine (SVM) were employed. Default parameter values were used when possible (see
-[65] for precise function calls used).
+(\cite{pedregosaScikitlearnMachineLearning2011}) were then employed to gauge the predictive value of
+the RMT features. To allow for a wide range of flexibilities, classifiers employing k-nearest
+neighbours (KNN), with k values in \(\{1, 2, 3, \dots, 10, 20\}\), logistic regression (LR), linear
+discriminant analysis (LDA), and a support-vector machine (SVM) were employed. Default parameter
+values were used when possible (see \cite{bergerderekm.DMBergerRandommatrixfmriV02020} for precise
+function calls used).
 
 The accuracy of each binary classifier was then validated with leave-one-out cross-validation
 (LOOCV) on all datasets, for all combinations of trimming and unfolding choices.
