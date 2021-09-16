@@ -3,6 +3,8 @@
 **/*.pdf
 **/*.docx
 **/*.zip
+**/.vscode
+**/*.out
 data/*.pdf
 data/*.xlsx
 data/*.ods
