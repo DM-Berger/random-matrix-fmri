@@ -1,6 +1,7 @@
 \documentclass[NETN,manuscript]{stjour-new}
 \articletype{Research}
 \usepackage{graphicx}
+\usepackage{cleveref}
 \graphicspath{ {figs/} }
 % \input{preamble.tex}
 % \documentclass{article}
@@ -26,18 +27,15 @@
 \affiliation{2}{Physics, St. Francis Xavier University, Antigonish, Canada}
 \affiliation{3}{Computer Science, St. Francis Xavier University, Antigonish, Canada}
 
-\date{\today}
+% \date{\today}
 
-% \maketitle
-
-% \keywords{random matrix theory, feature extraction, functional connectivity,
-% functional magnetic resonance imaging, voxelwise connectivity, predictive analysis}
+\keywords{random matrix theory, feature extraction, functional connectivity,
+functional magnetic resonance imaging, voxelwise connectivity, predictive analysis}
 
 \begin{abstract}
     Previous studies have investigated the potential of using analytic techniques from Random Matrix
     Theory (RMT) to investigate magnetic resonance imaging (MRI) data. We assess the potential
     application of RMT-based features for the analysis of functional MRI (fMRI) across diverse
-
     datasets. As novel contributions, we (1) assess the potential for RMT-inspired, whole-brain
     features extracted from voxel-wise functional connectivity to contain information useful for
     classifying between various psychological processes, (2) assess these features’
@@ -47,19 +45,18 @@
     RMT-inspired features may have unique potential in analyses of fMRI functional connectivity.
 \end{abstract}
 
-
 \section{Introduction}
 
 In functional magnetic resonance imaging (fMRI), changes in the blood-oxygenation-level-dependent
 (BOLD) signals are related to neural activity. It is common to investigate statistical relationships
-between the BOLD signals through functional connectivity analyses, where correlations between
+between the BOLD signals through \textbf{functional connectivity} analyses, where correlations between
 collections of these signals are examined to infer connections between different voxels or regions
 of interest (ROIs) within the brain.
 
 Whether in the presence of experimental stimuli, or the relative absence, as in a resting state,
 complex functional connectivity networks are ubiquitous
 \citep{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
-This complexity suggests fMRI is a candidate to be studied using Random Matrix Theory (RMT), a set
+This complexity suggests fMRI is a candidate to be studied using \textbf{Random Matrix Theory} (RMT), a set
 of mathematical tools originally developed some 50 years ago to solve complex problems in nuclear
 physics \citep{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. In various
 physical systems where nuclei can have different possible states, precisely modeling the entirety of
@@ -72,11 +69,21 @@ properties predicted by RMT.
 \begin{sloppypar}
 These universal properties have been observed in diverse phenomena. In small-scale systems, RMT
 universalities have been observed in quantum chaotic systems, complex nuclei, atoms, molecules and
-disordered mesoscopic systems \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001}, and at larger scales, RMT has been applied to atmospheric
-physics \citep{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations \cite{plerouRandomMatrixApproach2002} , social networks \cite{jalanUncoveringRandomnessSuccess2014}, random networks \cite{bandyopadhyayUniversalityComplexNetworks2007},
-network-formation in liquids \citep{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009}  and amorphous clusters \citep{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}. Within biological systems,
-RMT has also been used to successfully model aspects of  amino acid functional relationships \citep{bhadolaTargetingFunctionalMotifs2016},
-synchrony in epileptic seizures \citep{osorioPhasesynchronizationRandommatrixBased2011}, and in protein-protein interactions both in different species \citep{agrawalQuantifyingRandomnessProtein2014} and breast cancer \citep{raiRandomnessPreservedPatterns2015}.
+disordered mesoscopic systems
+\citep{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001},
+and at larger scales, RMT has been applied to atmospheric physics
+\citep{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations
+\citep{plerouRandomMatrixApproach2002} , social networks
+\citep{jalanUncoveringRandomnessSuccess2014}, random networks
+\citep{bandyopadhyayUniversalityComplexNetworks2007}, network-formation in liquids
+\citep{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009}  and
+amorphous clusters
+\citep{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}.
+Within biological systems, RMT has also been used to successfully model aspects of  amino acid
+functional relationships \citep{bhadolaTargetingFunctionalMotifs2016}, synchrony in epileptic
+seizures \citep{osorioPhasesynchronizationRandommatrixBased2011}, and in protein-protein
+interactions both in different species \citep{agrawalQuantifyingRandomnessProtein2014} and breast
+cancer \citep{raiRandomnessPreservedPatterns2015}.
 \end{sloppypar}
 
 In recent years, RMT analyses have been applied to study brain functioning.  The earliest  study
@@ -92,17 +99,16 @@ Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to 
 differences between rest and task states \citep{wangSpectralPropertiesTemporal2015}, between
 subjects with and without ADHD \citep{wangRandomMatrixTheory2016}, and between pain and non-pain
 states \citep{matharooSpontaneousBackpainAlters2020}. Across these three studies, the spectra of
-resting or low-attention states exhibited properties closest to the GOE.
-
-These findings suggest that certain aspects of psychological processes might be characterized, in
-part, by features computed from the eigenvalues of fMRI correlation matrices, and that these
-features might vary in an interpretable manner across psychological processes. If this is the case,
-RMT could have unique potential in characterizing the functioning of the human brain.
+resting or low-attention states exhibited properties closest to the GOE. These findings suggest that
+certain aspects of psychological processes might be characterized, in part, by features computed
+from the eigenvalues of fMRI correlation matrices, and that these features might vary in an
+interpretable manner across psychological processes. If this is the case, RMT could have unique
+potential in characterizing the functioning of the human brain.
 
 Here, we use a novel, voxel-based approach, and expand the applications of RMT to analyze fMRI scans
-from  diverse datasets1. We extract RMT-inspired whole-brain features from voxelwise functional
-connectivity data, and assess the predictive value of these features. We also examine in detail the
-robustness of the RMT methodology to various common analytic choices.
+from  diverse datasets. We extract RMT-inspired whole-brain features from \textbf{voxelwise
+functional connectivity} data, and assess the predictive value of these features. We also examine in
+detail the robustness of the RMT methodology to various common analytic choices.
 
 \section{Materials and Methods}
 
@@ -110,15 +116,21 @@ robustness of the RMT methodology to various common analytic choices.
 
 As our primary intention is to examine the potential utility of RMT-derived features across a wide
 variety of data, and not to decisively put forward or refute any specific hypotheses relating RMT to
-psychological processes, we examine a wide selection of fMRI datasets available on the OpenNeuro
-platform [36].  This allows for a broad assessment of the potential of voxelwise RMT features.
+psychological processes, we examine a wide selection of fMRI datasets available on the
+\href{https://openneuro.org/}{OpenNeuro} platform [36].  This allows for a broad assessment of the
+potential of voxelwise RMT features.
 
-However, since previous studies employing RMT for feature extraction
-\citep{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020} have partially interpreted
-their findings with respect to attentional processes, we have elected to use datasets that involve
-attention in some way. This includes measures of attention or vigilance, or comparisons between a
-condition involving more attention and focus (e.g. a task state) or conditions which should involve
-considerably less attention or focus (e.g. resting-state).
+However, since previous studies employing RMT for feature extraction have partially interpreted
+their findings with respect to attentional processes
+\citep{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we have elected to use
+datasets that involve attention in some way. This includes measures of attention or vigilance, or
+comparisons between a condition involving more attention and focus (e.g. a task state) or conditions
+which should involve considerably less attention or focus (e.g. resting-state).
+
+Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
+and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
+(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
+these datasets, we highlight below only those aspects relevant to the current paper.
 
 \begin{table}[h!]
 \small
@@ -143,11 +155,6 @@ LEARN   &  -                & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0 & 196 & 6.5
 \label{table:1}
 \end{table}
 
-
-Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
-and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
-(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
-these datasets, we highlight below only those aspects relevant to the current paper.
 
 \begin{table}[h!]
 \small
@@ -196,7 +203,7 @@ the other included datasets. For the purpose of keeping with the ``attention'' t
 in this paper, three pairings of subgroups were constructed via z-score splits of the various
 sum-scores of scale items involving concepts closely related to attention.
 
-\paragraph{Trait Attention}
+\emph{Trait Attention}.
 The PANAS-X \citep{watsonPANASXManualPositive1994} is a 9-point Likert-type self-report measure
 that queries the extent to which subjects agree particular affective terms have applied to them over
 a recent time period (e.g. a few weeks). An ad hoc (i.e. face-valid) sum-score was constructed from
@@ -204,7 +211,7 @@ the scale items: ``attentive'', ``alert'', ``interested'', ``concentrating'', an
 ``sluggish'', ``tired'', ``sleepy'', ``drowsy''. Subjects with a z-score greater / less than zero on this
 sum-score were placed in the high / low ``trait attention'' category
 
-\paragraph{Task Attention}
+\emph{Task Attention}.
 The Conjunctive Continuous Performance Task (CCPT;
 \cite{shalevConjunctiveContinuousPerformance2011} is a behavioural measure of sustained attention
 where subjects must react only if they see a red square among other different coloured figures. For
@@ -212,7 +219,7 @@ this paper, a sum score was constructed by subtracting the number of false posit
 negative responses from the number of success responses, and subjects with a z-score greater / less
 than zero on this scale were placed in high / low ``task attention'' category.
 
-\paragraph{Vigilance}
+\emph{Vigilance}.
 The Mini New York cognition questionnaire assesses various elements of the subject's cognitive
 state, e.g. ``my thoughts involved other people'', ``I thought about something positive'' (translated
 from German; \cite{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
@@ -220,7 +227,7 @@ alertness (``I was fully awake'' / ``war ich vollkommen wach'') and was used to 
 ``vigilance'' conditions in the same manner as the previous two splits.
 
 \subsubsection{Dataset 2}
-Dataset 2 (referred to in Fig. and tables with the label ``OSTEO'') is detailed in
+Dataset 2 (referred to in figures and tables with the label ``OSTEO'') is detailed in
 \cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls (``nopain''
 condition) and individuals with knee osteoarthritis (``pain'' condition) treated for 2 weeks with
 either placebo (``pain'' condition) or duloxetine (``duloxetine'' condition). An additional grouping was
@@ -242,8 +249,8 @@ resting-state scans. This resulted in four task state scans and one resting-stat
 In order to combine the multi-echo data into a single, usable matrix, two methods were employed. In
 the ``summed'' condition, echoes were combined via summation, a method which has value in providing an
 image with overall increased contrast \citep{kunduMultiechoFMRIReview2017}. In the ``interleave''
-condition, echoes were interleaved at each voxel: that is, if we denote the voxel's ith signal value
-from echo j as , then the interleaved voxel of the new image has the time-series \([t_{1,1},
+condition, echoes were interleaved at each voxel: that is, if we denote the voxel's \(i\)th signal value
+from echo \(j\) as \(t_{j,i}\), then the interleaved voxel of the new image has the time-series \([t_{1,1},
 t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
 
 This creates a physically-meaningful 4D image that contains the full, original multi-echo fMRI
@@ -252,7 +259,7 @@ methods is not to create a 4D volume that allows optimal detection of the purely
 signal, but to ensure all scan information was used with minimal additional analytic assumptions.
 
 \subsubsection{Dataset 4}
-Dataset 4 (referred to in Fig. and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
+Dataset 4 (referred to in figures and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
 described in detail in \cite{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
 in Table \ref{table:1}. Subjects with non-demented Parkinson’s Disease (PD) and healthy controls performed a
 number of repetitions of the Attention Network Task
@@ -265,7 +272,7 @@ This dataset also included extensively preprocessed scans, which were included i
 examine the effects of preprocessing on the extracted RMT features.
 
 \subsubsection{Dataset 5}
-Dataset 5 (referred to in Fig. and tables with the label ``LEARN'') is documented and described in
+Dataset 5 (referred to in figures and tables with the label ``LEARN'') is documented and described in
 detail in \cite{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
 were available for all subjects, allowing for within-subject comparisons. The complex task involved
 multiple phases, wherein subjects were exposed to named, black-and-white outlined satellite images
@@ -298,7 +305,7 @@ not change the eigenvalues of the correlation matrix). Thus RMT features summari
 correlations in a whole-brain and location-free manner, which brings into question some of the usual
 motivations for performing spatial smoothing, or registration to identify ROIs. In addition, if
 image dimensions are identical between subjects, the RMT features (by virtue of their definition and
-the unfolding procedure) already allow for direct comparisons. Thus, the usual motivations for
+the \textbf{unfolding} procedure) already allow for direct comparisons. Thus, the usual motivations for
 registration are also no longer clear when extracting RMT features.
 
 Given these particularities, as well as the novelty of the RMT-based methods and the diversity of
@@ -414,7 +421,7 @@ random correlation matrices will fall within \([\lambda_{-}, \lambda_{+}]\), eig
 fall within this region are typically considered to be the result of noise
 \citep{veraartDenoisingDiffusionMRI2016,veraartDiffusionMRINoise2016,ulfarssonDimensionEstimationNoisy2008,macmahonCommunityDetectionCorrelation2015}.
 We examine as a potential feature the proportion of eigenvalues that fall within this range, and
-call this the noise ratio. In addition, we calculate a broader, shifted noise ratio, based on the
+call this the \textbf{noise ratio}. In addition, we calculate a broader, shifted noise ratio, based on the
 adjustments of \cite{almogUncoveringFunctionalSignature2019} which takes into account the larger
 degree of correlation in empirical data.
 
@@ -423,10 +430,10 @@ The entire 4-dimensional \(m \times n \times n \times p \times t\) scan array fo
 excluding voxels with constant signals (which lead to undefined correlations), and excluding voxels
 identified as non-brain via preprocessing, was flattened to a two-dimensional \(m \cdot n \cdot p
 \times t\) matrix, and then the \(t - 1\) eigenvalues of that correlation matrix were computed. The
-value of \(t\) for a scan can be inferred from the number of volumes in Table \ref{table:1}. The various RMT
-features mentioned above were then extracted via the empyricalRMT library [64] developed and made
-publicly available as part of this study, as well as via specific code for this paper (which is
-documented and available online \citep{bergerderekm.DMBergerRandommatrixfmriV02020}.
+value of \(t\) for a scan can be inferred from the number of volumes in Table \ref{table:1}. The
+various RMT features mentioned above were then extracted via the \texttt{empyricalRMT} library
+\citep{bergerStfxecutablesEmpyricalRMTPreliminary2020} developed and made publicly available as part
+of this study, as well as via code for this paper \citep{bergerderekm.DMBergerRandommatrixfmriV02020}.
 
 As both the spectral rigidity and level number variance can be highly sensitive to the choice of
 smoothing procedure used in the unfolding method
@@ -454,8 +461,7 @@ A wide variety of standard, out-of-the-box classifiers available in the Python s
 the RMT features. To allow for a wide range of flexibilities, classifiers employing k-nearest
 neighbours (KNN), with k values in \(\{1, 2, 3, \dots, 10, 20\}\), logistic regression (LR), linear
 discriminant analysis (LDA), and a support-vector machine (SVM) were employed. Default parameter
-values were used when possible (see \cite{bergerderekm.DMBergerRandommatrixfmriV02020} for precise
-function calls used).
+values were used when possible \citep[see][for precise function calls used]{bergerderekm.DMBergerRandommatrixfmriV02020}.
 
 The accuracy of each binary classifier was then validated with leave-one-out cross-validation
 (LOOCV) on all datasets, for all combinations of trimming and unfolding choices.
@@ -465,10 +471,10 @@ The accuracy of each binary classifier was then validated with leave-one-out cro
 \subsection{Overview}
 Due to space limitations, we highlight only key results here. Extensive overviews of the full
 results are available in the supplementary materials. Visual summaries of the prediction accuracies
-for all features and analytic choices are presented in Fig. S1--4. Prediction accuracies for only the
-multivariate RMT features are summarized in Fig. S5--7, and the distributions of the scalar features
-are presented in Fig. S8--10. Prediction accuracies for the scalar features across analytic choices
-are summarized in Fig. S11--12.
+for all features and analytic choices are presented in figures S1--4. Prediction accuracies for only the
+multivariate RMT features are summarized in figures S5--7, and the distributions of the scalar features
+are presented in figures S8--10. Prediction accuracies for the scalar features across analytic choices
+are summarized in figures S11--12.
 
 Numeric (mean) summaries across datasets, broken down by classifier and feature are available in
 Tables S11--18. Complete (unsummarized) tables of all predictions for all combinations of features,
@@ -478,26 +484,26 @@ computed using the preprocessed data: full results for the raw data are availabl
 the supplementary material in \texttt{prediction\_tables.ods}.
 
 With the exception of the LEARNING dataset, the RMT-inspired features all demonstrated some
-predictive utility (Fig. S1-4). For example, there were strong differences in RMT features between
+predictive utility (figures S1-4). For example, there were strong differences in RMT features between
 task and rest conditions for the REFLECT dataset, but the features were of variable predictive
 utility in the PSYCH dataset, sometimes outperforming the naïve classifier, and sometimes not.
 Although the RMT features were useful in the comparison involving duloxetine and controls (no pain)
 in the OSTEO dataset, these features mostly did not aid in classifying between any of the other
-possible pairings of subgroups in this dataset (Fig. S1-4).
+possible pairings of subgroups in this dataset (figures S1-4).
 
 Although the performance of classifiers trained on RMT features was variable, there was a tendency
 for the raw and largest eigenvalues to be the most predictively useful features, especially in the
-REFLECT and PARK data in discriminating between Parkinson's and controls (Fig. S5-7. S13; but see
+REFLECT and PARK data in discriminating between Parkinson's and controls (figures S5-7. S13; but see
 Discussion).
 
 \subsection{Raw Features}
-As evident from Fig. S8-10, the scalar raw features (largest eigenvalue, noise ratio, and shifted
+As evident from figures S8-10, the scalar raw features (largest eigenvalue, noise ratio, and shifted
 noise ratio) varied more within than between subgroups. They were not generally useful for
 classifying conditions (Tables S15-17), with two or three notable exceptions.
 
 The noise ratio (but not shifted noise ratio) differed consistently between the duloxetine and
 control groups in the OSTEO data, allowing for prediction accuracies of up to 72\% compared to 51\%
-for the naive classifier (Fig. S11-12 top-right panel, Table S5). The largest eigenvalue was also
+for the naive classifier (figures S11-12 top-right panel, Table S5). The largest eigenvalue was also
 useful in distinguishing between subjects self-reporting high versus low vigilance across sessions:
 accuracies up to 64\% and 65\% (compared to naïve accuracies of 55\% and 50\%) for the first and
 second sessions, respectively (Table S6). Finally, for the REFLECT data, task and rest were
@@ -505,7 +511,7 @@ perfectly distinguishable with various features and with some classifiers.
 
 The sorted, raw eigenvalues, however, more consistently contained information that allowed some
 separation of subgroups. Averaging across all datasets and comparisons, the raw eigenvalues
-consistently demonstrated predictive utility (Tables S7--8). As visible in Fig. S13, the eigenvalues
+consistently demonstrated predictive utility (Tables S7--8). As visible in figures S13, the eigenvalues
 had the most consistent predictive value for distinguishing individuals with Parkinson's from
 controls, or distinguishing those with osteopathic pain taking duloxetine from controls (``nopain'' in
 Fig. S13). The raw eigenvalues sometimes had predictive value for the PSYCH data, most notably in
@@ -515,7 +521,7 @@ comparing those differing in self-reported vigilance and high vs. low scorers in
 In all these relationships, normalizing the eigenvalues to the interval \([0,1]\) prior to
 prediction considerably improved prediction accuracy (Tables S9-12).
 
-\paragraph{Role of Classifer}
+\subsubsection{Role of Classifer}
 The raw eigenvalues generally had the most predictive utility when employing either an SVM
 classifier or KNN classifier with \(k > 3\) (Table S11, first row). When the raw eigenvalues were
 first min-max normalized prior to prediction, an SVM classifier was clearly the most consistent in
@@ -531,7 +537,8 @@ subjects. This is because the observed NNSDs were usually well outside of the GO
 The predictive utility of the unfolded RMT features varied considerably across datasets and
 classifiers. However, some results were robust: for example, the spectral rigidity and level number
 variance strongly differentiated controls from individuals prescribed duloxetine for osteopathic
-pain, and this differentiation persisted regardless of unfolding degree or trimming (Fig. 5-8, top-right panels).
+pain, and this differentiation persisted regardless of unfolding degree or trimming
+(\cref{fig:levelvar,fig:nnsd,fig:rigidity}, top-right panels).
 
 Despite the insensitivity to unfolding in this dataset, there was still nontrivial variability in
 accuracy across classifiers when classifying duloxetine vs controls, with the less flexible
@@ -540,7 +547,7 @@ S1-2).
 
 For other datasets, the predictive utility of the unfolded features was highly dependent on the
 unfolding degree, and sometimes trim proportions. These differences are illustrated in detail for
-the Parkinson's data in Fig. S14. For example, with minimal trimming, subgroup overlap in spectral
+the Parkinson's data in figures S14. For example, with minimal trimming, subgroup overlap in spectral
 rigidity was minimized for unfolding degrees 5 and 9 (Fig. S14, first row), but with greater
 trimming, this was not the case (Fig. S14, second row). For the level number variance with minimal
 trimming, subgroup overlap appeared smaller for lower unfolding degrees (Fig. S14, third row),
@@ -555,7 +562,7 @@ degree nor amount of trimming had any easily summarizable effects on the predict
 various RMT metrics: the optimal trimming and unfolding degree was different for each dataset and
 comparison.
 
-\paragraph{Role of Classifier}. Across all datasets, unfoldings, and trimmings, the spectral rigidity was
+\subsubsection{Role of Classifier}. Across all datasets, unfoldings, and trimmings, the spectral rigidity was
 generally best able to separate between subgroups when either k was large (10 or 20) in KNN, or
 Logistic Regression or SVM was employed (Table S13). The pattern was similar for the level number
 variance, although the predictive utility of the level number variance was, overall, slightly more
@@ -634,7 +641,7 @@ extraction methods can achieve near perfect accuracies at classifying task vs. r
 \citep{zhangCharacterizingDifferentiatingTaskbased2016}. However, for functional connectivity data
 and with classical machine learning algorithms (such as SVM) we in general only expect large
 prediction accuracies (e.g. greater than 80\%) when the group functional connectivities are already
-strongly separated (e.g. Cohen’s \(d > 1.0\); \cite{dansereauStatisticalPowerPrediction2017}.
+strongly separated (e.g. Cohen’s \(d > 1.0\); \citealp{dansereauStatisticalPowerPrediction2017}).
 
 Nevertheless, the features extracted in this study are somewhat unique in that they are small,
 spatially-insensitive summaries of the complete fMRI data. In particular, reducing the functional
@@ -653,8 +660,8 @@ their definitions \citep{veraartDiffusionMRINoise2016,veraartDenoisingDiffusionM
 similar strong separation was observed in the PARK data when comparing the minimally pre-processed
 to fully pre-processed data (Fig. S1-4). The pre-processing in this case involved numerous steps
 (spike removal, spatial smoothing, co-registration to larger T1 image;
-\cite{madhyasthaDynamicConnectivityRest2015} which will also almost certainly alter the size of the
-largest eigenvalue.
+\citealp{madhyasthaDynamicConnectivityRest2015}) which will also almost certainly alter the size of
+the largest eigenvalue.
 
 When there was predictive utility in the unfolded features,	 this utility was dependent on the
 unfolding procedure and choice of classifier. For example, the highest nontrivial LOOCV mean
@@ -755,32 +762,23 @@ frequently fall outside the GOE/GDE bounds that have typically been observed in 
 Future studies should examine the sensitivity of these RMT features to the level of locality of
 analyses, or choice of size and location of ROIs.
 
-\section{Conclusion}
+% \section{Conclusion}
 
 
-\paragraph{Declarations}
-Manuscript submitted January 20, 2021. This work was supported by the  Natural Science and
-Engineering Research Council of Canada's Canada Research Chair grant (grant number 231266) to JL,
-Natural Science and Engineering Research Council of Canada Discovery Grant to JL, a Canada
-Foundation for Innovation and Nova Scotia Research and Innovation Trust infrastructure grant
-(R0176004) to JL, a St. Francis Xavier University research startup grant to JL (grant number
-R0168020), and a St. Francis Xavier University UCR grant to JL.
+% \paragraph{Declarations}
+% Manuscript submitted January 20, 2021. This work was supported by the  Natural Science and
+% Engineering Research Council of Canada's Canada Research Chair grant (grant number 231266) to JL,
+% Natural Science and Engineering Research Council of Canada Discovery Grant to JL, a Canada
+% Foundation for Innovation and Nova Scotia Research and Innovation Trust infrastructure grant
+% (R0176004) to JL, a St. Francis Xavier University research startup grant to JL (grant number
+% R0168020), and a St. Francis Xavier University UCR grant to JL.
 
-% \section{References}
-% \bibliography{rmt.bib}
-% \references{rmt.bib}
-
-% \bibstyle{plain}
-% \bibdata{rmt}
 \bibliography{rmt}
 
 \section{Technical Terms}
 
 \textbf{Functional Connectivity} the correlations and/or interactions between the timeseries of
 various regions of interest in fMRI scans.
-
-\textbf{Voxelwise Functional Connectivity} the correlations and/or interactions between the
-timeseries of all voxels in an fMRI scan.
 
 \textbf{Random Matrix} A random matrix is a matrix where each entry is sampled from some probability
 distribution.
@@ -789,7 +787,19 @@ distribution.
 large random matrices with identically and independently distributed (\emph{i.i.d.}) entries. RMT often investigates
 the limiting distributions of the eigenvalues of such matrices.
 
+\textbf{Voxelwise Functional Connectivity} the full matrix of correlations and/or interactions
+between the timeseries of \emph{all} voxels in an fMRI scan.
+
+\textbf{unfolding} A procedure wherein the eigenvalues of an empirically-observed matrix are
+re-mapped to a common space to allow comparison with the spectra of certain known ensembles.
+
 \textbf{Gaussian Orthogonal Ensemble} or GOE. The set of real symmetric matrices with entries
 distributed according to the standard Gaussian.
+
+\textbf{The Nearest-Neighbors Spacings Distribution} or NNSD is the is the distribution of the
+spacings (differences) of the adjacent unfolded and sorted eigenvalues.
+
+\textbf{Noise Ratio} The proportion of eigenvalues that fall within the maximum and minimum expected
+limits of the Marchenko-Pastur distribution.
 
 \end{document}

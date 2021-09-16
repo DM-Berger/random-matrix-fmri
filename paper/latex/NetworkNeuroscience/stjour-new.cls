@@ -27,7 +27,7 @@
 %% 1. Journal of Computational Psychiatry
 %% 2. Open Mind: Discoveries in Cognitive Science
 %% 3. Network Neuroscience
-  
+
 %%%%%%%%%%%
 %% Journal of Computational Psychiatry
 
@@ -42,9 +42,9 @@
 %% sustenance of healthy cognition through the lifespan. The journal also
 %% has a special interest in computational issues pertaining to related
 %% areas such as law and education.
-%% 
+%%
 %% Computational Psychiatry is an Open Access journal.
-%% 
+%%
 %% Visit computationalpsychiatry.org.
 %% Press Release:
 %% http://www.mitpressjournals.org/userimages/ContentEditor/1444762890059/CPSY_Press_Release.pdf
@@ -110,20 +110,20 @@ This version is dated \currversion^^J^^J}
 
     %% 5) Running heads, Footnotes
 
-    %% 6) Title Page: Journal Name, 
+    %% 6) Title Page: Journal Name,
     %%    Title, Authors, Affils, Corresponding Authors, Author Notes, Key Points; abstract
 
-    %% 7) Section Commands 
+    %% 7) Section Commands
 
-    %% 8) Figure and Table Captions 
+    %% 8) Figure and Table Captions
 
     %% 9) Listing
 
-    %% 10) Etc.: Hyphenation Library, Quote, Extract 
+    %% 10) Etc.: Hyphenation Library, Quote, Extract
 
     %% 11) End Article: Appendix, Glossary, Acronyms, Notation, Acknowledgments
 
-    %% 12) Bibliography, References  
+    %% 12) Bibliography, References
 
     %% 13) Track Changes
 
@@ -232,7 +232,7 @@ This version is dated \currversion^^J^^J}
   %% Comment
   %% \hoffset moves the printed page left or right on the physical page.
 \advance\hoffset.35in
-  
+
   %% Comment
   %% Setting page dimensions
   %% See p. 84-- 85 in LaTeX Companion, Goosins, Mittlebach and Samarin
@@ -313,7 +313,7 @@ This version is dated \currversion^^J^^J}
 \setlength\marginparpush{5\p@}
 
   %% space added before trivlist, which is used in many other
-  %% macros, (for instance, verbatim environment) 
+  %% macros, (for instance, verbatim environment)
   %% if macro is called in vertical mode, otherwise only parskip
   %% is added. Can set this without stretch if you don't like
   %% the stretchy space added.
@@ -322,35 +322,35 @@ This version is dated \currversion^^J^^J}
 
   %% Comment
   %% Setting parameters that control float placement
-  %% 
+  %%
   %% \topnumber counter holds the maximum number of
   %% floats that can appear on the top of a text page.
-  %% 
+  %%
   %% \topfraction indicates the maximum part of a text page that can be
   %%     occupied by floats at the top.
-  %% 
+  %%
   %% \bottomnumber counter holds the maximum number of
   %%     floats that can appear on the bottom of a text page.
-  %% 
+  %%
   %% \bottomfraction indicates the maximum part of a text page that can be
   %%     occupied by floats at the bottom.
-  %% 
+  %%
   %% \totalnumber indicates the maximum number of floats that can appear on
   %%     any text page.
-  %% 
+  %%
   %% \textfraction indicates the minimum part of a text page that has to be
   %%     occupied by text.
-  %% 
+  %%
   %% \floatpagefraction indicates the minimum part of a page that has to be
   %%     occupied by floating objects before a `float page' is produced.
-  %% 
+  %%
   %% \dbltopnumber counter holds the maximum number of
   %%     two column floats that can appear on the top of a two column text
   %%     page.
-  %% 
+  %%
   %% \dbltopfraction indicates the maximum part of a two column text page that
   %%     can be occupied by two column floats at the top.
-  %% 
+  %%
   %% \dblfloatpagefraction indicates the minimum part of a page that has to be
   %%     occupied by two column wide floating objects before a `float
   %%     page' is produced.
@@ -414,7 +414,7 @@ This version is dated \currversion^^J^^J}
 
   %% To make left and right page position differently, and have
   %% running heads be different on even and odd pages
-\@twosidetrue  
+\@twosidetrue
 
   %% Marginal notes should be on the left on even numbered pages; on
   %% right on odd numbered pages.
@@ -432,7 +432,7 @@ This version is dated \currversion^^J^^J}
 
   %% Conditionals that we can set and use later
 \newif\if@openright
-\newif\if@mainmatter 
+\newif\if@mainmatter
 \newif\if@restonecol
 \newif\if@titlepage
 \newif\ifxdraft %% xdraft rather than draft to prevent hyperref from turning off
@@ -488,7 +488,7 @@ This version is dated \currversion^^J^^J}
 }
 
 \newif\iftrack
-\DeclareOption{manuscript}{\global\xdrafttrue 
+\DeclareOption{manuscript}{\global\xdrafttrue
 %% tracking changes only in manuscript mode
 \global\tracktrue
 \textwidth=7in
@@ -504,7 +504,7 @@ This version is dated \currversion^^J^^J}
 \newif\iffinalfonts
 \DeclareOption{finalfonts}{\global\finalfontstrue}
 
-%% Journal Computational Psychiatry 
+%% Journal Computational Psychiatry
 \newif\ifCompPsych
 \DeclareOption{CompPsych}{%
   \global\CompPsychtrue
@@ -539,7 +539,7 @@ This version is dated \currversion^^J^^J}
 \fi
 
 
-%% <==== End Setting Options 
+%% <==== End Setting Options
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 4) Font Family Info
@@ -553,7 +553,7 @@ This version is dated \currversion^^J^^J}
 \newcommand{\@ptsize}{}
 
   %% Comment
-  %% Set font sizes, normal baselineskip, for the range of sizes, 
+  %% Set font sizes, normal baselineskip, for the range of sizes,
   %% changing baselineskip to be larger if draft option is true
   %% \setfontsize takes the first arg as the size of the font and
   %% the second as the size of the baselineskip
@@ -676,7 +676,7 @@ This version is dated \currversion^^J^^J}
 %\centerline{\footnotesize\tt == D R A F T\qquad\today\qquad\expandafter\ifx\csname
 %thereceived\endcsname\relax\else(Received \thereceived)\fi \ ==}
 %\vskip3pt
-\centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax 
+\centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax
            \else{\Large\bf{\large\bfseries\itshape Journal:} \titlejournalname}\fi}\vskip6pt
 \color{veryltgray}\hrule height 2pt
 \vskip14pt}
@@ -686,11 +686,11 @@ This version is dated \currversion^^J^^J}
 \centerline{\footnotesize\tt == D R A F T\qquad\expandafter\ifx\csname
 thereceived\endcsname\relax\else(Received \thereceived)\fi \ ==}
 \vskip5pt
-\centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax 
+\centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax
            \else Journal: \titlejournalname\fi \qquad/\qquad {\expandafter\ifx\csname thetitle\endcsname\relax\else
 {Title: \thetitle}\fi}}\vskip5pt
 \centerline{\expandafter\ifx\csname theauthorshortlist\endcsname\relax\else {Authors:}
-\theauthorshortlist\fi}% 
+\theauthorshortlist\fi}%
 \vskip4pt
 \color{veryltgray}\hrule height 2pt
 \vskip12pt
@@ -739,7 +739,7 @@ thereceived\endcsname\relax\else(Received \thereceived)\fi \ ==}
 \noindent\hspace*{1em}\@makefnmark\,#1}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 6) Title Page: 
+%% 6) Title Page:
    %% Journal Name, running heads;
    %% Title, Authors, Affils, Corresponding Authors, Author Notes, Key Points;
    %% Starting article with abstract.
@@ -856,7 +856,7 @@ Corresponding author: #1,
   %% Startsection calls \@sect, the engine that formats each section
 
   %% the minus dimensions are used to tell LaTeX not to indent
-  %% the text following the section head 
+  %% the text following the section head
   %% (silly, isn't it? but built into LaTeX)
   %% You can add things like underline or uppercase to the last arg
   %% to get those effects in a section head
@@ -1009,7 +1009,7 @@ Corresponding author: #1,
   %% the changed part.
 
 \def\xtable{table}
-\def\@array[#1]#2{\setbox\@arstrutbox=\hbox{\vrule 
+\def\@array[#1]#2{\setbox\@arstrutbox=\hbox{\vrule
      height\arraystretch \ht\strutbox
      depth\arraystretch \dp\strutbox
      width\z@}\@mkpream{#2}\edef\@preamble{\halign \noexpand\@halignto
@@ -1026,9 +1026,9 @@ Corresponding author: #1,
   %% Variation on code found in Latex.tex
 \def\new@tabacol{\edef\@preamble{\@preamble\hskip0pt}}
 
-\def\@tabclassz{\ifcase \@lastchclass\@acolampacol% 
+\def\@tabclassz{\ifcase \@lastchclass\@acolampacol%
 \or \@ampacol \or
-   \or \or \@addamp \or \@acolampacol\or \@firstampfalse 
+   \or \or \@addamp \or \@acolampacol\or \@firstampfalse
 \ifx\@captype\xtable \new@tabacol\else\@tabacol \fi%
 \fi%
 \edef\@preamble{\@preamble%
@@ -1037,7 +1037,7 @@ Corresponding author: #1,
      \or \ignorespaces\@sharp\unskip\hfil%
      \or \hfil\hskip\z@ \ignorespaces\@sharp\unskip\fi}}
 
-  %% This puts extra space between horizontal lines in tables. 
+  %% This puts extra space between horizontal lines in tables.
   %% If you want to use vertical lines in tables, you should use
   %% \savehline rather than \hline, otherwise the vertical and
   %% horizontal lines will not abutt.
@@ -1155,10 +1155,10 @@ Corresponding author: #1,
 \newcommand*{\descriptionlabel}[1]{\hspace\labelsep
                                 \normalfont\bfseries #1}
 
-%%% <<=== end of listing commands 
+%%% <<=== end of listing commands
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 10) ETC.: Month/year, Hyphenation Library, Quote, Quotation, Extract 
+%%% 10) ETC.: Month/year, Hyphenation Library, Quote, Quotation, Extract
 
 %% Month and Year
 
@@ -1215,17 +1215,17 @@ sys-tem-at-i-cal-ly
                {\endlist}
 
   %% If \begin{extract}...\end{extract} is used you will get the same
-  %% results as \begin{quotation}...\end{quotation} 
+  %% results as \begin{quotation}...\end{quotation}
 
 \let\extract\quotation
 \let\endextract\endquotation
 
-  %% <<== end ETC.: Month/year, Hyphenation Library, Quote, Quotation, Extract 
+  %% <<== end ETC.: Month/year, Hyphenation Library, Quote, Quotation, Extract
 
 %%%%%%%%%
 % 11) End Article: Appendix, Glossary, Acronyms, Acknowledgments
 
-% Appendix: 
+% Appendix:
 \newcounter{appendnum}
 
 \newif\ifappendon
@@ -1300,7 +1300,7 @@ $\displaystyle\tabskip\z@skip{##}$\@eqnsel
 
 
 
-%%%%% end appendix 
+%%%%% end appendix
 
 %%  Glossary
 
@@ -1316,7 +1316,7 @@ $\displaystyle\tabskip\z@skip{##}$\@eqnsel
 \symbol{\bf Symbol}{\bf Meaning}\vskip3pt\hrule\vskip3pt}
 
 \def\endglossary{\vskip1sp\egroup}
-%% 
+%%
 
 %% Acknowledgments
 \def\acknowledgments{\vskip12pt\noindent{\bf
@@ -1514,7 +1514,7 @@ changenum\the\refchangenumber\endcsname{Replaced: [#1]
 \global\advance\listchangenum by 1\relax
 \expandafter\ifx\csname changenum\the\listchangenum\endcsname\relax
 \else
-\csname changenum\the\listchangenum\endcsname\ 
+\csname changenum\the\listchangenum\endcsname\
 on page
 %% can't get hyperlink to work correctly for page numbers, yet:
 %\hyperlink{link\the\listchangenum}{
@@ -1596,7 +1596,7 @@ on page
 \articletype{Research Article}
 
 
-\def\toplinefont{\normalsize\sf} 
+\def\toplinefont{\normalsize\sf}
 
 \def\setdoi#1{\def\thedoi{\href{http://dx.doi.org/#1}{http://dx.doi.org/#1}}}
 
@@ -1651,7 +1651,7 @@ declared that no\\ competing interests exist.}
 \def\ytable{\def\@captype{table}}
 \def\endtable{\egroup
 \copy0
-}} 
+}}
 
 \def\endboxedtext{\egroup
 {\fboxsep=12.3pt\noindent\hskip1.2pt\fcolorbox{cyan}{white}{\copy0}}\vskip12pt}
@@ -1659,7 +1659,7 @@ declared that no\\ competing interests exist.}
 \long\def\wideboxedtext{\vskip-\lastskip\vskip12pt\setbox0=\vtop\bgroup\hsize=\fullpagewidth
 \advance\hsize-24pt
 \advance\hsize-1.2pt
-} 
+}
 
 \def\endwideboxedtext{\egroup
 {\fboxsep=12pt
@@ -1695,7 +1695,7 @@ declared that no\\ competing interests exist.}
 %% Courier
 \def\courier{pcrr}
 \xdef\courier{\courier\space}
-\font\boldtt=pcrb at 8pt 
+\font\boldtt=pcrb at 8pt
 
 \newdimen\fullpagewidth
 \ifxdraft
@@ -1750,7 +1750,7 @@ declared that no\\ competing interests exist.}
 \def\timesitalic{ptmri\space}
 \def\timesbolditalic{ptmbi\space}
 
-%% Special Use Fonts 
+%% Special Use Fonts
 %% Running heads
 \font\runningheadfont=\timesitalic at 11pt
 \font\foliofont=\timesbold at 12pt % was times roman
@@ -1770,15 +1770,15 @@ declared that no\\ competing interests exist.}
 %% Appendix title
 \font\appendixtitlefont=\timesbold at 14pt
 
-%% Caption 
+%% Caption
 \font\fignumfont=\timesbolditalic at 9pt
-\font\tabnumfont=\timesbolditalic at 9pt 
+\font\tabnumfont=\timesbolditalic at 9pt
 \font\figtextfont=\timesitalic at 9pt
 \font\realtabtextfont=\timesitalic at 9pt
 \def\tabtextfont{\small\realtabtextfont}
 
 %% Table fonts
-\def\tablefontsize{\normalsize} 
+\def\tablefontsize{\normalsize}
 \def\tablefootnotesize{\footnotesize}
 
 %% References/Bibliography
@@ -1830,16 +1830,16 @@ firstpage\the\articlenumber\endcsname{\the\c@page}
 \paperwidth=8.5in
 
 
-%% Open Mind 
+%% Open Mind
 
-\long\def\savethebibliography#1{\bibfont %\list 
+\long\def\savethebibliography#1{\bibfont %\list
 \def\makelabel#1{}% get rid of error message about no list
 {\@biblabel {\the \c@NAT@ctr}}
 {\@bibsetup {#1}\global \c@NAT@ctr \z@ }
 \ifNAT@openbib \renewcommand\newblock {\par }\else \renewcommand
-\newblock {\hskip .11em \@plus .33em  \@minus .07em}\fi 
-\sloppy \clubpenalty 4000\widowpenalty 4000 \sfcode `\.\@m 
-\let\NAT@bibitem@first@sw \@firstoftwo 
+\newblock {\hskip .11em \@plus .33em  \@minus .07em}\fi
+\sloppy \clubpenalty 4000\widowpenalty 4000 \sfcode `\.\@m
+\let\NAT@bibitem@first@sw \@firstoftwo
 \let \citeN \cite \let \shortcite\cite \let\citeasnoun\cite
 }
 
@@ -2002,14 +2002,14 @@ ItalicFont=OptimaLTStd-Italic]
 %\lower6pt
 \hbox to\textwidth{\hss
 \hbox to\fullpagewidth{%
-\hskip-23pt\vtop to 0pt{\vss 
+\hskip-23pt\vtop to 0pt{\vss
 \fboxsep=10pt
 \colorbox{mdcyan}{
-\vbox to 10.25in{\hsize=142pt 
+\vbox to 10.25in{\hsize=142pt
 \advance\hsize-2\fboxsep
 \baselineskip=7.5pt
 \vskip-9pt
-\hbox to\hsize{\hskip-13pt\includegraphics[width=144pt]{\@mitassetspath OPMI_logo}\hss} 
+\hbox to\hsize{\hskip-13pt\includegraphics[width=144pt]{\@mitassetspath OPMI_logo}\hss}
 \vskip102pt
 \sfb
  \raggedright
@@ -2030,7 +2030,7 @@ ItalicFont=OptimaLTStd-Italic]
  {\sfb Received:} \thereceived\\[2pt]
  {\sfb Accepted:} \theaccepted\\[2pt]
  {\sfb Published:} \thepublished
- \vfill 
+ \vfill
  {\sfb Competing Interests:}
  \theconflict
  \vfill
@@ -2092,10 +2092,10 @@ Cognitive Science\hfill %\color{black}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%
 \ifCompPsych
 \ifxdraft\else
 \usepackage{hyperref}
@@ -2173,7 +2173,7 @@ ItalicFont=OptimaLTStd-Italic]
 \else
 %%
 \font\xjournaltitlefont=\helveticabold at 16pt
-\font\xjournalsubtitlefont=\helveticabold at 16pt% 
+\font\xjournalsubtitlefont=\helveticabold at 16pt%
 \def\journaltitlefont{\xjournaltitlefont \baselineskip=22pt}
 \let\journalsubtitlefont\journaltitlefont
 \def\authorfont{\small\bf}
@@ -2221,17 +2221,17 @@ ItalicFont=OptimaLTStd-Italic]
 %\lower6pt
 \hbox to\textwidth{\hss
 \hbox to\fullpagewidth{%
-\hskip-23pt\vtop to 0pt{\vss 
+\hskip-23pt\vtop to 0pt{\vss
 \fboxsep=10pt
 \colorbox{mdcyan}{
-\vbox to 10.25in{\hsize=142pt 
+\vbox to 10.25in{\hsize=142pt
 \advance\hsize-2\fboxsep
 \baselineskip=7.5pt
 %\vskip-9pt
 \hbox to\hsize{%\hskip-13pt%\includegraphics[width=144pt]{OPMI_logo.jpg}
 \hss%\colorbox{white}{\sectionfont CPSY WordMark to Come}
 \includegraphics[width=121pt]{\@mitassetspath CPSY_logo_acronym}%
-\hss}% 
+\hss}%
 \vskip6pt
 \vskip1.25in
 \vskip102pt
@@ -2254,7 +2254,7 @@ ItalicFont=OptimaLTStd-Italic]
  {\sfb Received:} \thereceived\\[2pt]
  {\sfb Accepted:} \theaccepted\\[2pt]
  {\sfb Published:} \thepublished
- \vfill 
+ \vfill
  {\sfb Competing Interests:}
  \theconflict
  \vfill
@@ -2320,10 +2320,10 @@ Press}\hfill}}
 
 %% can't use this definition of @lbibitem with apacite.bst, or it will kill the & between authors.
 \def\@lbibitem[#1]#2{\if\relax\@extra@b@citeb\relax \else \@ifundefined{br@#2\@extra@b@citeb }{}
-{\@namedef {br@#2}{\@nameuse {br@#2\@extra@b@citeb }}}\fi 
+{\@namedef {br@#2}{\@nameuse {br@#2\@extra@b@citeb }}}\fi
 \@ifundefined {b@#2\@extra@b@citeb }{\def \NAT@num {}}{\NAT@parse {#2}}\def \NAT@tmp {#1}
-\expandafter \let \expandafter \bibitemOpen \csname NAT@b@open@#2\endcsname 
-\expandafter \let \expandafter \bibitemShut \csname NAT@b@shut@#2\endcsname 
+\expandafter \let \expandafter \bibitemOpen \csname NAT@b@open@#2\endcsname
+\expandafter \let \expandafter \bibitemShut \csname NAT@b@shut@#2\endcsname
 \@ifnum {\NAT@merge >\@ne }{\NAT@bibitem@first@sw {\@firstoftwo }{\@ifundefined {NAT@b*@#2}
 {\@firstoftwo }{\expandafter \def \expandafter \NAT@num \expandafter{\the \c@NAT@ctr }\@secondoftwo }}}
 {\@firstoftwo }{\global \advance\c@NAT@ctr \@ne \@ifx {\NAT@tmp \@empty }
@@ -2338,14 +2338,14 @@ Press}\hfill}}
 \NAT@bibitem@cont \bibitem@fin }\@ifx {\NAT@tmp \@empty}{\NAT@wrout {\the \c@NAT@ctr }{}{}{}{#2}}
 {\expandafter \NAT@ifcmd\NAT@tmp (@)(@)\@nil {#2}}}
 
-\long\def\savethebibliography#1{\bibfont %\list 
+\long\def\savethebibliography#1{\bibfont %\list
 \def\makelabel#1{}% get rid of error message about no list
 {\@biblabel {\the \c@NAT@ctr}}
 {\@bibsetup {#1}\global \c@NAT@ctr \z@ }
 \ifNAT@openbib \renewcommand\newblock {\par }\else \renewcommand
-\newblock {\hskip .11em \@plus .33em  \@minus .07em}\fi 
-\sloppy \clubpenalty 4000\widowpenalty 4000 \sfcode `\.\@m 
-\let\NAT@bibitem@first@sw \@firstoftwo 
+\newblock {\hskip .11em \@plus .33em  \@minus .07em}\fi
+\sloppy \clubpenalty 4000\widowpenalty 4000 \sfcode `\.\@m
+\let\NAT@bibitem@first@sw \@firstoftwo
 \let \citeN \cite \let \shortcite\cite \let\citeasnoun\cite
 }
 
@@ -2401,7 +2401,7 @@ to 0pt{\small\raggedright\hsize 2in\noindent #2:\\
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Network Neuroscience
@@ -2430,7 +2430,7 @@ to 0pt{\small\raggedright\hsize 2in\noindent #2:\\
 %% color
 
 %% turquoise
-%RGB 3107 111, 
+%RGB 3107 111,
 %CMYK 89 41 51 17
 
 \definecolor{dkturquoise}{cmyk}{.99, .51, .61, .27}
@@ -2487,7 +2487,7 @@ ItalicFont=OptimaLTStd-Italic]
 
 %\def\journaltitlefont{\fontsize{22}{31}
 %\fontspec{HelveticaNeueLTStd-Bd}}
-\def\journaltitlefont{\fontsize{16}{22}% 
+\def\journaltitlefont{\fontsize{16}{22}%
 \fontspec{HelveticaNeueLTStd-Bd}}
 
 \def\journalsubtitlefont{\fontsize{16}{22}
@@ -2508,7 +2508,7 @@ ItalicFont=OptimaLTStd-Italic]
 \else
 %%
 \font\xjournaltitlefont=\helveticabold at 16pt
-\font\xjournalsubtitlefont=\helveticabold at 16pt% 
+\font\xjournalsubtitlefont=\helveticabold at 16pt%
 \def\journaltitlefont{\xjournaltitlefont \baselineskip=22pt}
 \let\journalsubtitlefont\journaltitlefont
 \def\authorfont{\small\bf}
@@ -2561,12 +2561,12 @@ ItalicFont=OptimaLTStd-Italic]
 %\lower6pt
 \hbox to\textwidth{\hss
 \hbox to\fullpagewidth{%
-\hskip-23pt\vtop to 0pt{\vss 
+\hskip-23pt\vtop to 0pt{\vss
 \fboxsep=10pt
 \fboxrule=.5pt
 \color{eightpercentgray}
 \fbox{\color{black}
-\vbox to 10.25in{\hsize=142pt 
+\vbox to 10.25in{\hsize=142pt
 \advance\hsize-2\fboxsep
 \baselineskip=7.5pt
 \vskip23pt %% temporary
@@ -2598,7 +2598,7 @@ to\hsize{\hss\includegraphics[width=124pt]{\@mitassetspath NETN_logo.pdf}\hss}\v
  {\sfb Received:} \thereceived\\[2pt]
  {\sfb Accepted:} \theaccepted\\[2pt]
  {\sfb Published:} \thepublished
- \vfill 
+ \vfill
  {\sfb Competing Interests:}
  \theconflict
  \vfill
@@ -2721,22 +2721,22 @@ to 0pt{\small\raggedright\hsize 2in\noindent #2:\\
 
 \articletype{Research}
 
-\def\footnote#1{\typeout{^^J^^J 
+\def\footnote#1{\typeout{^^J^^J
 =============
-^^J^^J 
+^^J^^J
 !! There are no footnotes or endnotes
 in Network Neuroscience
-Style !! ^^J^^J Please Fix! 
+Style !! ^^J^^J Please Fix!
 ^^J^^J
 =============
 ^^J^^J}\PackageError{Network Neuroscience}{}{}}
 
-\def\appendix{\typeout{^^J^^J 
+\def\appendix{\typeout{^^J^^J
 =============
-^^J^^J 
+^^J^^J
 !! There are no Appendices
 in Network Neuroscience
-Style !! ^^J^^J Please Fix! 
+Style !! ^^J^^J Please Fix!
 ^^J^^J
 =============
 ^^J^^J}\PackageError{Network Neuroscience}{}{}}
@@ -2747,7 +2747,7 @@ Style !! ^^J^^J Please Fix!
 \vskip12pt
 \advance\hsize-2pt % was -6pt
 \global\advance\c@boxtextnum by 1
-\FrameSep=9pt \fboxrule=0pt 
+\FrameSep=9pt \fboxrule=0pt
 %\FrameRule=4pt
 \FrameRule=2pt
 \def\figure{\vskip6pt
@@ -2849,7 +2849,7 @@ to\textwidth{\hss\includegraphics[width=#1]{#2}\hfill}
 
 \long\def\widetable{\setbox0=\vtop\bgroup\hsize=\fullpagewidth
 \let\caption\widecaption
-} 
+}
 
 \def\endwidetable{\egroup
 \hbox
@@ -2883,17 +2883,17 @@ to\textwidth{\hss\copy0}}
 
 %% This definition allows for links and other commands that need to be \protect ed from
 %% having a problem. it makes every caption the equivalent of \caption[]{caption text}
-\def\@caption#1[#2]#3{\small\expandafter \ifx \csname if@capstart\expandafter \endcsname 
-\csname iftrue\endcsname \global \let \@currentHref \hc@currentHref \else \hyper@makecurrent {\@captype }\fi 
+\def\@caption#1[#2]#3{\small\expandafter \ifx \csname if@capstart\expandafter \endcsname
+\csname iftrue\endcsname \global \let \@currentHref \hc@currentHref \else \hyper@makecurrent {\@captype }\fi
 \@ifundefined {NR@gettitle}{\def \@currentlabelname{\thesection\relax #2}}
-{\NR@gettitle {#2}}\par 
+{\NR@gettitle {#2}}\par
 %\addcontentsline {\csname ext@#1\endcsname }{#1}{\protect \numberline {\csname the#1\endcsname }{\ignorespaces #2}}
-\begingroup \@parboxrestore \if@minipage \@setminipage \fi \normalsize 
-\expandafter\ifx \csname if@capstart\expandafter \endcsname 
-\csname iftrue\endcsname \global \@capstartfalse 
+\begingroup \@parboxrestore \if@minipage \@setminipage \fi \normalsize
+\expandafter\ifx \csname if@capstart\expandafter \endcsname
+\csname iftrue\endcsname \global \@capstartfalse
 \@makecaption {\csname fnum@#1\endcsname }{\ignorespaces #3}
-\else \@makecaption {\csname fnum@#1\endcsname }{\ignorespaces \ifHy@nesting 
-\expandafter \hyper@@anchor \expandafter {\@currentHref }{#3}\else 
+\else \@makecaption {\csname fnum@#1\endcsname }{\ignorespaces \ifHy@nesting
+\expandafter \hyper@@anchor \expandafter {\@currentHref }{#3}\else
 \Hy@raisedlink {\expandafter \hyper@@anchor \expandafter
 {\@currentHref }{\relax }}#3\fi }\fi \par \endgroup}
 
@@ -2914,7 +2914,7 @@ to\textwidth{\hss\copy0}}
 
 
 \long\def\whitebox#1{\colorbox{white}{\vtop{\advance\hsize-12pt
-#1}}} 
+#1}}}
 
 
 \endinput
