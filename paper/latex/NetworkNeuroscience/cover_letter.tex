@@ -1,44 +1,83 @@
-\documentclass[NETN,manuscript]{stjour-new}
-\articletype{Research}
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{url}
+% \usepackage{apalike}
+% \documentclass[NETN,manuscript]{stjour-new}
+% \articletype{Research}
 \usepackage{graphicx}
 \graphicspath{ {figs/} }
-\usepackage{hyperref}
 % \input{preamble.tex}
-% \usepackage[utf8]{inputenc}
-% \usepackage{geometry}
-% \usepackage{amsmath}
-% \usepackage{graphicx}
-% \usepackage[style=apa]{biblatex}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{natbib}
+% \usepackage[backend=biber,
+%             style=authoryear,
+%             natbib=true,
+% ]{biblatex}
+% \addbibresource{cover.bib}
+\usepackage{fancyhdr}
 % \usepackage{natbib}
 % \usepackage[font=footnotesize,labelfont=bf]{caption}
 % \addbibresource{rmt.bib}
 % \bibliographystyle{plain}
-% \bibliography{rmt}
+% \bibstyle{plain}
+% \bibliography{cover_letter}
+
 \begin{document}
+\bibliographystyle{plain}
+\thispagestyle{fancy}
+% \addtolength{\topmargin}{-63.87003pt}
+\fancyhead[C]{\includegraphics[height=0.5in]{stfx_text.png}}
+\fancyhead[L]{\includegraphics[height=0.5in]{crest.png}}
+\fancyhead[R]{
+    \sffamily
+    \scriptsize
+    4130 University Avenue \\
+    B2G 2W5 \\
+    Antigonish, Nova Scotia \\
+    Canada
+}
+\normalsize
 
 \title{Cover Letter}
-\date{\today}
+% \begin{center}
+% \includegraphics[width=4in]{stfx_logo.png}
+% \end{center}
 
-\author[Derek Berger, Gurpreet Matharoo, Jacob Levman]{
-    Derek M. Berger\affil{1},
-    Gurpreet S. Matharoo\affil{2}
-    \and Jacob Levman\affil{3}
-}
-\affiliation{1}{Computer Science, St. Francis Xavier University, Antigonish, Canada, dberger@stfx.ca}
-\affiliation{2}{Physics, St. Francis Xavier University, Antigonish, Canada, gmatharo@stfx.ca}
-\affiliation{3}{Computer Science, St. Francis Xavier University, Antigonish, Canada, jlevman@stfx.ca}
+
+% \author[Derek Berger, Gurpreet Matharoo, Jacob Levman]{
+%     Derek M. Berger\affil{1},
+%     Gurpreet S. Matharoo\affil{2}
+%     \and Jacob Levman\affil{3}
+% }
+% \affiliation{1}{Computer Science, St. Francis Xavier University, Antigonish, Canada, dberger@stfx.ca}
+% \affiliation{2}{Physics, St. Francis Xavier University, Antigonish, Canada, gmatharo@stfx.ca}
+% \affiliation{3}{Computer Science, St. Francis Xavier University, Antigonish, Canada, jlevman@stfx.ca}
 
 
 % \keywords{random matrix theory, feature extraction, functional connectivity,
 % functional magnetic resonance imaging, voxelwise connectivity, predictive analysis}
 
-To the Editors of Network Neuroscience
+~\\~\\
+To the Editors of Network Neuroscience, \\
 
-We believe our manuscript \emph{Random Matrix Theory Tools for the Analysis of Functional Magnetic
-Resonance Imaging Examinations} would be an excellent fit for Network Neuroscience as a
-\emph{Research} article. Our use of random matrix theory (RMT) for the analysis of functional
-connectivity in functional magnetic resonance imaging (fMRI) falls clearly within the \href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope}
-of \emph{Network Neuroscience}.
+We hope you will consider our manuscript \emph{Random Matrix Theory Tools for the Analysis of
+Functional Magnetic Resonance Imaging Examinations} for publication in Network Neuroscience as a
+\emph{Research} article.
+
+In our manuscript, we apply some of the analytical and statistical tools of random matrix theory
+(RMT) to analyze a wide variety of fMRI data in a predictive framework, and release open-source
+software to facilitate such analyses with a wide variety of data.
+
+
+
+
+Our use of random matrix theory (RMT) for the analysis of functional
+connectivity in functional magnetic resonance imaging (fMRI) falls clearly within the
+\href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope} of \emph{Network
+Neuroscience}.
 
 
 To the best of our knowledge, our voxelwise analysis of fMRI using RMT features is novel\(\mathbf{^{[1]}}\): the RMT
@@ -49,7 +88,16 @@ which we believe is more rigorous than an approach based solely on statistical s
 single dataset. Given there are very few uses of RMT for fMRI analysis, we hope you will find this
 manuscript to be worth your while.
 
-Should you consider to review our manuscript, we believe the following reviewers would be suitable:
+This paper is not under consideration at any other journal, although a poster of some preliminary
+results of our study was presented at the International Symposium for Magnetic Resonance in Medicine
+2021 annual conference \citep{bergerOpenSourceRandom2021}. Our lab has REB ethics approval for
+conducting retrospective analyses, although we are unaware of the need for this, this being an
+analysis of anonymized public data. All authors approve the manuscript in its submitted form, and
+have no conflicts of interest, financial or otherwise.
+
+Should you consider to review our manuscript, we believe the following reviewers would be suitable
+due to expertise in this areas of research:
+
 
 \begin{itemize}
 \item Sarika Jalan (sarika@iiti.ac.in) \\
@@ -74,26 +122,22 @@ Should you consider to review our manuscript, we believe the following reviewers
 \normalsize
 \end{itemize}
 
-All authors approve the manuscript in its submitted form, and have no conflicts of interest,
-financial or otherwise. [Names, affiliations, email addresses and funding information]
 
-\textbf{[1]} A poster of some preliminary results of our study was presented at the ISMRM annual
-conference \citep{bergerOpenSourceRandom2021}.
+Sincerely,\\ \textbf{Corresponding Author}\\
+Jacob Levman, PhD (jlevman@stfx.ca) \\
+Canada Research Chair in Bioinformatics \\
+Department of Computer Science \\
+St. Francis Xavier University
 
-Sincerely, \\
-Corresponding Author \\
-Institution Title \\
-Institution/Affiliation Name \\
-Institution Address \\
-Corresponding author e-mail address \\
+\textbf{Additional Contacts} [should the corresponding author be unavailable]\\
+Derek Berger (dberger@stfx.ca), Department of Computer Science, St. Francis Xavier University\\
+Gurpreet S. Matharoo (gmatharo@stfx.ca), Department of Physics, St. Francis Xavier University
 
-~\\
-\textbf{Additional Contact} [should the corresponding author be unavailable] \\
-Institution Title \\
-Institution/Affiliation Name \\
-Institution Address \\
-e-mail address \\
+\today{}
 
-\bibliography{rmt}
+[Names, affiliations, email addresses and funding information]
+
+% \printbibliography % biblatex
+\bibliography{cover.bib}  % natbib
 
 \end{document}
