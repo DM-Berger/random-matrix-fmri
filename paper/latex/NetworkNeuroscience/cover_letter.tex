@@ -27,8 +27,8 @@
 
 \begin{document}
 \bibliographystyle{plain}
-\thispagestyle{fancy}
-% \addtolength{\topmargin}{-63.87003pt}
+\fancypagestyle{nofooter}{\fancyfoot{}}
+\thispagestyle{nofooter}  %  https://tex.stackexchange.com/questions/136384/remove-footer-without-removing-the-header
 \setlength{\headheight}{30.0pt}
 \fancyhead[C]{\includegraphics[height=0.5in]{stfx_text.png}}
 \fancyhead[L]{\includegraphics[height=0.5in]{crest.png}}
@@ -76,24 +76,25 @@ Numerous fMRI studies examine correlations amongst regions of interest (ROI) in 
 connectivity computations \citep{huettelFunctionalMagneticResonance2004}. Instead, we use
 statistics from RMT to summarize \emph{all} voxelwise correlations with no reductions. In
 addition, rather than simply reporting findings which are statistically significant, we report all
-analyses from a cross-validated predictive framework, where multiple machine learnign models are
-compared against both each other and proper baselines (e.g. niave / dummy classifiers).
+analyses from a cross-validated predictive framework, where multiple machine learning models are
+compared against both each other and proper baselines (e.g. naive / dummy classifiers).
 
 We show that, across a variety of data and with fairly small data, and without any model tuning,
-that these RMT reductions have real predictive utility and potential. This suggests RMT has
-potential as a powerful method for summarizing functional connectivity information. As much of the
+that these RMT reductions have real predictive utility and potential. This suggests RMT could
+be a powerful and efficient method for summarizing functional connectivity information. As much of the
 research in network neuroscience involves fMRI, functional connectivity, and statistical physics, as
 per the \href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope} of \emph{Network
 Neuroscience}, we believe our manuscript to be an excellent fit for submission to your journal.
 
-This paper is not under consideration at any other journal, although a poster of some preliminary
-results of our study was presented at the International Symposium for Magnetic Resonance in Medicine
-2021 annual conference \citep{bergerOpenSourceRandom2021}. Our lab has REB ethics approval for
-conducting retrospective analyses, although we are unaware of the need for this, this being an
-analysis of anonymized public data. All authors approve the manuscript in its submitted form, and
-have no conflicts of interest, financial or otherwise. Should you consider to review our manuscript,
-we have suggested a number of potential reviewers on your submission website that we believe would
-be suitable due to expertise in RMT and similar interdisciplinary research:
+Should you consider to review our manuscript, we have suggested a number of potential reviewers on
+your submission website that we believe would be suitable due to expertise in RMT and similar
+interdisciplinary research. This paper is not under consideration at any other journal (although a
+poster of some preliminary results of our study was presented at the International Symposium for
+Magnetic Resonance in Medicine 2021 annual conference \citep{bergerOpenSourceRandom2021}). Our lab
+has REB ethics approval for conducting retrospective analyses (although we are unaware of the need,
+this being an analysis of anonymized public data). All authors approve the manuscript in its
+submitted form, and have no conflicts of interest, financial or otherwise.
+
 
 
 % \begin{itemize}
