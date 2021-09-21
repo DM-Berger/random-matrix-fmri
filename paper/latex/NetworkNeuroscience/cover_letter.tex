@@ -1,32 +1,32 @@
-\documentclass{article}
+\documentclass[10pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage[british]{babel}
 \usepackage{url}
-% \usepackage{apalike}
-% \documentclass[NETN,manuscript]{stjour-new}
-% \articletype{Research}
 \usepackage{graphicx}
 \graphicspath{ {figs/} }
-% \input{preamble.tex}
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{natbib}
-% \usepackage[backend=biber,
-%             style=authoryear,
-%             natbib=true,
-% ]{biblatex}
-% \addbibresource{cover.bib}
+% \usepackage[square,numbers]{natbib}
+\usepackage[
+    backend=biber,
+    style=authoryear,
+    natbib=true,
+    sortlocale=en_US,
+    url=false,
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{cover.bib}
 \usepackage{fancyhdr}
-% \usepackage{natbib}
-% \usepackage[font=footnotesize,labelfont=bf]{caption}
-% \addbibresource{rmt.bib}
-% \bibliographystyle{plain}
-% \bibstyle{plain}
-% \bibliography{cover_letter}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.,0.,0.4}
+\definecolor{darkred}{rgb}{0.5,0.,0.}
+\usepackage[pdftex,colorlinks=true,linkcolor=darkblue,citecolor=darkred,urlcolor=blue]{hyperref}
 
 \begin{document}
-\bibliographystyle{plain}
+% \bibliographystyle{apa}
 \fancypagestyle{nofooter}{\fancyfoot{}}
 \thispagestyle{nofooter}  %  https://tex.stackexchange.com/questions/136384/remove-footer-without-removing-the-header
 \setlength{\headheight}{30.0pt}
@@ -68,8 +68,8 @@ To the Many Editors of Network Neuroscience, \\
 We hope you will consider our manuscript \emph{Random Matrix Theory Tools for the Analysis of
 Functional Magnetic Resonance Imaging Examinations} for publication in Network Neuroscience as a
 \emph{Research} article. In it, we apply mathematical tools from random matrix theory (RMT) to
-analyze a wide variety of functional magnetic resonance imaging (fMRI) data, and also release
-open-source software to facilitate such analyses with a wider variety of data beyond fMRI.
+analyze a wide variety of functional magnetic resonance imaging (fMRI) data, and release
+open-source software \citep{bergerStfxecutablesEmpyricalRMTPreliminary2020} to facilitate such analyses with a wider variety of data beyond fMRI.
 
 Numerous fMRI studies examine correlations amongst regions of interest (ROI) in the brain. These
 ``functional connectivity'' analyses typically use ROIs or seed regions in order to simplify
@@ -88,9 +88,9 @@ Neuroscience}, we believe our manuscript to be an excellent fit for submission t
 
 Should you consider to review our manuscript, we have suggested a number of potential reviewers on
 your submission website that we believe would be suitable due to expertise in RMT and similar
-interdisciplinary research. This paper is not under consideration at any other journal (although a
+interdisciplinary research. This paper is not under consideration at any other journa, although a
 poster of some preliminary results of our study was presented at the International Symposium for
-Magnetic Resonance in Medicine 2021 annual conference \citep{bergerOpenSourceRandom2021}). Our lab
+Magnetic Resonance in Medicine 2021 annual conference \citep{bergerOpenSourceRandom2021}. Our lab
 has REB ethics approval for conducting retrospective analyses (although we are unaware of the need,
 this being an analysis of anonymized public data). All authors approve the manuscript in its
 submitted form, and have no conflicts of interest, financial or otherwise.
@@ -126,6 +126,7 @@ submitted form, and have no conflicts of interest, financial or otherwise.
 \noindent
 Sincerely, \\
 
+\small
 \noindent
 \textbf{Corresponding Author}\\
 Jacob Levman, PhD (jlevman@stfx.ca) \\
@@ -139,7 +140,13 @@ Derek Berger (dberger@stfx.ca), Department of Computer Science, St. Francis Xavi
 Gurpreet S. Matharoo (gmatharo@stfx.ca), Department of Physics, St. Francis Xavier University
 
 % \printbibliography % biblatex
-\renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
-\bibliography{cover.bib}  % natbib
+% \renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
+% \smallskip
+% \bibliographystyle{mystyle}
+% \bibliography{cover}  % natbib
+
+\footnotesize
+\AtNextBibliography{\footnotesize}
+\printbibliography[heading=none]
 
 \end{document}
