@@ -29,6 +29,7 @@
 \bibliographystyle{plain}
 \thispagestyle{fancy}
 % \addtolength{\topmargin}{-63.87003pt}
+\setlength{\headheight}{30.0pt}
 \fancyhead[C]{\includegraphics[height=0.5in]{stfx_text.png}}
 \fancyhead[L]{\includegraphics[height=0.5in]{crest.png}}
 \fancyhead[R]{
@@ -60,84 +61,84 @@
 % \keywords{random matrix theory, feature extraction, functional connectivity,
 % functional magnetic resonance imaging, voxelwise connectivity, predictive analysis}
 
-~\\~\\
-To the Editors of Network Neuroscience, \\
+\noindent
+\today, \\
+To the Many Editors of Network Neuroscience, \\
 
 We hope you will consider our manuscript \emph{Random Matrix Theory Tools for the Analysis of
 Functional Magnetic Resonance Imaging Examinations} for publication in Network Neuroscience as a
-\emph{Research} article.
+\emph{Research} article. In it, we apply mathematical tools from random matrix theory (RMT) to
+analyze a wide variety of functional magnetic resonance imaging (fMRI) data, and also release
+open-source software to facilitate such analyses with a wider variety of data beyond fMRI.
 
-In our manuscript, we apply some of the analytical and statistical tools of random matrix theory
-(RMT) to analyze a wide variety of fMRI data in a predictive framework, and release open-source
-software to facilitate such analyses with a wide variety of data.
+Numerous fMRI studies examine correlations amongst regions of interest (ROI) in the brain. These
+``functional connectivity'' analyses typically use ROIs or seed regions in order to simplify
+connectivity computations \citep{huettelFunctionalMagneticResonance2004}. Instead, we use
+statistics from RMT to summarize \emph{all} voxelwise correlations with no reductions. In
+addition, rather than simply reporting findings which are statistically significant, we report all
+analyses from a cross-validated predictive framework, where multiple machine learnign models are
+compared against both each other and proper baselines (e.g. niave / dummy classifiers).
 
-
-
-
-Our use of random matrix theory (RMT) for the analysis of functional
-connectivity in functional magnetic resonance imaging (fMRI) falls clearly within the
-\href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope} of \emph{Network
-Neuroscience}.
-
-
-To the best of our knowledge, our voxelwise analysis of fMRI using RMT features is novel\(\mathbf{^{[1]}}\): the RMT
-features computed here summarize the correlations of \emph{all} fMRI voxels (rather than those from
-some seed voxels), but previous works (documented in the manuscript) have been ROI focused. We also
-present results in a predictive framework using cross-validation on a wide variety of datasets,
-which we believe is more rigorous than an approach based solely on statistical significance for a
-single dataset. Given there are very few uses of RMT for fMRI analysis, we hope you will find this
-manuscript to be worth your while.
+We show that, across a variety of data and with fairly small data, and without any model tuning,
+that these RMT reductions have real predictive utility and potential. This suggests RMT has
+potential as a powerful method for summarizing functional connectivity information. As much of the
+research in network neuroscience involves fMRI, functional connectivity, and statistical physics, as
+per the \href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope} of \emph{Network
+Neuroscience}, we believe our manuscript to be an excellent fit for submission to your journal.
 
 This paper is not under consideration at any other journal, although a poster of some preliminary
 results of our study was presented at the International Symposium for Magnetic Resonance in Medicine
 2021 annual conference \citep{bergerOpenSourceRandom2021}. Our lab has REB ethics approval for
 conducting retrospective analyses, although we are unaware of the need for this, this being an
 analysis of anonymized public data. All authors approve the manuscript in its submitted form, and
-have no conflicts of interest, financial or otherwise.
-
-Should you consider to review our manuscript, we believe the following reviewers would be suitable
-due to expertise in this areas of research:
-
-
-\begin{itemize}
-\item Sarika Jalan (sarika@iiti.ac.in) \\
-\small
-~~~ Centre for Biosciences and Biomedical Engineering, IIT Indore India
-\normalsize
-\item Javeria Hashmi (javeria.hashmi@dal.ca) \\
-\small
-~~~ Department of Anesthesia, Pain Management and Perioperative Medicine Dalhousie University, Canada
-\normalsize
-\item Nivedita Deo (ndeo@physics.du.ac.in) \\
-\small
-~~~ Department of Physics and Astrophysics University of Delhi, India
-\normalsize
-\item Guillermo A. Cecchi (gcecchi@us.ibm.com) \\
-\small
-~~~ Thomas J. Watson Research Center, Yorktown Heights, NY USA
-\normalsize
-\item Randy McIntosh (rmcintosh@research.baycrest.org) \\
-\small
-~~~ Rotman Research Institute at Baycrest Health Sciences, Toronto, Canada
-\normalsize
-\end{itemize}
+have no conflicts of interest, financial or otherwise. Should you consider to review our manuscript,
+we have suggested a number of potential reviewers on your submission website that we believe would
+be suitable due to expertise in RMT and similar interdisciplinary research:
 
 
-Sincerely,\\ \textbf{Corresponding Author}\\
+% \begin{itemize}
+% \item Sarika Jalan (sarika@iiti.ac.in) \\
+% \small
+% ~~~ Centre for Biosciences and Biomedical Engineering, IIT Indore India
+% \normalsize
+% \item Javeria Hashmi (javeria.hashmi@dal.ca) \\
+% \small
+% ~~~ Department of Anesthesia, Pain Management and Perioperative Medicine Dalhousie University, Canada
+% \normalsize
+% \item Nivedita Deo (ndeo@physics.du.ac.in) \\
+% \small
+% ~~~ Department of Physics and Astrophysics University of Delhi, India
+% \normalsize
+% \item Guillermo A. Cecchi (gcecchi@us.ibm.com) \\
+% \small
+% ~~~ Thomas J. Watson Research Center, Yorktown Heights, NY USA
+% \normalsize
+% \item Randy McIntosh (rmcintosh@research.baycrest.org) \\
+% \small
+% ~~~ Rotman Research Institute at Baycrest Health Sciences, Toronto, Canada
+% \normalsize
+% \end{itemize}
+
+
+\bigskip
+
+\noindent
+Sincerely, \\
+
+\noindent
+\textbf{Corresponding Author}\\
 Jacob Levman, PhD (jlevman@stfx.ca) \\
 Canada Research Chair in Bioinformatics \\
 Department of Computer Science \\
-St. Francis Xavier University
+St. Francis Xavier University \\
 
+\noindent
 \textbf{Additional Contacts} [should the corresponding author be unavailable]\\
 Derek Berger (dberger@stfx.ca), Department of Computer Science, St. Francis Xavier University\\
 Gurpreet S. Matharoo (gmatharo@stfx.ca), Department of Physics, St. Francis Xavier University
 
-\today{}
-
-[Names, affiliations, email addresses and funding information]
-
 % \printbibliography % biblatex
+\renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
 \bibliography{cover.bib}  % natbib
 
 \end{document}
