@@ -1,0 +1,156 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage[british]{babel}
+\usepackage{url}
+\usepackage{graphicx}
+\graphicspath{ {figs/} }
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+% \usepackage[square,numbers]{natbib}
+\usepackage[
+    backend=biber,
+    style=authoryear,
+    natbib=true,
+    sortlocale=en_US,
+    url=false,
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{cover.bib}
+\usepackage{fancyhdr}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.,0.,0.4}
+\definecolor{darkred}{rgb}{0.5,0.,0.}
+\usepackage[pdftex,colorlinks=true,linkcolor=darkblue,citecolor=darkred,urlcolor=blue]{hyperref}
+
+\begin{document}
+% \bibliographystyle{apa}
+\fancypagestyle{nofooter}{\fancyfoot{}}
+\thispagestyle{nofooter}  %  https://tex.stackexchange.com/questions/136384/remove-footer-without-removing-the-header
+\setlength{\headheight}{30.0pt}
+\fancyhead[C]{\includegraphics[height=0.5in]{stfx_text.png}}
+\fancyhead[L]{\includegraphics[height=0.5in]{crest.png}}
+\fancyhead[R]{
+    \sffamily
+    \scriptsize
+    4130 University Avenue \\
+    B2G 2W5 \\
+    Antigonish, Nova Scotia \\
+    Canada
+}
+\normalsize
+
+\title{Cover Letter}
+% \begin{center}
+% \includegraphics[width=4in]{stfx_logo.png}
+% \end{center}
+
+
+% \author[Derek Berger, Gurpreet Matharoo, Jacob Levman]{
+%     Derek M. Berger\affil{1},
+%     Gurpreet S. Matharoo\affil{2}
+%     \and Jacob Levman\affil{3}
+% }
+% \affiliation{1}{Computer Science, St. Francis Xavier University, Antigonish, Canada, dberger@stfx.ca}
+% \affiliation{2}{Physics, St. Francis Xavier University, Antigonish, Canada, gmatharo@stfx.ca}
+% \affiliation{3}{Computer Science, St. Francis Xavier University, Antigonish, Canada, jlevman@stfx.ca}
+
+
+% \keywords{random matrix theory, feature extraction, functional connectivity,
+% functional magnetic resonance imaging, voxelwise connectivity, predictive analysis}
+
+\noindent
+\today, \\
+To the Editors of Network Neuroscience, \\
+
+We hope you will consider our manuscript \emph{Random Matrix Theory Tools for the Analysis of
+Functional Magnetic Resonance Imaging Examinations} for publication in Network Neuroscience as a
+\emph{Research} article. In it, we apply mathematical tools from random matrix theory (RMT) to
+analyze a wide variety of functional magnetic resonance imaging (fMRI) data, and release
+open-source software \citep{bergerStfxecutablesEmpyricalRMTPreliminary2020} to facilitate such analyses with a wide variety of data.
+
+Numerous fMRI studies examine correlations amongst regions of interest (ROI) in the brain. These
+``functional connectivity'' analyses typically use ROIs or seed regions in order to simplify
+connectivity computations \citep{huettelFunctionalMagneticResonance2004}. Instead, we use
+statistics from RMT to summarize \emph{all} voxelwise correlations with no reductions. In
+addition, rather than simply reporting findings which are statistically significant, we report all
+analyses from a cross-validated predictive framework, where multiple machine learning models are
+compared against both each other and proper baselines (e.g. naive / dummy classifiers).
+
+We show that, across a variety of data and with fairly small data, and without any model tuning,
+that these RMT reductions have real predictive utility and potential. This suggests RMT could
+be a powerful and efficient method for summarizing functional connectivity information. As much of the
+research in network neuroscience involves fMRI, functional connectivity, and statistical physics, as
+per the \href{https://direct.mit.edu/netn/pages/submission-guidelines#aims}{Aims and Scope} of \emph{Network
+Neuroscience}, we believe our manuscript to be an excellent fit for submission to your journal.
+
+Should you consider to review our manuscript, we have suggested a number of potential reviewers on
+your submission website that we believe would be suitable due to expertise in RMT and similar
+interdisciplinary research. This paper is not under consideration at any other journa, although a
+poster of some preliminary results of our study was presented at the International Symposium for
+Magnetic Resonance in Medicine 2021 annual conference \citep{bergerOpenSourceRandom2021}. Our lab
+has REB ethics approval for conducting retrospective analyses (although we are unaware of the need,
+this being an analysis of anonymized public data). All authors approve the manuscript in its
+submitted form, and have no conflicts of interest, financial or otherwise.
+
+
+
+% \begin{itemize}
+% \item Sarika Jalan (sarika@iiti.ac.in) \\
+% \small
+% ~~~ Centre for Biosciences and Biomedical Engineering, IIT Indore India
+% \normalsize
+% \item Javeria Hashmi (javeria.hashmi@dal.ca) \\
+% \small
+% ~~~ Department of Anesthesia, Pain Management and Perioperative Medicine Dalhousie University, Canada
+% \normalsize
+% \item Nivedita Deo (ndeo@physics.du.ac.in) \\
+% \small
+% ~~~ Department of Physics and Astrophysics University of Delhi, India
+% \normalsize
+% \item Guillermo A. Cecchi (gcecchi@us.ibm.com) \\
+% \small
+% ~~~ Thomas J. Watson Research Center, Yorktown Heights, NY USA
+% \normalsize
+% \item Randy McIntosh (rmcintosh@research.baycrest.org) \\
+% \small
+% ~~~ Rotman Research Institute at Baycrest Health Sciences, Toronto, Canada
+% \normalsize
+% \end{itemize}
+
+
+\bigskip
+
+\noindent
+Sincerely, \\
+
+\small
+\noindent
+\textbf{Corresponding Author}\\
+Jacob Levman, PhD (jlevman@stfx.ca) \\
+Canada Research Chair in Bioinformatics \\
+Department of Computer Science \\
+St. Francis Xavier University \\
+
+\noindent
+\textbf{Additional Contacts} [should the corresponding author be unavailable]\\
+Derek Berger (dberger@stfx.ca), Department of Computer Science, St. Francis Xavier University\\
+Gurpreet S. Matharoo (gmatharo@stfx.ca), Department of Physics, St. Francis Xavier University
+
+% \printbibliography % biblatex
+% \renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
+% \smallskip
+% \bibliographystyle{mystyle}
+% \bibliography{cover}  % natbib
+
+\footnotesize
+\begin{center}
+\noindent\rule{6cm}{0.4pt}
+\end{center}
+
+\AtNextBibliography{\footnotesize}
+\printbibliography[heading=none]
+
+\end{document}
