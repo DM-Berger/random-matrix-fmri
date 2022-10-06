@@ -1,0 +1,207 @@
+---
+title: "Random Matrix Theory Tools for the Analysis of Functional Magnetic-Resonance Imaging Examinations"
+fontsize: 10pt
+urlcolor: blue
+linkcolor: blue
+# mainfont: "Garamond Premier Pro"
+# biblio-style: "apalike"
+bibliography: "rmt.bib"  # exported from Zotero with better BibLaTeX extension
+link-citations: true
+output:
+    # bookdown::pdf_document2:
+    bookdown::pdf_book:
+        latex_engine: xelatex
+        toc: false
+        # toc_depth: 2
+        number_sections: false
+        highlight: tango
+        # https://bookdown.org/yihui/rmarkdown-cookbook/figure-placement.html
+        # unicode-math needed for bold italic math
+        # (https://tex.stackexchange.com/questions/431013/error-extended-mathchar-used-as-mathchar-when-using-bm)
+        extra_dependencies: ["float", "unicode-math"]
+        mathjax: default
+        includes:
+            in_header: preamble.tex
+        split_bib: true
+        fig_width: 6
+        fig_height: 4
+        link-citations: true
+citation-style: ieee.csl # https://www.zotero.org/styles
+---
+
+
+# Abstract
+
+Previous studies have investigated the potential of using analytic techniques from Random Matrix
+Theory (RMT) to investigate magnetic resonance imaging (MRI) data. We assess the potential
+application of RMT-based features for the analysis of functional MRI (fMRI) across diverse datasets.
+As novel contributions, we (1) assess the potential for RMT-inspired, whole-brain features extracted
+from voxel-wise functional connectivity to contain information useful for classifying between
+various psychological processes, (2) assess these features’ predictive—rather than
+explanatory—value, (3) investigate the effect of varying RMT analysis methods on the robustness of
+study findings, and (4) make general-purpose code publicly available for users to extract these
+features from a wide variety of data. We find preliminary evidence suggesting that RMT-inspired
+features may have unique potential in analyses of fMRI functional connectivity.
+
+
+## Index Terms / Keywords
+
+feature extraction, functional connectivity, functional magnetic resonance imaging, random matrix
+theory, voxelwise connectivity
+
+## Funding Info
+
+Manuscript submitted January 20, 2021. This work was supported by the  Natural Science and
+Engineering Research Council of Canada's Canada Research Chair grant (grant number 231266) to JL,
+Natural Science and Engineering Research Council of Canada Discovery Grant to JL, a Canada
+Foundation for Innovation and Nova Scotia Research and Innovation Trust infrastructure grant
+(R0176004) to JL, a St. Francis Xavier University research startup grant to JL (grant number
+R0168020), and a St. Francis Xavier University UCR grant to JL.
+
+## Author Info
+
+Derek Berger is with the department of Computer Science, St. Francis Xavier University, Antigonish
+NS B2G 2W5, Canada (e-mail: dberger@stfx.ca).
+
+Gurpreet Matharoo is with ACENET, and the Department of Physics, St. Francis Xavier University,
+Antigonish NS B2G 2W5, Canada (e-mail: gmatharo@stfx.ca).
+
+Jacob Levman is with the Department of Computer Science, St. Francis Xavier University, Antigonish
+NS B2G 2W5, Canada (e-mail: jlevman@stfx.ca).
+
+\newpage
+
+# Introduction
+
+In functional magnetic resonance imaging (fMRI), changes in the blood-oxygenation-level-dependent
+(BOLD) signals are related to neural activity. It is common to investigate statistical relationships
+between the BOLD signals through functional connectivity analyses, where correlations between
+collections of these signals are examined to infer connections between different voxels or regions
+of interest (ROIs) within the brain.
+
+Whether in the presence of experimental stimuli, or the relative absence, as in a resting state,
+complex functional connectivity networks are ubiquitous [1]–[4]. This complexity suggests fMRI is a
+candidate to be studied using Random Matrix Theory (RMT), a set of mathematical tools originally
+developed some 50 years ago to solve complex problems in nuclear physics [5], [6]. In various
+physical systems where nuclei can have different possible states, precisely modeling the entirety of
+the interactions between nuclei is often intractable. For such large, complex systems, the
+eigenvalues (or spectra) efficiently summarize the totality of the interactions between components
+of the system, and RMT describes the expected behaviour of such eigenvalues. By analysing the
+spectrum statistically, complex systems can be investigated by comparison to the universal
+properties predicted by RMT.
+
+These universal properties have been observed in diverse phenomena. In small-scale systems, RMT
+universalities have been observed in quantum chaotic systems, complex nuclei, atoms, molecules and
+disordered mesoscopic systems [5]–[11], and at larger scales, RMT has been applied to atmospheric
+physics [12], stock cross-correlations [13], social networks [14], random networks [15],
+network-formation in liquids [16], [17] and amorphous clusters [18]–[21]. Within biological systems,
+RMT has also been used to successfully model aspects of  amino acid functional relationships [22],
+synchrony in epileptic seizures [23], and in protein-protein interactions both in different species
+[24] and breast cancer [25].
+
+In recent years, RMT analyses have been applied to study brain functioning.  The earliest  study
+demonstrated that spectra of the correlations between electroencephalographic (EEG) signals closely
+resemble those of the Gaussian Orthogonal Ensemble (GOE) [26].  Somewhat more recently, RMT was used
+to evaluate the quality of whole brain features extracted from fMRI data [27], [28]. RMT has also
+been used in diffusion MRI to aid in the selection of the number of components to employ in
+principal-component reduction analysis and denoising [29]–[31].
+
+Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to investigate
+differences between rest and task states [32], between subjects with and without ADHD [33], and
+between pain and non-pain states [34]. Across these three studies, the spectra of resting or
+low-attention states exhibited properties closest to the GOE.
+
+These findings suggest that certain aspects of psychological processes might be characterized, in
+part, by features computed from the eigenvalues of fMRI correlation matrices, and that these
+features might vary in an interpretable manner across psychological processes. If this is the case,
+RMT could have unique potential in characterizing the functioning of the human brain.
+
+Here, we use a novel, voxel-based approach, and expand the applications of RMT to analyze fMRI scans
+from  diverse datasets1. We extract RMT-inspired whole-brain features from voxelwise functional
+connectivity data, and assess the predictive value of these features. We also examine in detail the
+robustness of the RMT methodology to various common analytic choices.
+
+# Materials and Methods
+
+## Datasets
+
+As our primary intention is to examine the potential utility of RMT-derived features across a wide
+variety of data, and not to decisively put forward or refute any specific hypotheses relating RMT to
+psychological processes, we examine a wide selection of fMRI datasets available on the OpenNeuro
+platform [36].  This allows for a broad assessment of the potential of voxelwise RMT features.
+
+However, since previous studies employing RMT for feature extraction [33], [34] have partially
+interpreted their findings with respect to attentional processes, we have elected to use datasets
+that involve attention in some way. This includes measures of attention or vigilance, or comparisons
+between a condition involving more attention and focus (e.g. a task state) or conditions which
+should involve considerably less attention or focus (e.g. resting-state).
+
+```{r , echo=FALSE, results='asis'}
+  cat(' Table: (\\#tab:scan-params) Summary of Scan Parameters. ID = Identifier for paper. FOV = Field of View. TR = Time of Repetition (seconds). Time = total duration (minutes) of each scan. Dimensions listed as M × N × P, indicate P slices with dimensions M × N.
+
+  |   ID   |     FOV (mm) | Dimensions | Voxel Size (mm) |  TR  | Volumes | Time (m) |
+  |:------:|:------------:|:-----------:|:---------------:|:----:|:-------:|:--------:|
+  | PSYCH  | 192          | 128×128×70 | 1.5×1.5×1.5     | 3.0  |     300 |  15     |
+  | OSTEO  | -            | 64×64×36   | 3.4×3.4×3.0     | 2.5  |     300 |  12.5   |
+  | REFLECT| 210          | 72×72×46   | 3.0×3.0×3.0     | 3.0  |     204 |  10.2   |
+  |        | 240          | 64×64×33   | 3.8×3.8×3.8     | 2.0  |     260 |  8.7    |
+  | PARK   | 240×240×129  | 80×80×43   | 3.0×3.0×3.0     | 2.4  |     149 |  5.96   |
+  | LEARN  |  -           | 64×64×36   | 3.0×3.0×3.0     | 2.0  |     195 |  6.5    |')
+
+```
+
+## A Simple Linear MLP
+
+A citation to [@abueleninSpectralUnfoldingChaotic2018a;
+@abul-magdModellingHighwaytrafficHeadway2007; @alakorkkoEffectsSpatialSmoothing2017].
+
+As a concrete example, imagine we are build a simple ANN from $\mathbbm{R}$ to $\mathbbm{R}^2$ by
+way of two larger intermediate layers. We might have for example
+
+```python
+ann = Sequential([
+    Linear(1, 2),
+    Linear(2, 1),
+])
+```
+
+which learns the weights
+
+$$
+\begin{aligned}
+\mathbf{W}_1 &= \begin{bmatrix} w_1 & w_2 \end{bmatrix} & \text{layer 1: matrix of shape (1, 2), output shape (1, 2)} \\
+\mathbf{W}_2 &= \begin{bmatrix} w_3 \\ w_4 \end{bmatrix}& \text{layer 2: matrix of shape (2, 1), output shape (1, 1)} \\
+\end{aligned}
+$$
+
+Assuming ReLUs and no biases, the entire equation for this network is
+$y = \mathbf{W}_2 \cdot \text{ReLU}(\mathbf{W}_1 x) + b$ (final layer should always have a bias), that is:
+
+$$
+\begin{aligned}
+\mathbf{W}_1 x & = \begin{bmatrix} w_1 \cdot x & \;\; w_2 \cdot x \end{bmatrix} \\
+             y & = \begin{bmatrix}  w_3 \cdot \text{ReLU}(w_1 \cdot x) + w_4 \cdot \text{ReLU}(w_2 \cdot x) + b \end{bmatrix} \\
+\end{aligned}
+$$
+
+This in fact reduces to:
+
+$$
+y = \begin{cases}
+w_1 w_3 x + w_2 w_4 x + b  & \text{ if }  sgn(x) =   sgn(w_1) \text{ and } sgn(x)   = sgn(w_2) \\
+w_1 w_3 x + b              & \text{ if }  sgn(x) =   sgn(w_1) \text{ and } sgn(x) \ne sgn(w_2) \\
+w_2 w_4 x + b              & \text{ if }  sgn(x) \ne sgn(w_1) \text{ and } sgn(x)   = sgn(w_2) \\
+b                          & x = 0 \\
+\end{cases}
+$$
+
+In particular, without loss of generality we can take $w_1 < 0$ and $w_2 > 0$ and reduce this to:
+
+$$
+y = \begin{cases}
+w_2 w_4 x + b  & \text{ if }  x \ge 0 \\
+w_1 w_3 x + b  & \text{ if }  x  < 0 \\
+\end{cases}
+$$
+
+# References

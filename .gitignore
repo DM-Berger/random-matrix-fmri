@@ -5,6 +5,12 @@
 **/*.zip
 **/.vscode
 **/*.out
+
+# LaTeX
+paper/latex/**/__*.tex
+**/wordcount.dvi
+
+# Data
 data/*.pdf
 data/*.xlsx
 data/*.ods
