@@ -340,13 +340,7 @@ figure files larger than 10 MB must be uploaded separately.
 ### Other Annoyances
 
 - If the study involves the re-analysis of previously published datasets (from
-  the author or other groups) or public/shared datasets, the ethics statement
-  should describe both the original ethical review as well as any further
-  ethical review or data use agreement pertinent to the submitted manuscript.
+  the author or other groups) or public/shared datasets, the ethics statement should describe both the original ethical review as well as any further ethical review or data use agreement pertinent to the submitted manuscript.
 - **Authors must state in their cover letter if a brief version of the study has
-  been published as a conference proceeding.** In this case, the Authors should
-  clarify the additional work that has been completed and added to the
-  submitted full report. The proceeding paper must be available to the
-  editorial team in order to judge the relative novelty and contribution of the
-  full paper.
+  been published as a conference proceeding.** In this case, the Authors should clarify the additional work that has been completed and added to the submitted full report. The proceeding paper must be available to the editorial team in order to judge the relative novelty and contribution of the full paper.
 
