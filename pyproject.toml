@@ -1,11 +1,10 @@
 [tool.black]
-line-length = 120
+line-length = 90
 
 [tool.isort]
 profile = 'black'
-src_paths = ['code', 'code/rmt', 'test']
 skip_gitignore = false
-line_length = 120
+line_length = 90
 atomic = true
 sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'LOCALFOLDER', 'FIRSTPARTY']
-known_local_folder = ['code/rmt', 'rmt']
+known_local_folder = ['code', 'code/rmt', 'rmt', 'src', 'test', 'tests']
