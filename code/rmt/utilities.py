@@ -1,11 +1,10 @@
+from typing import Any, Union
+
 import numpy as np
 import pandas as pd
 import seaborn as sbn
-
-
 from numpy import ndarray
 from statsmodels.nonparametric.kde import KDEUnivariate as KDE
-from typing import Any, Union
 
 
 def _percentile_boot(df: pd.DataFrame, B: int = 2000) -> pd.DataFrame:

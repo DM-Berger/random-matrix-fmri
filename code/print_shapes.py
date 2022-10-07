@@ -1,6 +1,6 @@
 import numpy as np
 
-from rmt._data_constants import DATASETS
+from rmt.constants import DATASETS
 
 
 def print_shapes() -> None:

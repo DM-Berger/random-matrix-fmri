@@ -7,11 +7,16 @@ import sys
 from typing import Any
 from warnings import filterwarnings
 
-from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
-from rmt._filenames import preview_precompute_outpaths
-from rmt._precompute import precompute_dataset
+from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
+from rmt.filenames import previewprecompute_outpaths
+from rmt.precompute import precompute_dataset
 from rmt.args import ARGS
-from rmt.plot_datasets import plot_largest, plot_pred_rigidity, plot_pred_levelvar, plot_pred_nnsd
+from rmt.plot_datasets import (
+    plot_largest,
+    plot_pred_rigidity,
+    plot_pred_levelvar,
+    plot_pred_nnsd,
+)
 from rmt.summarize import compute_all_diffs_dfs, compute_all_preds_df, supplement_stat_dfs
 
 
@@ -39,14 +44,24 @@ def all_pred_means_by_algo(
             ARGS.normalize = norm
             for degree in UNFOLD:
                 ARGS.unfold["degree"] = degree
-                supplemented = supplement_stat_dfs(diffs=None, preds=compute_all_preds_df(ARGS, silent=silent))[1]
+                supplemented = supplement_stat_dfs(
+                    diffs=None, preds=compute_all_preds_df(ARGS, silent=silent)
+                )[1]
                 df = pd.read_csv(supplemented)
                 df["Degree"] = ARGS.unfold["degree"]
                 df["Trim"] = ARGS.trim
                 dfs.append(df)
 
     compare: pd.DataFrame = pd.concat(dfs)
-    features = ["Raw Eigs", "Largest20", "Largest", "Noise", "Noise (shift)", "Rigidity", "Levelvar"]
+    features = [
+        "Raw Eigs",
+        "Largest20",
+        "Largest",
+        "Noise",
+        "Noise (shift)",
+        "Rigidity",
+        "Levelvar",
+    ]
     compare = compare[
         [
             "Dataset",
@@ -76,7 +91,9 @@ def all_pred_means_by_algo(
         # print(algo)
         alg_compare = compare[compare["Algorithm"] == algo]
         if subtract_guess:
-            alg_compare = alg_compare[features].apply(lambda col: col - alg_compare["Guess"])
+            alg_compare = alg_compare[features].apply(
+                lambda col: col - alg_compare["Guess"]
+            )
         desc = alg_compare.describe().drop(labels="count", axis=0)
         if algo == "Logistic Regression":
             algo = "LR"
@@ -87,7 +104,9 @@ def all_pred_means_by_algo(
         algo_var[algo] = desc["Levelvar"].rename(columns={"Levelvar": algo})
         algo_largest[algo] = desc["Largest"].rename(columns={"Largest": algo})
         algo_noise[algo] = desc["Noise"].rename(columns={"Noise": algo})
-        algo_noise_shift[algo] = desc["Noise (shift)"].rename(columns={"Noise (shift)": algo})
+        algo_noise_shift[algo] = desc["Noise (shift)"].rename(
+            columns={"Noise (shift)": algo}
+        )
         # print(compare[compare["Algorithm"] == algo].describe())
         # print("\n\n")
         # algo_rig["Guess"] =
@@ -102,11 +121,17 @@ def all_pred_means_by_algo(
     algo_var.to_csv(DATA_ROOT / f"{d}{c}all_preds_levelvar_by_algo{f}{n}{g}.csv")
     algo_largest.to_csv(DATA_ROOT / f"{d}{c}all_preds_largest_by_algo{f}{n}{g}.csv")
     algo_noise.to_csv(DATA_ROOT / f"{d}{c}all_preds_noise_by_algo{f}{n}{g}.csv")
-    algo_noise_shift.to_csv(DATA_ROOT / f"{d}{c}all_preds_noise_shift_by_algo{f}{n}{g}.csv")
+    algo_noise_shift.to_csv(
+        DATA_ROOT / f"{d}{c}all_preds_noise_shift_by_algo{f}{n}{g}.csv"
+    )
 
 
 def make_pred_means(
-    dataset_name: str, comparison: str, subtract_guess: bool = False, silent: bool = False, force: bool = False
+    dataset_name: str,
+    comparison: str,
+    subtract_guess: bool = False,
+    silent: bool = False,
+    force: bool = False,
 ) -> None:
     FULLPRE = ARGS.fullpre
 
@@ -120,7 +145,9 @@ def make_pred_means(
             ARGS.normalize = norm
             for degree in UNFOLD:
                 ARGS.unfold["degree"] = degree
-                supplemented = supplement_stat_dfs(diffs=None, preds=compute_all_preds_df(ARGS, silent=True))[1]
+                supplemented = supplement_stat_dfs(
+                    diffs=None, preds=compute_all_preds_df(ARGS, silent=True)
+                )[1]
                 df = pd.read_csv(supplemented)
                 df["Degree"] = ARGS.unfold["degree"]
                 df["Trim"] = ARGS.trim
@@ -140,8 +167,12 @@ def make_pred_means(
         # print(algo)
         desc = compare[compare["Algorithm"] == algo].describe()
         if subtract_guess:
-            algo_rig[algo] = desc["Rigidity"].rename(columns={"Rigidity": algo}) - desc["Guess"]
-            algo_rig[algo] = desc["Rigidity"].rename(columns={"Rigidity": algo}) - desc["Guess"]
+            algo_rig[algo] = (
+                desc["Rigidity"].rename(columns={"Rigidity": algo}) - desc["Guess"]
+            )
+            algo_rig[algo] = (
+                desc["Rigidity"].rename(columns={"Rigidity": algo}) - desc["Guess"]
+            )
         else:
             algo_rig[algo] = desc["Rigidity"].rename(columns={"Rigidity": algo})
             algo_var[algo] = desc["Levelvar"].rename(columns={"Levelvar": algo})
@@ -152,8 +183,12 @@ def make_pred_means(
     var_out = DATA_ROOT / f"{dataset_name}_{comparison}_levelvar_by_algo{guess_label}.csv"
     algo_rig.to_csv(rig_out)
     algo_var.to_csv(var_out)
-    print(f"Saved {dataset_name} {comparison} rigidity predictions by algorithm to {rig_out.relative_to(DATA_ROOT)}")
-    print(f"Saved {dataset_name} {comparison} levelvar predictions by algorithm to {var_out.relative_to(DATA_ROOT)}")
+    print(
+        f"Saved {dataset_name} {comparison} rigidity predictions by algorithm to {rig_out.relative_to(DATA_ROOT)}"
+    )
+    print(
+        f"Saved {dataset_name} {comparison} levelvar predictions by algorithm to {var_out.relative_to(DATA_ROOT)}"
+    )
 
 
 def make_marchenko_plots(shifted: bool = False):
@@ -173,14 +208,18 @@ def make_marchenko_plots(shifted: bool = False):
 
             fig: plt.Figure
             fig, axes = plt.subplots(nrows=4, ncols=3)
-            suptitle = (
-                f"{'Shifted ' if shifted else ''}Marchenko Noise Ratio {'(preprocessed)' if ARGS.fullpre else ''}"
-            )
+            suptitle = f"{'Shifted ' if shifted else ''}Marchenko Noise Ratio {'(preprocessed)' if ARGS.fullpre else ''}"
             for i, dataset_name in enumerate(datasets):
                 dfs = []
-                for groupname, observables in precompute_dataset(dataset_name, ARGS, silent=True).items():
+                for groupname, observables in precompute_dataset(
+                    dataset_name, ARGS, silent=True
+                ).items():
                     df_full = pd.read_pickle(observables["marchenko"])
-                    df = pd.DataFrame(df_full.loc["noise_ratio_shifted" if shifted else "noise_ratio", :])
+                    df = pd.DataFrame(
+                        df_full.loc[
+                            "noise_ratio_shifted" if shifted else "noise_ratio", :
+                        ]
+                    )
                     df["subgroup"] = [groupname for _ in range(len(df))]
                     dfs.append(df)
                 df = pd.concat(dfs)
@@ -196,14 +235,26 @@ def make_marchenko_plots(shifted: bool = False):
                     subfontsize = 10
                     fontsize = 12
                     ax: plt.Axes = axes.flat[i]
-                    sbn.violinplot(x="subgroup", y=f"noise_ratio{'_shifted' if shifted else ''}", data=df, ax=ax)
+                    sbn.violinplot(
+                        x="subgroup",
+                        y=f"noise_ratio{'_shifted' if shifted else ''}",
+                        data=df,
+                        ax=ax,
+                    )
                     sbn.despine(offset=10, trim=True, ax=ax)
                     ax.set_title(title, fontdict={"fontsize": fontsize})
                     ax.set_xlabel("", fontdict={"fontsize": subfontsize})
                     ax.set_ylabel("", fontdict={"fontsize": subfontsize})
             fig.suptitle(suptitle)
             fig.text(x=0.5, y=0.04, s="Subgroup", ha="center", va="center")  # xlabel
-            fig.text(x=0.05, y=0.5, s="Noise Proportion", ha="center", va="center", rotation="vertical")  # ylabel
+            fig.text(
+                x=0.05,
+                y=0.5,
+                s="Noise Proportion",
+                ha="center",
+                va="center",
+                rotation="vertical",
+            )  # ylabel
             fig.subplots_adjust(hspace=0.48, wspace=0.3)
             # sbn.despine(ax=axes.flat[-1], trim=True)
             fig.delaxes(ax=axes.flat[-1])
@@ -240,7 +291,9 @@ def make_largest_plots():
             suptitle = f"Largest Eigenvalue{' (preprocessed)' if ARGS.fullpre else ''}"
             for i, dataset_name in enumerate(datasets):
                 dfs = []
-                for groupname, observables in precompute_dataset(dataset_name, ARGS, silent=True).items():
+                for groupname, observables in precompute_dataset(
+                    dataset_name, ARGS, silent=True
+                ).items():
                     df_full = pd.read_pickle(observables["largest"])
                     df = pd.DataFrame(df_full.loc["largest", :], dtype=float)
                     df["subgroup"] = [groupname for _ in range(len(df))]
@@ -263,7 +316,14 @@ def make_largest_plots():
                     ax.set_ylabel("", fontdict={"fontsize": subfontsize})
             fig.suptitle(suptitle)
             fig.text(x=0.5, y=0.04, s="Subgroup", ha="center", va="center")  # xlabel
-            fig.text(x=0.05, y=0.5, s="Magnitude", ha="center", va="center", rotation="vertical")  # ylabel
+            fig.text(
+                x=0.05,
+                y=0.5,
+                s="Magnitude",
+                ha="center",
+                va="center",
+                rotation="vertical",
+            )  # ylabel
             fig.subplots_adjust(hspace=0.48, wspace=0.3)
             # sbn.despine(ax=axes.flat[-1], trim=True)
             fig.delaxes(ax=axes.flat[-1])
@@ -307,11 +367,19 @@ filterwarnings("ignore", category=np.RankWarning)
 # plot_pred_levelvar(ARGS, "OSTEO", "duloxetine_v_nopain", ensembles=True,
 # plot_pred_rigidity(ARGS, "PARKINSONS", "control_v_parkinsons", ensembles=True, silent=True, force=False)
 # plot_pred_levelvar(ARGS, "PARKINSONS", "control_v_parkinsons", ensembles=True, silent=True, force=False)
-plot_pred_nnsd(ARGS, "OSTEO", "duloxetine_v_nopain", trim=4.0, ensembles=True, silent=True, force=False)
+plot_pred_nnsd(
+    ARGS,
+    "OSTEO",
+    "duloxetine_v_nopain",
+    trim=4.0,
+    ensembles=True,
+    silent=True,
+    force=False,
+)
 plt.show()
 # get_cmds()
 # make_largest_plots()
-# preview_precompute_outpaths(ARGS)
+# previewprecompute_outpaths(ARGS)
 sys.exit(0)
 
 # preds = compute_all_preds_df(ARGS, silent=True)
@@ -367,7 +435,7 @@ sys.exit(0)
 
 plt.show()
 sys.exit(0)
-# preview_precompute_outpaths(ARGS)
+# previewprecompute_outpaths(ARGS)
 # compute_all_preds_df(ARGS, silent=True)
 
 # preds = compute_all_preds_df(ARGS, silent=False)

@@ -7,4 +7,6 @@
 ignore = E203,E302,E731,W503
 max-line-length = 90
 exclude = tests/test_current.py
-per-file-ignores = code/rmt/constants.py:E221,E501,E241
+per-file-ignores =
+    code/rmt/constants.py:E221,E501,E241
+    code/rmt/defaults.py:E221,E501,E241

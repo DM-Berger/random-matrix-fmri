@@ -10,10 +10,10 @@ from empyricalRMT.ensemble import GOE, GDE
 
 from typing import Any, List
 
-from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
-from rmt._filenames import argstrings_from_args, relpath
-from rmt._precompute import precompute_dataset
-from rmt._utilities import _percentile_boot
+from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
+from rmt.filenames import argstrings_from_args, relpath
+from rmt.precompute import precompute_dataset
+from rmt.utilities import _percentile_boot
 from rmt.args import ARGS
 from rmt.comparisons import Pairings
 from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
@@ -43,13 +43,17 @@ def plot_marchenko(args: Any, show: bool = False) -> None:
     total = 0
     fig, axes = plt.subplots(nrows=3, nocols=8)
     for dataset_name in datasets:
-        for groupname, observables in precompute_dataset(dataset_name, args, silent=True).items():
+        for groupname, observables in precompute_dataset(
+            dataset_name, args, silent=True
+        ).items():
             total += 1  # count how much plots we need
 
     fig, axes = plt.subplots(nrows=3, nocols=8)
     for dataset_name in datasets:
         dfs, dfs_noise = [], []
-        for groupname, observables in precompute_dataset(dataset_name, args, silent=True).items():
+        for groupname, observables in precompute_dataset(
+            dataset_name, args, silent=True
+        ).items():
             df_full = pd.read_pickle(observables["marchenko"])
             df = pd.DataFrame(df_full.loc["noise_ratio", :])
             df_noise = pd.DataFrame(df_full.loc["noise_ratio_shifted", :])
@@ -127,7 +131,9 @@ def plot_brody(args: Any, show: bool = False) -> None:
     datasets = DATASETS_FULLPRE if args.fullpre else DATASETS
     for dataset_name in datasets:
         dfs = []
-        for groupname, observables in precompute_dataset(dataset_name, args, silent=True).items():
+        for groupname, observables in precompute_dataset(
+            dataset_name, args, silent=True
+        ).items():
             path = observables["brody"]
             df_full = pd.read_pickle(path)
             df = pd.DataFrame(df_full.loc["beta", :])
@@ -184,7 +190,9 @@ def plot_largest(args: Any, show: bool = False) -> None:
     datasets = DATASETS_FULLPRE if args.fullpre else DATASETS
     for dataset_name in datasets:
         dfs = []
-        for groupname, observables in precompute_dataset(dataset_name, args, silent=True).items():
+        for groupname, observables in precompute_dataset(
+            dataset_name, args, silent=True
+        ).items():
             path = observables["largest"]
             df_full = pd.read_pickle(path)
             df = pd.DataFrame(df_full.loc["largest", :], dtype=float)
@@ -246,7 +254,9 @@ def plot_raw_eigs(args: Any, show: bool = False) -> None:
     # for subgroupname, eigpaths in dataset.items():
     for dataset_name in datasets:
         dfs = []
-        for groupname, observables in precompute_dataset(dataset_name, args, silent=True).items():
+        for groupname, observables in precompute_dataset(
+            dataset_name, args, silent=True
+        ).items():
             path = observables["largest"]
             df_full = pd.read_pickle(path)
             df = pd.DataFrame(df_full.loc["largest", :], dtype=float)
@@ -342,7 +352,13 @@ def plot_pred_nnsd(
                     ax=ax,
                 )
                 sbn.lineplot(
-                    spacings, brody, color="#FD8208", ax=ax, alpha=0.9, label=g1 if j == 0 else None, linewidth=0.5
+                    spacings,
+                    brody,
+                    color="#FD8208",
+                    ax=ax,
+                    alpha=0.9,
+                    label=g1 if j == 0 else None,
+                    linewidth=0.5,
                 )
             for j, unf in enumerate(unf2):
                 spacings = unf.spacings
@@ -364,7 +380,13 @@ def plot_pred_nnsd(
                     ax=ax,
                 )
                 sbn.lineplot(
-                    spacings, brody, color="#000000", ax=ax, alpha=0.9, label=g2 if j == 0 else None, linewidth=0.5
+                    spacings,
+                    brody,
+                    color="#000000",
+                    ax=ax,
+                    alpha=0.9,
+                    label=g2 if j == 0 else None,
+                    linewidth=0.5,
                 )
 
             if ensembles:
@@ -380,10 +402,18 @@ def plot_pred_nnsd(
         axes.flat[-1].legend().set_visible(True)
         fig.text(0.5, 0.04, "spacing (s)", ha="center", va="center")  # xlabel
         fig.text(
-            0.03, 0.5, "p(s)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+            0.03,
+            0.5,
+            "p(s)",
+            ha="center",
+            va="center",
+            rotation="vertical",
+            fontdict={"fontname": "DejaVu Sans"},
         )  # ylabel
         fig.set_size_inches(w=16, h=5)
-        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.245)
+        fig.subplots_adjust(
+            top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.245
+        )
         plt.suptitle(f"{dataset_name} {ARGS.trim} - NNSD")
         plt.show(block=False)
 
@@ -421,9 +451,21 @@ def plot_pred_rigidity(
             boots1 = _percentile_boot(df1)
             boots2 = _percentile_boot(df2)
             sbn.lineplot(x=df1.index, y=boots1["mean"], color="#FD8208", label=g1, ax=ax)
-            ax.fill_between(x=df1.index, y1=boots1["low"], y2=boots1["high"], color="#FD8208", alpha=0.3)
+            ax.fill_between(
+                x=df1.index,
+                y1=boots1["low"],
+                y2=boots1["high"],
+                color="#FD8208",
+                alpha=0.3,
+            )
             sbn.lineplot(x=df2.index, y=boots2["mean"], color="#000000", label=g2, ax=ax)
-            ax.fill_between(x=df2.index, y1=boots2["low"], y2=boots2["high"], color="#000000", alpha=0.3)
+            ax.fill_between(
+                x=df2.index,
+                y1=boots2["low"],
+                y2=boots2["high"],
+                color="#000000",
+                alpha=0.3,
+            )
             if ensembles:
                 L = df1.index
                 poisson = GDE.spectral_rigidity(L=L)
@@ -437,10 +479,18 @@ def plot_pred_rigidity(
         axes.flat[-1].legend().set_visible(True)
         fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
         fig.text(
-            0.03, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontdict={"fontname": "DejaVu Sans"}
+            0.03,
+            0.5,
+            "∆₃(L)",
+            ha="center",
+            va="center",
+            rotation="vertical",
+            fontdict={"fontname": "DejaVu Sans"},
         )  # ylabel
         fig.set_size_inches(w=12, h=3)
-        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.2)
+        fig.subplots_adjust(
+            top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.2
+        )
         plt.suptitle(f"{dataset_name} {ARGS.trim} - Spectral Rigidity")
         plt.show(block=False)
 
@@ -478,9 +528,21 @@ def plot_pred_levelvar(
             boots1 = _percentile_boot(df1)
             boots2 = _percentile_boot(df2)
             sbn.lineplot(x=df1.index, y=boots1["mean"], color="#FD8208", label=g1, ax=ax)
-            ax.fill_between(x=df1.index, y1=boots1["low"], y2=boots1["high"], color="#FD8208", alpha=0.3)
+            ax.fill_between(
+                x=df1.index,
+                y1=boots1["low"],
+                y2=boots1["high"],
+                color="#FD8208",
+                alpha=0.3,
+            )
             sbn.lineplot(x=df2.index, y=boots2["mean"], color="#000000", label=g2, ax=ax)
-            ax.fill_between(x=df2.index, y1=boots2["low"], y2=boots2["high"], color="#000000", alpha=0.3)
+            ax.fill_between(
+                x=df2.index,
+                y1=boots2["low"],
+                y2=boots2["high"],
+                color="#000000",
+                alpha=0.3,
+            )
             if ensembles:
                 L = df1.index
                 poisson = GDE.spectral_rigidity(L=L)
@@ -503,13 +565,19 @@ def plot_pred_levelvar(
             fontdict={"fontname": "DejaVu Sans"},
         )  # ylabel
         fig.set_size_inches(w=12, h=3)
-        fig.subplots_adjust(top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.24)
+        fig.subplots_adjust(
+            top=0.83, bottom=0.14, left=0.085, right=0.955, hspace=0.2, wspace=0.24
+        )
         plt.suptitle(f"{dataset_name} {ARGS.trim} - Level Number Variance")
         plt.show(block=False)
 
 
 def make_pred_hists(
-    args: Any, density: bool = True, normalize: bool = False, silent: bool = False, force: bool = False
+    args: Any,
+    density: bool = True,
+    normalize: bool = False,
+    silent: bool = False,
+    force: bool = False,
 ) -> None:
     global ARGS
     # ARGS.fullpre = True
@@ -524,7 +592,9 @@ def make_pred_hists(
                 ARGS.normalize = normalize
                 for degree in unfold:
                     ARGS.unfold["degree"] = degree
-                    supplemented = supplement_stat_dfs(diffs=None, preds=compute_all_preds_df(args, silent=True))[1]
+                    supplemented = supplement_stat_dfs(
+                        diffs=None, preds=compute_all_preds_df(args, silent=True)
+                    )[1]
                     dfs.append(pd.read_csv(supplemented))
         # fmt: off
         FEATURES = [
@@ -566,7 +636,9 @@ def make_pred_hists(
                 guesses.append(all_algo_compare["Guess"].iloc[0])
                 titles.append(f"{dataset}--{comparison}")
         fig, axes = plt.subplots(nrows=3, ncols=6, sharex=False)
-        for i, (hist_data, bins, guess, title) in enumerate(zip(hist_info, bins_all, guesses, titles)):
+        for i, (hist_data, bins, guess, title) in enumerate(
+            zip(hist_info, bins_all, guesses, titles)
+        ):
             sbn.set_style("ticks")
             sbn.set_palette("Accent")
             ax: plt.Axes = axes.flat[i]
@@ -585,9 +657,16 @@ def make_pred_hists(
             if i == 0:
                 ax.legend()
             ax.set_title(title, fontdict={"fontsize": 8})
-        fig.text(0.5, 0.04, "Feature Prediction Accuracy", ha="center", va="center")  # xlabel
         fig.text(
-            0.1, 0.5, "Density" if density else "Frequency", ha="center", va="center", rotation="vertical"
+            0.5, 0.04, "Feature Prediction Accuracy", ha="center", va="center"
+        )  # xlabel
+        fig.text(
+            0.1,
+            0.5,
+            "Density" if density else "Frequency",
+            ha="center",
+            va="center",
+            rotation="vertical",
         )  # ylabel
         f = " (fullpre)" if ARGS.fullpre else ""
         n = " (normed)" if ARGS.normalize else ""

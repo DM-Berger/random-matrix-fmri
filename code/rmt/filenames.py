@@ -4,9 +4,20 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE, PRECOMPUTE_OUTDIRS, PRECOMPUTE_OUTDIRS_FULLPRE
-from rmt._defaults import BRODY_ARG_DEFAULTS, LEVELVAR_ARG_DEFAULTS, RIGIDITY_ARG_DEFAULTS, UNFOLD_ARG_DEFAULTS
 from rmt._types import Observable
+from rmt.constants import (
+    DATA_ROOT,
+    DATASETS,
+    DATASETS_FULLPRE,
+    PRECOMPUTE_OUTDIRS,
+    PRECOMPUTE_OUTDIRS_FULLPRE,
+)
+from rmt.defaults import (
+    BRODY_ARG_DEFAULTS,
+    LEVELVAR_ARG_DEFAULTS,
+    RIGIDITY_ARG_DEFAULTS,
+    UNFOLD_ARG_DEFAULTS,
+)
 
 
 def _prefix(trim_args: str, unfold_args: dict) -> str:
@@ -43,7 +54,10 @@ def argstrings_from_args(args: Any) -> Tuple[str, Dict[Observable, str]]:
         the arguments
     """
     # defaults
-    unfold_args = {**UNFOLD_ARG_DEFAULTS, **args.unfold}  # splat (yes, that's the name for this syntax)
+    unfold_args = {
+        **UNFOLD_ARG_DEFAULTS,
+        **args.unfold,
+    }  # splat (yes, that's the name for this syntax)
     levelvar_args = {**LEVELVAR_ARG_DEFAULTS, **args.levelvar}
     rigidity_args = {**RIGIDITY_ARG_DEFAULTS, **args.rigidity}
     brody_args = {**BRODY_ARG_DEFAULTS, **args.brody}
@@ -72,7 +86,9 @@ def argstrings_from_args(args: Any) -> Tuple[str, Dict[Observable, str]]:
     )
 
 
-def stats_fnames(args: Any, normalize: bool, extension: str = "pickle") -> Tuple[str, str]:
+def stats_fnames(
+    args: Any, normalize: bool, extension: str = "pickle"
+) -> Tuple[str, str]:
     """Generates filenames for the complete statistics tables.
 
     Parameters
@@ -101,24 +117,26 @@ def stats_fnames(args: Any, normalize: bool, extension: str = "pickle") -> Tuple
     var_label = labs["levelvar"].replace(prefix, "")
     brod_label = labs["brody"].replace(prefix, "")
     fullpre = "_fullpre" if args.fullpre else ""
-    preds_fname = (
-        f"predicts{fullpre}_{prefix}{'_normed' if normalize else ''}_{rig_label}_{var_label}_{brod_label}.{extension}"
-    )  # noqa E501
-    diffs_fname = f"diffs{fullpre}_{prefix}_{rig_label}_{var_label}_{brod_label}.{extension}"
+    preds_fname = f"predicts{fullpre}_{prefix}{'_normed' if normalize else ''}_{rig_label}_{var_label}_{brod_label}.{extension}"  # noqa E501
+    diffs_fname = (
+        f"diffs{fullpre}_{prefix}_{rig_label}_{var_label}_{brod_label}.{extension}"
+    )
     return preds_fname, diffs_fname
 
 
-def precomputed_subgroup_paths_from_args(dataset_name: str, subgroupname: str, args: Any) -> Dict[Observable, Path]:
+def precomputed_subgroup_paths_from_args(
+    dataset_name: str, subgroupname: str, args: Any
+) -> Dict[Observable, Path]:
     """Generate the paths of files output for given `args`
 
     Parameters
     ----------
     dataset_name: str
-        The Dataset name (e.g. the key value for indexing into _data_constants.DATASETS).
+        The Dataset name (e.g. the key value for indexing into constants.DATASETS).
 
     subgroupname: str
         The name of the SUBGROUP being analyzed (not dataset name). E.g. the
-        top-level key values defined in _data_constants.get_all_filepath_groupings().
+        top-level key values defined in constants.get_all_filepath_groupings().
 
     Returns
     -------
@@ -155,7 +173,7 @@ def precomputed_subgroup_paths_from_args(dataset_name: str, subgroupname: str, a
     }
 
 
-def preview_precompute_outpaths(args: Any) -> None:
+def previewprecompute_outpaths(args: Any) -> None:
     """Log all precompute paths to stdout, as well as whether the precompute
     files already exist"""
     dataset_name: str
@@ -165,7 +183,9 @@ def preview_precompute_outpaths(args: Any) -> None:
         print(f"\nDataset: {dataset_name}")
         for subgroupname in sorted(dataset.keys()):
             print(f"\tSubgroup: {subgroupname}")
-            outpaths = precomputed_subgroup_paths_from_args(dataset_name, subgroupname, args)
+            outpaths = precomputed_subgroup_paths_from_args(
+                dataset_name, subgroupname, args
+            )
             for key, val in outpaths.items():
                 print(f"\t\t{key} data saved at: {val.relative_to(DATA_ROOT)}")
                 print(f"\t\tAlready exists: {val.exists()}")

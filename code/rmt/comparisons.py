@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from rmt._data_constants import (
+from rmt.constants import (
     DATASETS,
     DATASETS_FULLPRE,
     DUDS,
@@ -29,8 +29,13 @@ from rmt._data_constants import (
     STAT_OUTDIRS_FULLPRE,
 )
 from rmt._types import Observable
-from rmt._filenames import _prefix, precomputed_subgroup_paths_from_args, relpath, stats_fnames
-from rmt._utilities import _percentile_boot, _configure_sbn_style, _cohen_d
+from rmt.filenames import (
+    _prefix,
+    precomputed_subgroup_paths_from_args,
+    relpath,
+    stats_fnames,
+)
+from rmt.utilities import _percentile_boot, _configure_sbn_style, _cohen_d
 
 
 def _trimmed_from_args(vals: ndarray, trim_args: str) -> ndarray:
@@ -43,7 +48,9 @@ def _trimmed_from_args(vals: ndarray, trim_args: str) -> ndarray:
     return vals
 
 
-def group_differences_summary(g1: ndarray, g2: ndarray, rowname: str, dataset_name: str, comparison: str) -> DataFrame:
+def group_differences_summary(
+    g1: ndarray, g2: ndarray, rowname: str, dataset_name: str, comparison: str
+) -> DataFrame:
     """Given ndarrays of scalar RMT features `g1` and `g2`, compute various
     descriptive statistics and return them as a DataFrame.
 
@@ -63,7 +70,9 @@ def group_differences_summary(g1: ndarray, g2: ndarray, rowname: str, dataset_na
     df: DataFrame
         The summary DataFrame.
     """
-    is_paired = dataset_name.lower() in PAIRED_DATA  # e.g. for paired t-tests outputs = None
+    is_paired = (
+        dataset_name.lower() in PAIRED_DATA
+    )  # e.g. for paired t-tests outputs = None
     g1, g2 = np.ravel(g1), np.ravel(g2)
 
     nans = (np.nan, np.nan)
@@ -111,7 +120,7 @@ class Pair:
         run.py
 
     dataset_name: str
-        The Dataset name (e.g. the key value for indexing into _data_constants.DATASETS).
+        The Dataset name (e.g. the key value for indexing into constants.DATASETS).
 
     label: str
         The label string for the comparison (e.g. 'task_v_rest').
@@ -124,11 +133,11 @@ class Pair:
 
     subgroup1: str
         The name of the first SUBGROUP being analyzed (not dataset name). E.g. the
-        top-level key values defined in _data_constants.get_all_filepath_groupings().
+        top-level key values defined in constants.get_all_filepath_groupings().
 
     subgroup2: str
         The name of the second SUBGROUP being analyzed (not dataset name). E.g. the
-        top-level key values defined in _data_constants.get_all_filepath_groupings().
+        top-level key values defined in constants.get_all_filepath_groupings().
 
     rigidity: Pair = Tuple[Path, Path]
         Tuple of paths to the precomputed unfolded feature values. (Will need an
@@ -162,9 +171,13 @@ class Pair:
         marchenko: Tuple[Path, Path],
     ):
         if len(eigs1) == 0:
-            raise ValueError(f"eigs1 argument for dataset {dataset_name} and pairing {label} has no eigenvalues.")
+            raise ValueError(
+                f"eigs1 argument for dataset {dataset_name} and pairing {label} has no eigenvalues."
+            )
         if len(eigs2) == 0:
-            raise ValueError(f"eigs2 argument for dataset {dataset_name} and pairing {label} has no eigenvalues.")
+            raise ValueError(
+                f"eigs2 argument for dataset {dataset_name} and pairing {label} has no eigenvalues."
+            )
         self.args = args
         self.dataset_name = dataset_name
         self.label = label
@@ -218,12 +231,20 @@ class Pair:
         eigs2 = [np.load(p) for p in self.eigs2]
 
         unfolded1 = DataFrame(
-            data=[Eigenvalues(_trimmed_from_args(eigs, trim_args)).unfold(**unf_args).vals for eigs in eigs1]
+            data=[
+                Eigenvalues(_trimmed_from_args(eigs, trim_args)).unfold(**unf_args).vals
+                for eigs in eigs1
+            ]
         )
         unfolded2 = DataFrame(
-            data=[Eigenvalues(_trimmed_from_args(eigs, trim_args)).unfold(**unf_args).vals for eigs in eigs2]
+            data=[
+                Eigenvalues(_trimmed_from_args(eigs, trim_args)).unfold(**unf_args).vals
+                for eigs in eigs2
+            ]
         )
-        l1, l2 = np.min([len(eigs) for eigs in eigs1]), np.min([len(eigs) for eigs in eigs2])
+        l1, l2 = np.min([len(eigs) for eigs in eigs1]), np.min(
+            [len(eigs) for eigs in eigs2]
+        )
         l_shared = np.min([l1, l2])
         eigs1 = [eigs[-l_shared:] for eigs in eigs1]  # use largest eigenvalues only
         eigs2 = [eigs[-l_shared:] for eigs in eigs2]
@@ -239,7 +260,9 @@ class Pair:
         noise_shifted2 = pd.read_pickle(self.marchenko[1]).loc["noise_ratio_shifted", :].T
         brody1 = pd.read_pickle(self.brody[0]).loc["beta"].T
         brody2 = pd.read_pickle(self.brody[1]).loc["beta"].T
-        rig1 = pd.read_pickle(self.rigidity[0]).set_index("L").T  # must be (n_samples, n_features)
+        rig1 = (
+            pd.read_pickle(self.rigidity[0]).set_index("L").T
+        )  # must be (n_samples, n_features)
         rig2 = pd.read_pickle(self.rigidity[1]).set_index("L").T
         var1 = pd.read_pickle(self.levelvar[0]).set_index("L").T
         var2 = pd.read_pickle(self.levelvar[1]).set_index("L").T
@@ -256,7 +279,9 @@ class Pair:
             "Levelvar": (var1, var2),
         }
 
-    def _to_X_y(self, g1: Any, g2: Any, normalize: bool = False) -> Tuple[ndarray, ndarray]:
+    def _to_X_y(
+        self, g1: Any, g2: Any, normalize: bool = False
+    ) -> Tuple[ndarray, ndarray]:
         X = pd.concat([g1, g2])
         if len(X.shape) == 1:
             X = X.to_numpy().ravel()
@@ -265,7 +290,9 @@ class Pair:
             X = MinMaxScaler().fit_transform(X)
         # g1_size, g2_size = len(self.eigs1), len(self.eigs2)
         g1_size, g2_size = g1.shape[0], g2.shape[0]
-        labels = [self.subgroup1 for _ in range(g1_size)] + [self.subgroup2 for _ in range(g2_size)]
+        labels = [self.subgroup1 for _ in range(g1_size)] + [
+            self.subgroup2 for _ in range(g2_size)
+        ]
         y = np.array(labels).ravel()
         return X, y
 
@@ -278,7 +305,9 @@ class Pair:
         except ValueError:
             return np.nan
 
-    def _logistic_regression_classify(self, g1: Any, g2: Any, normalize: bool = False) -> np.float64:
+    def _logistic_regression_classify(
+        self, g1: Any, g2: Any, normalize: bool = False
+    ) -> np.float64:
         X, y = self._to_X_y(g1, g2, normalize)
         try:
             LR = LogisticRegression(solver="liblinear", max_iter=500).fit(X, y)
@@ -296,7 +325,9 @@ class Pair:
         except ValueError:
             return np.nan
 
-    def _knn_classify(self, g1: Any, g2: Any, n_neighbours: int, normalize: bool = True) -> np.float64:
+    def _knn_classify(
+        self, g1: Any, g2: Any, n_neighbours: int, normalize: bool = True
+    ) -> np.float64:
         X, y = self._to_X_y(g1, g2, normalize)
         try:
             knn = KNN(n_neighbors=n_neighbours, n_jobs=-1)
@@ -313,11 +344,15 @@ class Pair:
         if use_eigs:
             eigs1 = [np.load(p) for p in self.eigs1]
             eigs2 = [np.load(p) for p in self.eigs2]
-            l1, l2 = np.min([len(eigs) for eigs in eigs1]), np.min([len(eigs) for eigs in eigs2])
+            l1, l2 = np.min([len(eigs) for eigs in eigs1]), np.min(
+                [len(eigs) for eigs in eigs2]
+            )
             l_shared = np.min([l1, l2])
             eigs1 = [eigs[-l_shared:] for eigs in eigs1]  # use largest eigenvalues only
             eigs2 = [eigs[-l_shared:] for eigs in eigs2]
-            eigs1, eigs2 = DataFrame(data=np.array(eigs1)), DataFrame(data=np.array(eigs2))
+            eigs1, eigs2 = DataFrame(data=np.array(eigs1)), DataFrame(
+                data=np.array(eigs2)
+            )
             # eigs = pd.concat([eigs1, eigs2])
 
         largest1 = np.array([np.load(p).max() for p in self.eigs1]).ravel()
@@ -334,21 +369,29 @@ class Pair:
         noise_shifted2 = pd.read_pickle(self.marchenko[1]).loc["noise_ratio_shifted", :].T
         brody1 = pd.read_pickle(self.brody[0]).loc["beta"].T
         brody2 = pd.read_pickle(self.brody[1]).loc["beta"].T
-        rig1 = pd.read_pickle(self.rigidity[0]).set_index("L").T  # must be (n_samples, n_features)
+        rig1 = (
+            pd.read_pickle(self.rigidity[0]).set_index("L").T
+        )  # must be (n_samples, n_features)
         rig2 = pd.read_pickle(self.rigidity[1]).set_index("L").T
         var1 = pd.read_pickle(self.levelvar[0]).set_index("L").T
         var2 = pd.read_pickle(self.levelvar[1]).set_index("L").T
 
         largest = np.hstack([largest1, largest2])
         noise = pd.concat([noise1, noise2]).to_numpy(dtype=np.float64)
-        noise_shifted = pd.concat([noise_shifted1, noise_shifted2]).to_numpy(dtype=np.float64)
+        noise_shifted = pd.concat([noise_shifted1, noise_shifted2]).to_numpy(
+            dtype=np.float64
+        )
         brody = pd.concat([brody1, brody2]).to_numpy(dtype=np.float64)
-        rig, var = pd.concat([rig1, rig2]), pd.concat([var1, var2]).to_numpy(dtype=np.float64)
+        rig, var = pd.concat([rig1, rig2]), pd.concat([var1, var2]).to_numpy(
+            dtype=np.float64
+        )
 
         for arr in [largest, noise, noise_shifted, brody, rig, var]:
             print(arr.shape)
         X = np.vstack([largest, noise, noise_shifted, brody, rig, var])
-        labels = [self.subgroup1 for _ in self.eigs1] + [self.subgroup2 for _ in self.eigs2]
+        labels = [self.subgroup1 for _ in self.eigs1] + [
+            self.subgroup2 for _ in self.eigs2
+        ]
         y = np.array(labels).ravel()
 
         LR = LogisticRegression(n_jobs=-1).fit(X, y)
@@ -365,7 +408,9 @@ class Pair:
         knns = [f"KNN-{k}" for k in knns]
         df = DataFrame(index=["Logistic Regression", "SVM"] + knns, dtype=float)
         rnd = 2
-        guess = np.max([len(self.eigs1), len(self.eigs2)]) / (len(self.eigs1) + len(self.eigs2))
+        guess = np.max([len(self.eigs1), len(self.eigs2)]) / (
+            len(self.eigs1) + len(self.eigs2)
+        )
 
         df.loc["Logistic Regression", "Observables"] = np.round(log_score, rnd)
         df.loc["Logistic Regression", "Guess"] = np.round(guess, rnd)
@@ -403,21 +448,33 @@ class Pair:
 
         if logistic:
             label = "Logistic Regression"
-            for predictor, (g1, g2) in tqdm(data.items(), total=len(data), desc=label, disable=silent):
-                preds.loc[label, predictor] = self._logistic_regression_classify(g1, g2, normalize)
+            for predictor, (g1, g2) in tqdm(
+                data.items(), total=len(data), desc=label, disable=silent
+            ):
+                preds.loc[label, predictor] = self._logistic_regression_classify(
+                    g1, g2, normalize
+                )
 
-        for predictor, (g1, g2) in tqdm(data.items(), total=len(data), desc="LDA", disable=silent):
+        for predictor, (g1, g2) in tqdm(
+            data.items(), total=len(data), desc="LDA", disable=silent
+        ):
             preds.loc["LDA", predictor] = self._lda_classify(g1, g2, normalize)
 
-        for predictor, (g1, g2) in tqdm(data.items(), total=len(data), desc="SVM", disable=silent):
+        for predictor, (g1, g2) in tqdm(
+            data.items(), total=len(data), desc="SVM", disable=silent
+        ):
             preds.loc["SVM", predictor] = self._svm_classify(g1, g2, normalize)
 
         for predictor, (g1, g2) in data.items():
             for k in tqdm(knns, total=len(knns), desc=f"{predictor} KNN", disable=silent):
-                preds.loc[f"KNN-{k}", predictor] = self._knn_classify(g1, g2, k, normalize)
+                preds.loc[f"KNN-{k}", predictor] = self._knn_classify(
+                    g1, g2, k, normalize
+                )
 
         # show guess to beat in last column
-        guess = np.max([len(self.eigs1), len(self.eigs2)]) / (len(self.eigs1) + len(self.eigs2))
+        guess = np.max([len(self.eigs1), len(self.eigs2)]) / (
+            len(self.eigs1) + len(self.eigs2)
+        )
         for key in index:
             preds.loc[key, "Guess"] = guess
 
@@ -435,13 +492,21 @@ class Pair:
 
         dataset_name = self.dataset_name
         data = self._get_formatted_data()
-        largest_diffs = group_differences_summary(*data["Largest"], "Largest Eigenvalue", dataset_name, self.label)
-        noise_diffs = group_differences_summary(*data["Noise"], "Noise Ratio", dataset_name, self.label)
+        largest_diffs = group_differences_summary(
+            *data["Largest"], "Largest Eigenvalue", dataset_name, self.label
+        )
+        noise_diffs = group_differences_summary(
+            *data["Noise"], "Noise Ratio", dataset_name, self.label
+        )
         noise_shifted_diffs = group_differences_summary(
             *data["Noise (shift)"], "Shifted Noise Ratio", dataset_name, self.label
         )
-        brody_diffs = group_differences_summary(*data["Brody"], "β", dataset_name, self.label)
-        diffs = pd.concat([largest_diffs, noise_diffs, noise_shifted_diffs, brody_diffs], sort=False)
+        brody_diffs = group_differences_summary(
+            *data["Brody"], "β", dataset_name, self.label
+        )
+        diffs = pd.concat(
+            [largest_diffs, noise_diffs, noise_shifted_diffs, brody_diffs], sort=False
+        )
 
         if not outfile.parent.exists():
             os.makedirs(outfile.parent, exist_ok=True)
@@ -461,7 +526,12 @@ class Pair:
     ) -> None:
         # label is always g1_v_g2, we want "attention" to be orange, "nonattend"
         # to be black
-        if self.label in ["rest_v_task", "nopain_v_pain", "control_v_control_pre", "park_pre_v_parkinsons"]:
+        if self.label in [
+            "rest_v_task",
+            "nopain_v_pain",
+            "control_v_control_pre",
+            "park_pre_v_parkinsons",
+        ]:
             c1, c2 = "#000000", "#FD8208"
         elif self.label in [
             "allpain_v_nopain",
@@ -544,10 +614,18 @@ class Pair:
 
         # plot theoretically-expected curves
         s = np.linspace(0, max_spacing, 5000)
-        sbn.lineplot(x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=axes[0])
-        sbn.lineplot(x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=axes[1])
-        sbn.lineplot(x=s, y=GOE.nnsd(spacings=s), color="#0066FF", label="GOE", ax=axes[0])
-        sbn.lineplot(x=s, y=GOE.nnsd(spacings=s), color="#0066FF", label="GOE", ax=axes[1])
+        sbn.lineplot(
+            x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=axes[0]
+        )
+        sbn.lineplot(
+            x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=axes[1]
+        )
+        sbn.lineplot(
+            x=s, y=GOE.nnsd(spacings=s), color="#0066FF", label="GOE", ax=axes[0]
+        )
+        sbn.lineplot(
+            x=s, y=GOE.nnsd(spacings=s), color="#0066FF", label="GOE", ax=axes[1]
+        )
 
         # ensure all plots have identical axes
         axes[0].set_ylim(top=2.0)
@@ -576,7 +654,12 @@ class Pair:
     def plot_rigidity(self, title: str = None, outdir: Path = None) -> None:
         # label is always g1_v_g2, we want "attention" to be orange, "nonattend"
         # to be black
-        if self.label in ["rest_v_task", "nopain_v_pain", "control_v_control_pre", "park_pre_v_parkinsons"]:
+        if self.label in [
+            "rest_v_task",
+            "nopain_v_pain",
+            "control_v_control_pre",
+            "park_pre_v_parkinsons",
+        ]:
             c1, c2 = "#000000", "#FD8208"
         elif self.label in [
             "allpain_v_nopain",
@@ -612,8 +695,12 @@ class Pair:
         ax.fill_between(x=L, y1=boots["low"], y2=boots["high"], color=c2, alpha=0.3)
 
         # plot theoretically-expected curves
-        sbn.lineplot(x=L, y=Poisson.spectral_rigidity(L=L), color="#08FD4F", label="Poisson", ax=ax)
-        sbn.lineplot(x=L, y=GOE.spectral_rigidity(L=L), color="#0066FF", label="GOE", ax=ax)
+        sbn.lineplot(
+            x=L, y=Poisson.spectral_rigidity(L=L), color="#08FD4F", label="Poisson", ax=ax
+        )
+        sbn.lineplot(
+            x=L, y=GOE.spectral_rigidity(L=L), color="#0066FF", label="GOE", ax=ax
+        )
 
         ax.legend().set_visible(True)
         ax.set_title(f"{self.label}: Rigidity" if title is None else title)
@@ -633,7 +720,12 @@ class Pair:
     def plot_levelvar(self, title: str = None, outdir: Path = None) -> None:
         # label is always g1_v_g2, we want "attention" to be orange, "nonattend"
         # to be black
-        if self.label in ["rest_v_task", "nopain_v_pain", "control_v_control_pre", "park_pre_v_parkinsons"]:
+        if self.label in [
+            "rest_v_task",
+            "nopain_v_pain",
+            "control_v_control_pre",
+            "park_pre_v_parkinsons",
+        ]:
             c1, c2 = "#000000", "#FD8208"
         elif self.label in [
             "allpain_v_nopain",
@@ -711,14 +803,16 @@ class Pair:
         s.append(f"   rigidity:  {short(self.rigidity[0])} v. {short(self.rigidity[1])}")
         s.append(f"   levelvar:  {short(self.levelvar[0])} v. {short(self.levelvar[1])}")
         s.append(f"   brody:     {short(self.brody[0])} v. {short(self.brody[1])}")
-        s.append(f"   marchenko: {short(self.marchenko[0])} v. {short(self.marchenko[1])}")
+        s.append(
+            f"   marchenko: {short(self.marchenko[0])} v. {short(self.marchenko[1])}"
+        )
         return "\n".join(s)
 
 
 class Pairings:
     """A helper class for bundling together data for each comparison.
 
-    NOTE: Constructor only really intended to be called from "pairings_from_precomputed".
+    NOTE: Constructor only really intended to be called from "pairings_fromprecomputed".
 
     Parameters
     ----------
@@ -727,7 +821,7 @@ class Pairings:
         run.py
 
     dataset_name: str
-        The Dataset name (e.g. the key value for indexing into _data_constants.DATASETS).
+        The Dataset name (e.g. the key value for indexing into constants.DATASETS).
 
     Returns
     -------
@@ -737,15 +831,15 @@ class Pairings:
     def __init__(self, args: Any, dataset_name: str):
         self.args: Any = args
         self.dataset_name: str = dataset_name
-        self.pairs: List[Pair] = self.pairings_from_precomputed()
+        self.pairs: List[Pair] = self.pairings_fromprecomputed()
 
-    def pairings_from_precomputed(self) -> List[Pair]:
+    def pairings_fromprecomputed(self) -> List[Pair]:
         """Generate a list of the subgrup pairings for dataset `dataset_name`.
 
         Parameters
         ----------
         dataset_name: str
-            The Dataset name (e.g. the key value for indexing into _data_constants.DATASETS).
+            The Dataset name (e.g. the key value for indexing into constants.DATASETS).
 
         args: Args
             Contains the unfolding, trimming, normalization, etc options defined in
@@ -759,9 +853,13 @@ class Pairings:
         dataset_name = self.dataset_name
         summary_paths: Dict[str, Dict[Observable, Path]] = {}
 
-        dataset = DATASETS_FULLPRE[dataset_name] if args.fullpre else DATASETS[dataset_name]
+        dataset = (
+            DATASETS_FULLPRE[dataset_name] if args.fullpre else DATASETS[dataset_name]
+        )
         for groupname in dataset:
-            summary_paths[groupname] = precomputed_subgroup_paths_from_args(dataset_name, groupname, args)
+            summary_paths[groupname] = precomputed_subgroup_paths_from_args(
+                dataset_name, groupname, args
+            )
         pairings = []
         for subgroupname1, observables1 in summary_paths.items():
             for subgroupname2, observables2 in summary_paths.items():
@@ -770,7 +868,11 @@ class Pairings:
                 label = f"{subgroupname1}_v_{subgroupname2}"
                 if label in DUDS:
                     continue
-                pairing = {"label": label, "subgroup1": subgroupname1, "subgroup2": subgroupname2}
+                pairing = {
+                    "label": label,
+                    "subgroup1": subgroupname1,
+                    "subgroup2": subgroupname2,
+                }
                 observables = ["rigidity", "levelvar", "brody", "marchenko"]
                 for obs in observables:
                     pairing[obs] = (observables1[obs], observables2[obs])  # type: ignore

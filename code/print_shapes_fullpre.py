@@ -1,6 +1,6 @@
 import numpy as np
 
-from rmt._data_constants import DATASETS_FULLPRE
+from rmt.constants import DATASETS_FULLPRE
 
 for dataset_name, dataset in DATASETS_FULLPRE.items():
     print(f"{'='*80}\n{dataset_name.upper()}")

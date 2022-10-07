@@ -1,18 +1,20 @@
-import numpy as np
 import os
-import pandas as pd
-
-from empyricalRMT.eigenvalues import Eigenvalues
 from pathlib import Path
-from tqdm import tqdm
 from typing import Any, List
 
-from rmt._data_constants import DATASETS, DATASETS_FULLPRE
-from rmt._filenames import precomputed_subgroup_paths_from_args, relpath
+import numpy as np
+import pandas as pd
+from empyricalRMT.eigenvalues import Eigenvalues
+from tqdm import tqdm
+
 from rmt._types import DataSummaryPaths
+from rmt.constants import DATASETS, DATASETS_FULLPRE
+from rmt.filenames import precomputed_subgroup_paths_from_args, relpath
 
 
-def precompute_largest(eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False) -> Path:
+def precompute_largest(
+    eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False
+) -> Path:
     """Take the eigenvalues saved in `eigpaths`, compute the largest, and save that in a DataFrame
     in `out`
 
@@ -53,7 +55,9 @@ def precompute_largest(eigpaths: List[Path], out: Path, force: bool = False, sil
     return out
 
 
-def precompute_marchenko(eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False) -> Path:
+def precompute_marchenko(
+    eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False
+) -> Path:
     """Take the eigenvalues saved in `eigpaths`, compute the Marchenko-Pastur
     endpoints (both shifted and unshifted), and save that in a DataFrame at
     `out`. DataFrame will also contain information rated to proportion of
@@ -81,7 +85,15 @@ def precompute_marchenko(eigpaths: List[Path], out: Path, force: bool = False, s
     if not force and out.exists():
         return out
     marchenko_df = pd.DataFrame(
-        index=["low", "high", "low_shift", "high_shift", "noise_ratio", "noise_ratio_shifted"], dtype=int
+        index=[
+            "low",
+            "high",
+            "low_shift",
+            "high_shift",
+            "noise_ratio",
+            "noise_ratio_shifted",
+        ],
+        dtype=int,
     )
     desc = "{} - Marchenko"
     pbar = tqdm(total=len(eigpaths), desc=desc.format("eigs-XX"), disable=silent)
@@ -92,10 +104,16 @@ def precompute_marchenko(eigpaths: List[Path], out: Path, force: bool = False, s
         vals = vals[1:]
         N, T = np.load(str(path).replace("eigs", "shapes"))
         eigs = Eigenvalues(vals)
-        _, marchenko = eigs.trim_marchenko_pastur(series_length=T, n_series=N, use_shifted=False)
-        _, marchenko_shifted = eigs.trim_marchenko_pastur(series_length=T, n_series=N, use_shifted=True)
+        _, marchenko = eigs.trim_marchenko_pastur(
+            series_length=T, n_series=N, use_shifted=False
+        )
+        _, marchenko_shifted = eigs.trim_marchenko_pastur(
+            series_length=T, n_series=N, use_shifted=True
+        )
         noise_ratio = np.mean((vals > marchenko[0]) & (vals < marchenko[1]))
-        noise_ratio_shifted = np.mean((vals > marchenko_shifted[0]) & (vals < marchenko_shifted[1]))
+        noise_ratio_shifted = np.mean(
+            (vals > marchenko_shifted[0]) & (vals < marchenko_shifted[1])
+        )
         marchenko_df[eigname] = [
             marchenko[0],
             marchenko[1],
@@ -112,7 +130,9 @@ def precompute_marchenko(eigpaths: List[Path], out: Path, force: bool = False, s
     return out
 
 
-def precompute_brody(eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False) -> Path:
+def precompute_brody(
+    eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False
+) -> Path:
     """Take the eigenvalues saved in `eigpaths`, compute the Brody parameter beta,
     and save that in a DataFrame in `out`
 
@@ -164,7 +184,9 @@ def precompute_brody(eigpaths: List[Path], args: Any, out: Path, force: bool = F
     return out
 
 
-def precompute_rigidity(eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False) -> Path:
+def precompute_rigidity(
+    eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False
+) -> Path:
     """Take the eigenvalues saved in `eigpaths`, compute the rigidity, and save that in a DataFrame
     in `out`
 
@@ -217,7 +239,9 @@ def precompute_rigidity(eigpaths: List[Path], args: Any, out: Path, force: bool 
     return out
 
 
-def precompute_levelvar(eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False) -> Path:
+def precompute_levelvar(
+    eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False
+) -> Path:
     """Take the eigenvalues saved in `eigpaths`, compute the levelvar, and save that in a DataFrame
     in `out`
 
@@ -287,7 +311,7 @@ def precompute_dataset(
     Parameters
     ----------
     dataset_name: str
-        The Dataset name (e.g. the key value for indexing into _data_constants.DATASETS).
+        The Dataset name (e.g. the key value for indexing into constants.DATASETS).
 
     args: Args
         Contains the unfolding, trimming, normalization, etc options defined in
@@ -320,7 +344,9 @@ def precompute_dataset(
     dataset = DATASETS_FULLPRE[dataset_name] if args.fullpre else DATASETS[dataset_name]
     ret: DataSummaryPaths = {}
     for subgroupname, eigpaths in dataset.items():
-        outpaths = precomputed_subgroup_paths_from_args(dataset_name, subgroupname, args=args)
+        outpaths = precomputed_subgroup_paths_from_args(
+            dataset_name, subgroupname, args=args
+        )
         rig_out = outpaths["rigidity"]
         var_out = outpaths["levelvar"]
         brod_out = outpaths["brody"]
@@ -344,9 +370,18 @@ def precompute_dataset(
         sublabel = subgroupname.upper()
 
         if not force_all:
-            if np.alltrue([rig_out.exists(), var_out.exists(), march_out.exists(), largest_out.exists()]):
+            if np.alltrue(
+                [
+                    rig_out.exists(),
+                    var_out.exists(),
+                    march_out.exists(),
+                    largest_out.exists(),
+                ]
+            ):
                 if not silent:
-                    print(f"All observables for subgroup {sublabel} exist. Skipping to next subgroup.")
+                    print(
+                        f"All observables for subgroup {sublabel} exist. Skipping to next subgroup."
+                    )
                 continue
 
         log = [f"\nComputing measures for subgroup {sublabel} to {relpath(rig_out)}:"]

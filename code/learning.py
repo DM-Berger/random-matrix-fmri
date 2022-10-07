@@ -16,8 +16,8 @@ from tqdm import tqdm
 from typing import Any, Dict, List, Union
 from typing_extensions import Literal
 
-from rmt._filenames import precomputed_subgroup_paths_from_args
-from rmt._precompute import (
+from rmt.filenames import precomputed_subgroup_paths_from_args
+from rmt.precompute import (
     precompute_brody,
     precompute_largest,
     precompute_levelvar,
@@ -25,7 +25,7 @@ from rmt._precompute import (
     precompute_rigidity,
 )
 from rmt._types import Observable
-from rmt._utilities import _kde, _percentile_boot
+from rmt.utilities import _kde, _percentile_boot
 
 SubjField = Literal["group", "runs"]
 Subject = Dict[SubjField, Union[str, ndarray]]
@@ -53,7 +53,10 @@ BRODY_ARGS    = {"method": "mle"}
 
 def get_subjects_dict() -> Dict[str, Subject]:
     eig_paths: List[Path] = np.sort(
-        [Path(p).resolve() for p in glob(str(LEARNING_DATA.parent) + "/**/*eigs*", recursive=True)]
+        [
+            Path(p).resolve()
+            for p in glob(str(LEARNING_DATA.parent) + "/**/*eigs*", recursive=True)
+        ]
     )
     subj_ids = np.unique(list(map(lambda p: p.stem.replace("eigs-", "")[:2], eig_paths)))
     subjects: Subjects = {}
@@ -91,15 +94,21 @@ def precompute_subjects(
         rigidity = SUMMARY_OUTDIR / (f"subj-{subj_id}_" + labels["rigidity"] + ".zip")
         levelvar = SUMMARY_OUTDIR / (f"subj-{subj_id}_" + labels["levelvar"] + ".zip")
         if force_all:
-            force_largest = force_marchenko = force_brody = force_rigidity = force_levelvar = True
+            force_largest = (
+                force_marchenko
+            ) = force_brody = force_rigidity = force_levelvar = True
 
         eigpaths = list(subj["runs"])
 
         precompute_largest(eigpaths=eigpaths, out=largest, force=force_largest)
         precompute_marchenko(eigpaths=eigpaths, out=marchenko, force=force_marchenko)
         precompute_brody(eigpaths=eigpaths, args=args, out=brody, force=force_brody)
-        precompute_rigidity(eigpaths=eigpaths, args=args, out=rigidity, force=force_rigidity)
-        precompute_levelvar(eigpaths=eigpaths, args=args, out=levelvar, force=force_levelvar)
+        precompute_rigidity(
+            eigpaths=eigpaths, args=args, out=rigidity, force=force_rigidity
+        )
+        precompute_levelvar(
+            eigpaths=eigpaths, args=args, out=levelvar, force=force_levelvar
+        )
         summaries[subj_id] = {
             "largest": largest,
             "marchenko": marchenko,
@@ -164,7 +173,13 @@ def plot_subject_marchenko(
             noise = df.loc[ratio, :].to_numpy(dtype=float).ravel()
             # sbn.violinplot(x=noise, ax=ax, color="#919191")
             sbn.distplot(
-                noise, hist=False, norm_hist=True, kde=True, rug=True, ax=ax, color="#000000"
+                noise,
+                hist=False,
+                norm_hist=True,
+                kde=True,
+                rug=True,
+                ax=ax,
+                color="#000000",
             )
             # sbn.despine(offset=10, trim=True, ax=axes.flat[i])
             ax.set_title(f"subj-{subj_id}")
@@ -184,7 +199,9 @@ def plot_subject_marchenko(
         fig.text(
             0.5, 0.04, "Proportion of Eigenvalues due to Noise", ha="center", va="center"
         )  # xlabel
-        fig.text(0.05, 0.5, "Density", ha="center", va="center", rotation="vertical")  # ylabel
+        fig.text(
+            0.05, 0.5, "Density", ha="center", va="center", rotation="vertical"
+        )  # ylabel
         if outfiles is None:
             plt.show()
         else:
@@ -267,7 +284,9 @@ def plot_subject_nnsd(args: Any, n_bins: int = 20, outfile: Path = None) -> None
             # sbn.lineplot(x=s, y=kde, color=c1, alpha=1.0 / 8, ax=ax)
         # sbn.lineplot(x=s, y=kdes.mean(axis=0), color="#9d0000", label="Mean KDE", ax=ax)
         sbn.lineplot(x=s, y=kdes.mean(axis=0), color=c1, label="Mean KDE", ax=ax)
-        sbn.lineplot(x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=ax)
+        sbn.lineplot(
+            x=s, y=Poisson.nnsd(spacings=s), color="#08FD4F", label="Poisson", ax=ax
+        )
         sbn.lineplot(x=s, y=GOE.nnsd(spacings=s), color="#0066FF", label="GOE", ax=ax)
 
         ax.set_title(f"subj-{subj_id}")
@@ -287,10 +306,14 @@ def plot_subject_nnsd(args: Any, n_bins: int = 20, outfile: Path = None) -> None
     fig.set_size_inches(10, 6)
     fig.subplots_adjust(left=0.13, bottom=0.15, wspace=0.1, hspace=0.35)
     fig.text(0.5, 0.04, "spacing (s)", ha="center", va="center")  # xlabel
-    fig.text(0.05, 0.5, "density p(s)", ha="center", va="center", rotation="vertical")  # ylabel
+    fig.text(
+        0.05, 0.5, "density p(s)", ha="center", va="center", rotation="vertical"
+    )  # ylabel
     plt.setp(axes, xlim=(0.0, 3.0), ylim=(0.0, 1.2))  # better use of space
     handles, labels = axes.flat[-1].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="center right", frameon=False, framealpha=0, fontsize="8")
+    fig.legend(
+        handles, labels, loc="center right", frameon=False, framealpha=0, fontsize="8"
+    )
     if outfile is None:
         plt.show()
     else:
@@ -321,8 +344,12 @@ def plot_subject_rigidity(
         sbn.lineplot(x=L, y=boots["mean"], color=c1, ax=ax)
         ax.fill_between(x=L, y1=boots["low"], y2=boots["high"], color=c1, alpha=0.3)
         # plot theoretically-expected curves
-        sbn.lineplot(x=L, y=Poisson.spectral_rigidity(L=L), color="#08FD4F", label="Poisson", ax=ax)
-        sbn.lineplot(x=L, y=GOE.spectral_rigidity(L=L), color="#0066FF", label="GOE", ax=ax)
+        sbn.lineplot(
+            x=L, y=Poisson.spectral_rigidity(L=L), color="#08FD4F", label="Poisson", ax=ax
+        )
+        sbn.lineplot(
+            x=L, y=GOE.spectral_rigidity(L=L), color="#0066FF", label="GOE", ax=ax
+        )
 
         ax.set_ylabel("")
         ax.set_title(label)
@@ -340,7 +367,13 @@ def plot_subject_rigidity(
     fig.subplots_adjust(left=0.13, bottom=0.15, wspace=0.1, hspace=0.35)
     fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
     fig.text(
-        0.05, 0.5, "∆₃(L)", ha="center", va="center", rotation="vertical", fontname="DejaVu Sans"
+        0.05,
+        0.5,
+        "∆₃(L)",
+        ha="center",
+        va="center",
+        rotation="vertical",
+        fontname="DejaVu Sans",
     )  # ylabel
     if outfile is None:
         plt.show()
@@ -374,7 +407,9 @@ def plot_subject_levelvar(
         sbn.lineplot(x=L, y=boots["mean"], color=c1, ax=ax)
         ax.fill_between(x=L, y1=boots["low"], y2=boots["high"], color=c1, alpha=0.3)
         # plot theoretically-expected curves
-        sbn.lineplot(x=L, y=Poisson.level_variance(L=L), color="#08FD4F", label="Poisson", ax=ax)
+        sbn.lineplot(
+            x=L, y=Poisson.level_variance(L=L), color="#08FD4F", label="Poisson", ax=ax
+        )
         sbn.lineplot(x=L, y=GOE.level_variance(L=L), color="#0066FF", label="GOE", ax=ax)
 
         ax.set_ylabel("")
@@ -393,7 +428,13 @@ def plot_subject_levelvar(
     fig.subplots_adjust(left=0.13, bottom=0.15, wspace=0.1, hspace=0.35)
     fig.text(0.5, 0.04, "L", ha="center", va="center")  # xlabel
     fig.text(
-        0.05, 0.5, "Σ²(L)", ha="center", va="center", rotation="vertical", fontname="DejaVu Sans"
+        0.05,
+        0.5,
+        "Σ²(L)",
+        ha="center",
+        va="center",
+        rotation="vertical",
+        fontname="DejaVu Sans",
     )  # ylabel
     if outfile is None:
         plt.show()
@@ -415,8 +456,12 @@ def plot_subjects(summaries: Dict[str, Dict[Observable, Path]], args: Any) -> No
     # )
     # plot_subject_marchenko(summaries, MARCHENKO_OUTS)
     plot_subject_nnsd(args, n_bins=20, outfile=PLOT_OUTDIR / f"{outs['nnsd']}.png")
-    plot_subject_rigidity(summaries, args, outfile=PLOT_OUTDIR / f"{outs['rigidity']}.png")
-    plot_subject_levelvar(summaries, args, outfile=PLOT_OUTDIR / f"{outs['levelvar']}.png")
+    plot_subject_rigidity(
+        summaries, args, outfile=PLOT_OUTDIR / f"{outs['rigidity']}.png"
+    )
+    plot_subject_levelvar(
+        summaries, args, outfile=PLOT_OUTDIR / f"{outs['levelvar']}.png"
+    )
 
 
 SUBJECTS: Subjects = get_subjects_dict()

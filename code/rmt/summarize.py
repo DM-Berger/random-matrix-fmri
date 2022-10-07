@@ -3,16 +3,21 @@ import pandas as pd
 from pathlib import Path
 from typing import Any, Tuple
 
-from rmt._data_constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
-from rmt._filenames import relpath, stats_fnames
-from rmt._precompute import precompute_dataset
+from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
+from rmt.filenames import relpath, stats_fnames
+from rmt.precompute import precompute_dataset
 from rmt.comparisons import Pairings
 
 
 def compute_all_diffs_dfs(args: Any, silent: bool = False) -> Path:
     _, diffs_out = stats_fnames(args, args.normalize, extension="csv")
     all_diffs_out = DATA_ROOT / diffs_out
-    DUDS = ["control_pre_v_parkinsons", "park_pre_v_parkinsons", "control_v_park_pre", "control_v_control_pre"]
+    DUDS = [
+        "control_pre_v_parkinsons",
+        "park_pre_v_parkinsons",
+        "control_v_park_pre",
+        "control_v_control_pre",
+    ]
 
     all_diffs = []
     datasets = DATASETS_FULLPRE if args.fullpre else DATASETS
@@ -40,7 +45,12 @@ def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -
     all_preds_out = DATA_ROOT / preds_out
     if not force and all_preds_out.exists():
         return all_preds_out
-    DUDS = ["control_pre_v_parkinsons", "park_pre_v_parkinsons", "control_v_park_pre", "control_v_control_pre"]
+    DUDS = [
+        "control_pre_v_parkinsons",
+        "park_pre_v_parkinsons",
+        "control_v_park_pre",
+        "control_v_control_pre",
+    ]
     datasets = DATASETS_FULLPRE if args.fullpre else DATASETS
 
     all_preds = []
@@ -52,7 +62,9 @@ def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -
         for pair in pairings.pairs:
             if pair.label in DUDS:
                 continue
-            preds = pair.paired_predicts(args=args, logistic=True, normalize=args.normalize, silent=silent)
+            preds = pair.paired_predicts(
+                args=args, logistic=True, normalize=args.normalize, silent=silent
+            )
             all_preds.append(preds)
 
     preds_df = pd.concat(all_preds)
@@ -63,7 +75,9 @@ def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -
     return all_preds_out
 
 
-def supplement_stat_dfs(diffs: Path = None, preds: Path = None, force: bool = False) -> Tuple[Path, Path]:
+def supplement_stat_dfs(
+    diffs: Path = None, preds: Path = None, force: bool = False
+) -> Tuple[Path, Path]:
     preds_out = preds.parent / f"[SUMS]{preds.name}" if preds else None
     diffs_out = diffs.parent / f"[SORT]{diffs.name}" if diffs else None
     if preds:
