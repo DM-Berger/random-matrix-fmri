@@ -1,12 +1,19 @@
+# fmt: off
+import sys  # isort: skip
+from pathlib import Path  # isort: skip
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT))
+# fmt: on
+
 """Holds constants related to filepaths."""
 import sys
 from glob import glob
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 import pandas as pd
+from pandas import DataFrame
 
-from rmt._types import SubgroupEigPaths
+from rmt._types import Subgroups
 
 DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "data"
 FULLPRE_DIRNAME = "rmt_fullpre"
@@ -43,8 +50,9 @@ def extract_psych_groups(path: Path, fullpre: bool) -> Dict[str, List[Path]]:
     """Obtain a dict with "high" and "low" keys, with values being the lists of paths
     of the extracted eigenvalues.
     """
+
     def paths(root: Path) -> List[Path]:
-        return [Path(f) for f in glob(str(root.resolve()), recursive=True)]
+        return [Path(f) for f in glob(str(root), recursive=True)]
 
     def is_in(ids: List[str]) -> Callable:
         def closure(path: Path) -> bool:
@@ -72,7 +80,17 @@ def extract_psych_groups(path: Path, fullpre: bool) -> Dict[str, List[Path]]:
     return {"high": high, "low": low}
 
 
-def get_all_filepath_groupings(fullpre: bool) -> Tuple[SubgroupEigPaths, ...]:
+def get_all_filepath_groupings(
+    fullpre: bool,
+) -> Tuple[
+    Subgroups,
+    Subgroups,
+    Dict[str, Subgroups],
+    Dict[str, DataFrame],
+    Subgroups,
+    Subgroups,
+    Subgroups,
+]:
     def paths(root: Path) -> List[Path]:
         return [Path(f) for f in glob(str(root.resolve()))]
 
@@ -199,9 +217,10 @@ def get_all_filepath_groupings(fullpre: bool) -> Tuple[SubgroupEigPaths, ...]:
     reflect_interleave,
 ) = get_all_filepath_groupings(fullpre=False)
 
+
 # Groups at the dataset level. Psych dataset is treated as if it is three Datasets.
 # a "Dataset" is a dict with keys for each subgroup
-DATASETS: Dict[str, SubgroupEigPaths] = {
+DATASETS: Dict[str, Subgroups] = {
     "LEARNING": learning_groups,
     "OSTEO": osteo_groups,
     "PSYCH_VIGILANCE_SES-1": psych_groups["vigilance_ses-1"],
@@ -225,7 +244,7 @@ DATASETS: Dict[str, SubgroupEigPaths] = {
     reflect_interleave_pre,
 ) = get_all_filepath_groupings(fullpre=True)
 
-DATASETS_FULLPRE: Dict[str, SubgroupEigPaths] = {
+DATASETS_FULLPRE: Dict[str, Subgroups] = {
     "LEARNING": learning_groups_pre,
     "OSTEO": osteo_groups_pre,
     "PSYCH_VIGILANCE_SES-1": psych_groups_pre["vigilance_ses-1"],
@@ -239,8 +258,16 @@ DATASETS_FULLPRE: Dict[str, SubgroupEigPaths] = {
     "REFLECT_INTERLEAVED": reflect_interleave_pre,
 }
 for dataset_name, subgroups in DATASETS_FULLPRE.items():
-    for subgroup_name, paths in subgroups.items():
-        for path in paths:
+    if isinstance(subgroups, dict):
+        for subgroup_name, paths in subgroups.items():
+            for path in paths:
+                try:
+                    assert path.exists()
+                except AssertionError:
+                    print(f"Could not find file {path}")
+                    sys.exit(1)
+    else:
+        for path in subgroups:
             try:
                 assert path.exists()
             except AssertionError:
