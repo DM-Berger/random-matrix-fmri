@@ -1,3 +1,4 @@
+__OBSERVABLES_CACHE__
 **/*.csv
 **/*~lock*
 **/*.pdf
