@@ -1,8 +1,8 @@
 import argparse
-import numpy as np
-
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
+import numpy as np
 
 
 def res(string: str) -> str:
@@ -47,17 +47,57 @@ def brody_parse(string: str) -> str:
 
 parser = argparse.ArgumentParser(description="Run with RMT args")
 parser.add_argument(
-    "-t", "--trim", metavar="<trim indices>", type=trim_parse, nargs=1, action="store", default="(1,-1)"
+    "-t",
+    "--trim",
+    metavar="<trim indices>",
+    type=trim_parse,
+    nargs=1,
+    action="store",
+    default="(1,-1)",
 )
 parser.add_argument(
-    "-s", "--smoother", metavar="<smoother>", type=smoother_parse, nargs=1, action="store", default="poly"
+    "-s",
+    "--smoother",
+    metavar="<smoother>",
+    type=smoother_parse,
+    nargs=1,
+    action="store",
+    default="poly",
 )
 parser.add_argument(
-    "-d", "--degree", metavar="<smoother degree>", type=degree_parse, nargs=1, action="store", default=7
+    "-d",
+    "--degree",
+    metavar="<smoother degree>",
+    type=degree_parse,
+    nargs=1,
+    action="store",
+    default=7,
 )
-parser.add_argument("--detrend", metavar="<detrend>", type=bool_parse, nargs="?", action="store", default=False)
-parser.add_argument("-b", "--brody", metavar="<brody>", type=brody_parse, nargs=1, action="store", default="mle")
-parser.add_argument("--normalize", metavar="<normalize>", type=bool_parse, nargs="?", action="store", default=False)
+parser.add_argument(
+    "--detrend",
+    metavar="<detrend>",
+    type=bool_parse,
+    nargs="?",
+    action="store",
+    default=False,
+)
+parser.add_argument(
+    "-b",
+    "--brody",
+    metavar="<brody>",
+    type=brody_parse,
+    nargs=1,
+    action="store",
+    default="mle",
+)
+parser.add_argument(
+    "--normalize",
+    metavar="<normalize>",
+    type=bool_parse,
+    nargs="?",
+    action="store",
+    default=False,
+)
 parser.add_argument("--fullpre", action="store_true")
 
 args = parser.parse_args()
@@ -167,7 +207,9 @@ class Args:
         var_min, var_max = self.levelvar["L"].min(), np.round(self.levelvar["L"].max(), 2)
         var_diff = np.round(np.diff(self.levelvar["L"])[0], 2)
         tol, iters = self.levelvar["tol"], self.levelvar["max_L_iters"]
-        print(f"LEVELVAR_ARGS:  L=np.arange({var_min}, {var_max}, {var_diff}), tol={tol}, max_L_iters={iters}")
+        print(
+            f"LEVELVAR_ARGS:  L=np.arange({var_min}, {var_max}, {var_diff}), "
+            f"tol={tol}, max_L_iters={iters}")
         print(f"BRODY_ARGS:     {self.brody['method']}")
         print(f"NORMALIZE:      {self.normalize}")
         print(f"FULLPRE:        {self.fullpre}")

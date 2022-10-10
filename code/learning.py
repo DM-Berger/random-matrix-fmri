@@ -1,21 +1,21 @@
+import os
+import re
+from glob import glob
+from pathlib import Path
+from typing import Any, Dict, List, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
-import re
 import seaborn as sbn
-
 from empyricalRMT.eigenvalues import Eigenvalues
 from empyricalRMT.ensemble import GOE, Poisson
-from glob import glob
 from matplotlib.pyplot import Axes
 from numpy import ndarray
-from pathlib import Path
 from tqdm import tqdm
-
-from typing import Any, Dict, List, Union
 from typing_extensions import Literal
 
+from rmt._types import Observable
 from rmt.filenames import precomputed_subgroup_paths_from_args
 from rmt.precompute import (
     precompute_brody,
@@ -24,7 +24,6 @@ from rmt.precompute import (
     precompute_marchenko,
     precompute_rigidity,
 )
-from rmt._types import Observable
 from rmt.utilities import _kde, _percentile_boot
 
 SubjField = Literal["group", "runs"]
@@ -42,13 +41,11 @@ OUTDIRS = {"SLEPT": "", "NOSLEEP": ""}
 PLOT_OUTDIR = LEARNING_DATA / "plots"
 SUMMARY_OUTDIR = LEARNING_DATA / "summary"
 
-# fmt: off
-TRIM_ARGS     = r"(1,-1)"  # must be indices of trims, tuple, no spaces
-UNFOLD_ARGS   = {"smoother": "poly", "degree": 7, "detrend": False}
+TRIM_ARGS = r"(1,-1)"  # must be indices of trims, tuple, no spaces
+UNFOLD_ARGS = {"smoother": "poly", "degree": 7, "detrend": False}
 LEVELVAR_ARGS = {"L": np.arange(0.5, 10, 0.1), "tol": 0.001, "max_L_iters": 50000}
 RIGIDITY_ARGS = {"L": np.arange(2, 20, 0.5)}
-BRODY_ARGS    = {"method": "mle"}
-# fmt: on
+BRODY_ARGS = {"method": "mle"}
 
 
 def get_subjects_dict() -> Dict[str, Subject]:
@@ -122,7 +119,10 @@ def precompute_subjects(
 def rename_columns(df: pd.DataFrame) -> None:
     cols = list(df.columns)
     renamed = list(map(lambda col: str(re.sub(r"eigs-\d\d_", "", col)), cols))
-    # map(lambda col: col.replace("eigs", "subj").replace("_", "_run-"), cols)  # type: ignore
+    # map(
+    #     lambda col: col.replace("eigs", "subj").replace("_", "_run-"),
+    #     cols
+    # )  # type: ignore
     df.rename(columns=dict(zip(cols, renamed)), inplace=True)
 
 
@@ -207,7 +207,8 @@ def plot_subject_marchenko(
         else:
             fig.savefig(str(outfiles[ratio].resolve()), dpi=300)
             print(
-                f"Saved largest eigenvalues plot to {str(outfiles[ratio].relative_to(DATA_ROOT))}"
+                "Saved largest eigenvalues plot to "
+                f"{str(outfiles[ratio].relative_to(DATA_ROOT))}"
             )
         plt.close()
 
@@ -337,7 +338,7 @@ def plot_subject_rigidity(
         L = rigidities.index.to_numpy(dtype=float).ravel()
         for col in rigidities:
             sbn.lineplot(x=L, y=rigidities[col], color=c1, alpha=1.0 / 8.0, ax=ax)
-            # sbn.lineplot(x=L, y=rigidities[col], label=f"run-{col}", color=c1, alpha=1.0/8.0, ax=ax)
+            # sbn.lineplot(x=L, y=rigidities[col], label=f"run-{col}", color=c1, alpha=1.0/8.0, ax=ax)  # noqa
 
         boots = _percentile_boot(rigidities, B=2000)
         # sbn.lineplot(x=L, y=boots["mean"], color=c1, label=label)
@@ -399,7 +400,7 @@ def plot_subject_levelvar(
         L = levelvars.index.to_numpy(dtype=float).ravel()
         for col in levelvars:
             sbn.lineplot(x=L, y=levelvars[col], color=c1, alpha=1.0 / 8.0, ax=ax)
-            # sbn.lineplot(x=L, y=levelvars[col], label=f"run-{col}", color=c1, alpha=1.0/8.0, ax=ax)
+            # sbn.lineplot(x=L, y=levelvars[col], label=f"run-{col}", color=c1, alpha=1.0/8.0, ax=ax)  # noqa
 
         boots = _percentile_boot(levelvars, B=2000)
         top.append(np.max(boots["mean"]))
@@ -478,7 +479,9 @@ BRODY_ARGS = {"method": "mle"}
 class Args:
     exists = False
     def __init__(self): # noqa
-        if _Args.exists: raise RuntimeError("Args object already exists.") # noqa
+        if self.__class__.exists:
+            raise RuntimeError("Args object already exists.")
+        self.__class__.exists = True
 
     @property
     def trim(self): return TRIM_IDX # noqa

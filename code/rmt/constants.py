@@ -1,14 +1,12 @@
 """Holds constants related to filepaths."""
 import sys
-from copy import deepcopy
 from glob import glob
 from pathlib import Path
-from pprint import pprint
 from typing import Any, Callable, Dict, List, Tuple
 
 import pandas as pd
 
-from rmt._types import Dataset
+from rmt._types import SubgroupEigPaths
 
 DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "data"
 FULLPRE_DIRNAME = "rmt_fullpre"
@@ -45,6 +43,8 @@ def extract_psych_groups(path: Path, fullpre: bool) -> Dict[str, List[Path]]:
     """Obtain a dict with "high" and "low" keys, with values being the lists of paths
     of the extracted eigenvalues.
     """
+    def paths(root: Path) -> List[Path]:
+        return [Path(f) for f in glob(str(root.resolve()), recursive=True)]
 
     def is_in(ids: List[str]) -> Callable:
         def closure(path: Path) -> bool:
@@ -65,85 +65,45 @@ def extract_psych_groups(path: Path, fullpre: bool) -> Dict[str, List[Path]]:
     low_ids = list(
         map(lambda idx: "eigs-{:02d}".format(idx), df[~df["high_attender"]].index)
     )
-    all_eigs = sorted(
-        [
-            Path(p)
-            for p in glob(
-                f"{PSYCHOLOGICAL_DATA_FULLPRE if fullpre else PSYCHOLOGICAL_DATA}/**/*eigs*.npy",
-                recursive=True,
-            )
-        ]
-    )
+    root = PSYCHOLOGICAL_DATA_FULLPRE if fullpre else PSYCHOLOGICAL_DATA
+    all_eigs = sorted(paths(f"{root}/**/*eigs*.npy"))
     high = sorted(list(filter(is_in(high_ids), all_eigs)))
     low = sorted(list(filter(is_in(low_ids), all_eigs)))
     return {"high": high, "low": low}
 
 
-def get_all_filepath_groupings(fullpre: bool) -> Any:
+def get_all_filepath_groupings(fullpre: bool) -> Tuple[SubgroupEigPaths, ...]:
+    def paths(root: Path) -> List[Path]:
+        return [Path(f) for f in glob(str(root.resolve()))]
+
     learning_groups = {
-        "task": [
-            Path(f) for f in glob(str((LEARNING_DATA / "task" / "*eigs*.npy").resolve()))
-        ],
-        "rest": [
-            Path(f) for f in glob(str((LEARNING_DATA / "rest" / "*eigs*.npy").resolve()))
-        ],
+        "task": paths(LEARNING_DATA / "task" / "*eigs*.npy"),
+        "rest": paths(LEARNING_DATA / "rest" / "*eigs*.npy"),
     }
     learning_groups["task"].sort(key=lambda p: p.name)
     learning_groups["rest"].sort(key=lambda p: p.name)
 
     learning_groups_fullpre = {
-        "task": [
-            Path(f)
-            for f in glob(str((LEARNING_DATA_FULLPRE / "task" / "*eigs*.npy").resolve()))
-        ],
-        "rest": [
-            Path(f)
-            for f in glob(str((LEARNING_DATA_FULLPRE / "rest" / "*eigs*.npy").resolve()))
-        ],
+        "task": paths(LEARNING_DATA_FULLPRE / "task" / "*eigs*.npy"),
+        "rest": paths(LEARNING_DATA_FULLPRE / "rest" / "*eigs*.npy"),
     }
     learning_groups_fullpre["task"].sort(key=lambda p: p.name)
     learning_groups_fullpre["rest"].sort(key=lambda p: p.name)
 
     osteo_groups = {
-        "allpain": [
-            Path(f) for f in glob(str((OSTEO_DATA / "pain" / "**/*eigs*.npy").resolve()))
-        ],
-        "nopain": [
-            Path(f) for f in glob(str((OSTEO_DATA / "controls" / "*eigs*.npy").resolve()))
-        ],
-        "duloxetine": [
-            Path(f)
-            for f in glob(str((OSTEO_DATA / "pain/duloxetine" / "*eigs*.npy").resolve()))
-        ],
-        "pain": [
-            Path(f)
-            for f in glob(str((OSTEO_DATA / "pain/placebo" / "*eigs*.npy").resolve()))
-        ],
+        "allpain": paths(OSTEO_DATA / "pain" / "**/*eigs*.npy"),
+        "nopain": paths(OSTEO_DATA / "controls" / "*eigs*.npy"),
+        "duloxetine": paths(OSTEO_DATA / "pain/duloxetine" / "*eigs*.npy"),
+        "pain": paths(OSTEO_DATA / "pain/placebo" / "*eigs*.npy"),
     }
     for key in osteo_groups.keys():
         osteo_groups[key].sort(key=lambda p: p.name)
 
     osteo_groups_fullpre = {
-        "allpain": [
-            Path(f)
-            for f in glob(str((OSTEO_DATA_FULLPRE / "pain" / "**/*eigs*.npy").resolve()))
-        ],
-        "nopain": [
-            Path(f)
-            for f in glob(str((OSTEO_DATA_FULLPRE / "controls" / "*eigs*.npy").resolve()))
-        ],
-        "duloxetine": [
-            Path(f)
-            for f in glob(
-                str((OSTEO_DATA_FULLPRE / "pain/duloxetine" / "*eigs*.npy").resolve())
-            )
-        ],
-        "pain": [
-            Path(f)
-            for f in glob(
-                str((OSTEO_DATA_FULLPRE / "pain/placebo" / "*eigs*.npy").resolve())
-            )
-        ],
+        "allpain": paths(OSTEO_DATA_FULLPRE / "pain" / "**/*eigs*.npy"),
+        "nopain": paths(OSTEO_DATA_FULLPRE / "controls" / "*eigs*.npy"),
+        "duloxetine": paths(OSTEO_DATA_FULLPRE / "pain/duloxetine" / "*eigs*.npy"),
+        "pain": paths(OSTEO_DATA_FULLPRE / "pain/placebo" / "*eigs*.npy"),
     }
     for key in osteo_groups_fullpre.keys():
         osteo_groups_fullpre[key].sort(key=lambda p: p.name)
@@ -175,124 +135,38 @@ def get_all_filepath_groupings(fullpre: bool) -> Any:
     }
 
     park_groups = {
-        "control": [
-            Path(f)
-            for f in glob(
-                str((PARKINSONS_DATA / "raw/controls" / "*eigs*.npy").resolve())
-            )
-        ],
-        "parkinsons": [
-            Path(f)
-            for f in glob(
-                str((PARKINSONS_DATA / "raw/parkinsons" / "*eigs*.npy").resolve())
-            )
-        ],
-        "control_pre": [
-            Path(f)
-            for f in glob(
-                str((PARKINSONS_DATA / "afni_preproc/controls" / "*eigs*.npy").resolve())
-            )
-        ],
-        "park_pre": [
-            Path(f)
-            for f in glob(
-                str(
-                    (PARKINSONS_DATA / "afni_preproc/parkinsons" / "*eigs*.npy").resolve()
-                )
-            )
-        ],
+        "control": paths(PARKINSONS_DATA / "raw/controls" / "*eigs*.npy"),
+        "parkinsons": paths(PARKINSONS_DATA / "raw/parkinsons" / "*eigs*.npy"),
+        "control_pre": paths(PARKINSONS_DATA / "afni_preproc/controls" / "*eigs*.npy"),
+        "park_pre": paths(PARKINSONS_DATA / "afni_preproc/parkinsons" / "*eigs*.npy"),
     }
 
     park_groups_fullpre = {
-        "control": [
-            Path(f)
-            for f in glob(
-                str((PARKINSONS_DATA_FULLPRE / "raw/controls" / "*eigs*.npy").resolve())
-            )
-        ],
-        "parkinsons": [
-            Path(f)
-            for f in glob(
-                str((PARKINSONS_DATA_FULLPRE / "raw/parkinsons" / "*eigs*.npy").resolve())
-            )
-        ],
-        "control_pre": [
-            Path(f)
-            for f in glob(
-                # NOTE: INTENTIONALLY THE SAME!!!
-                str((PARKINSONS_DATA / "afni_preproc/controls" / "*eigs*.npy").resolve())
-            )
-        ],
-        "park_pre": [
-            Path(f)
-            for f in glob(
-                # NOTE: INTENTIONALLY THE SAME!!!
-                str(
-                    (PARKINSONS_DATA / "afni_preproc/parkinsons" / "*eigs*.npy").resolve()
-                )
-            )
-        ],
+        "control": paths(PARKINSONS_DATA_FULLPRE / "raw/controls" / "*eigs*.npy"),
+        "parkinsons": paths(PARKINSONS_DATA_FULLPRE / "raw/parkinsons" / "*eigs*.npy"),
+        # NOTE: INTENTIONALLY THE SAME!!!
+        "control_pre": paths(PARKINSONS_DATA / "afni_preproc/controls" / "*eigs*.npy"),
+        # NOTE: INTENTIONALLY THE SAME!!!
+        "park_pre": paths(PARKINSONS_DATA / "afni_preproc/parkinsons" / "*eigs*.npy"),
     }
 
     reflect_sum_groups = {
-        "task": [
-            Path(f)
-            for f in glob(str((REFLECTIVE_SUMMED / "task" / "*eigs*.npy").resolve()))
-        ],
-        "rest": [
-            Path(f)
-            for f in glob(
-                str((REFLECTIVE_SUMMED / "rest_reshaped" / "*eigs*.npy").resolve())
-            )
-        ],
+        "task": paths(REFLECTIVE_SUMMED / "task" / "*eigs*.npy"),
+        "rest": paths(REFLECTIVE_SUMMED / "rest_reshaped" / "*eigs*.npy"),
     }
     reflect_sum_groups_fullpre = {
-        "task": [
-            Path(f)
-            for f in glob(
-                str((REFLECTIVE_SUMMED_FULLPRE / "task" / "*eigs*.npy").resolve())
-            )
-        ],
-        "rest": [
-            Path(f)
-            for f in glob(
-                str(
-                    (REFLECTIVE_SUMMED_FULLPRE / "rest_reshaped" / "*eigs*.npy").resolve()
-                )
-            )
-        ],
+        "task": paths(REFLECTIVE_SUMMED_FULLPRE / "task" / "*eigs*.npy"),
+        "rest": paths(REFLECTIVE_SUMMED_FULLPRE / "rest_reshaped" / "*eigs*.npy"),
     }
 
     reflect_interleave_groups = {
-        "task": [
-            Path(f)
-            for f in glob(str((REFLECTIVE_INTERLEAVED / "task" / "*eigs*.npy").resolve()))
-        ],
-        "rest": [
-            Path(f)
-            for f in glob(
-                str((REFLECTIVE_INTERLEAVED / "rest_reshaped" / "*eigs*.npy").resolve())
-            )
-        ],
+        "task": paths(REFLECTIVE_INTERLEAVED / "task" / "*eigs*.npy"),
+        "rest": paths(REFLECTIVE_INTERLEAVED / "rest_reshaped" / "*eigs*.npy"),
     }
 
     reflect_interleave_groups_fullpre = {
-        "task": [
-            Path(f)
-            for f in glob(
-                str((REFLECTIVE_INTERLEAVED_FULLPRE / "task" / "*eigs*.npy").resolve())
-            )
-        ],
-        "rest": [
-            Path(f)
-            for f in glob(
-                str(
-                    (
-                        REFLECTIVE_INTERLEAVED_FULLPRE / "rest_reshaped" / "*eigs*.npy"
-                    ).resolve()
-                )
-            )
-        ],
+        "task": paths(REFLECTIVE_INTERLEAVED_FULLPRE / "task" / "*eigs*.npy"),
+        "rest": paths(REFLECTIVE_INTERLEAVED_FULLPRE / "rest_reshaped" / "*eigs*.npy"),
     }
     if fullpre:
         return (
@@ -327,7 +201,7 @@ def get_all_filepath_groupings(fullpre: bool) -> Any:
 
 # Groups at the dataset level. Psych dataset is treated as if it is three Datasets.
 # a "Dataset" is a dict with keys for each subgroup
-DATASETS: Dict[str, Dataset] = {
+DATASETS: Dict[str, SubgroupEigPaths] = {
     "LEARNING": learning_groups,
     "OSTEO": osteo_groups,
     "PSYCH_VIGILANCE_SES-1": psych_groups["vigilance_ses-1"],
@@ -351,7 +225,7 @@ DATASETS: Dict[str, Dataset] = {
     reflect_interleave_pre,
 ) = get_all_filepath_groupings(fullpre=True)
 
-DATASETS_FULLPRE: Dict[str, Dataset] = {
+DATASETS_FULLPRE: Dict[str, SubgroupEigPaths] = {
     "LEARNING": learning_groups_pre,
     "OSTEO": osteo_groups_pre,
     "PSYCH_VIGILANCE_SES-1": psych_groups_pre["vigilance_ses-1"],

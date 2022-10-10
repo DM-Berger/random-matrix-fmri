@@ -15,8 +15,8 @@ from rmt.filenames import precomputed_subgroup_paths_from_args, relpath
 def precompute_largest(
     eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False
 ) -> Path:
-    """Take the eigenvalues saved in `eigpaths`, compute the largest, and save that in a DataFrame
-    in `out`
+    """Take the eigenvalues saved in `eigpaths`, compute the largest, and save
+    that in a DataFrame in `out`
 
     Parameters
     ----------
@@ -58,10 +58,10 @@ def precompute_largest(
 def precompute_marchenko(
     eigpaths: List[Path], out: Path, force: bool = False, silent: bool = False
 ) -> Path:
-    """Take the eigenvalues saved in `eigpaths`, compute the Marchenko-Pastur
-    endpoints (both shifted and unshifted), and save that in a DataFrame at
-    `out`. DataFrame will also contain information rated to proportion of
-    eigenvalues within those bounds "noise_ratio" and "noise_ratio" shifted.
+    """Take the eigenvalues saved in `eigpaths`, compute the Marchenko-Pastur endpoints
+    (both shifted and unshifted), and save that in a DataFrame at `out`. DataFrame will
+    also contain information rated to proportion of eigenvalues within those bounds
+    "noise_ratio" and "noise_ratio" shifted.
 
     Parameters
     ----------
@@ -187,8 +187,8 @@ def precompute_brody(
 def precompute_rigidity(
     eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False
 ) -> Path:
-    """Take the eigenvalues saved in `eigpaths`, compute the rigidity, and save that in a DataFrame
-    in `out`
+    """Take the eigenvalues saved in `eigpaths`, compute the rigidity,
+    and save in DataFrame at `out`
 
     Parameters
     ----------
@@ -242,8 +242,8 @@ def precompute_rigidity(
 def precompute_levelvar(
     eigpaths: List[Path], args: Any, out: Path, force: bool = False, silent: bool = False
 ) -> Path:
-    """Take the eigenvalues saved in `eigpaths`, compute the levelvar, and save that in a DataFrame
-    in `out`
+    """Take the eigenvalues saved in `eigpaths`, compute the levelvar, and save
+    in a DataFrame in `out`
 
     Parameters
     ----------
@@ -380,7 +380,8 @@ def precompute_dataset(
             ):
                 if not silent:
                     print(
-                        f"All observables for subgroup {sublabel} exist. Skipping to next subgroup."
+                        f"All observables for subgroup {sublabel} "
+                        "exist. Skipping to next subgroup."
                     )
                 continue
 
