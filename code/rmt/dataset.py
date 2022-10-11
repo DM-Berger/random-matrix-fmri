@@ -8,6 +8,7 @@ sys.path.append(str(ROOT))
 import sys
 import traceback
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, List, Optional, Sequence, Tuple, Union, cast, no_type_check
 
@@ -29,7 +30,8 @@ from rmt._types import Subgroups
 from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt.enumerables import Dataset
 
-MEMOIZER = Memory(location=str(ROOT.parent / "__OBSERVABLES_CACHE__"))
+CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
+MEMOIZER = Memory(location=str(CACHE_DIR))
 L_VALUES = np.arange(1.0, 21.0, step=1.0)
 
 
@@ -128,6 +130,7 @@ class ProcessedDataset:
         self.full_pre = full_pre
         data = PATH_DATA_PRE if self.full_pre else PATH_DATA
         self.path_info = data[self.source]
+        self.id = f"{self.source.name}__fullpre={self.full_pre}"
 
     def labels(self) -> ndarray:
         return cast(ndarray, self.path_info["cls"].to_numpy())
@@ -173,7 +176,7 @@ def _compute_levelvar(args: ObservableArgs) -> ndarray | None:
         return None
 
 
-@MEMOIZER.cache
+# @MEMOIZER.cache
 def rigidities(
     dataset: ProcessedDataset,
     degree: int,
@@ -181,6 +184,14 @@ def rigidities(
     L: ndarray = L_VALUES,
     parallel: bool = True,
 ) -> DataFrame:
+    L_hash = sha256(L.data.tobytes()).hexdigest()
+    to_hash = (dataset.id, degree, smoother.name, L_hash)
+    # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
+    hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
+    outfile = CACHE_DIR / f"{hsh}.json"
+    if outfile.exists():
+        return pd.read_json(outfile)
+
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
     if parallel:
@@ -199,10 +210,11 @@ def rigidities(
             labels.append(label)
     df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
     df["y"] = labels
+    df.to_json(outfile, indent=2)
     return df
 
 
-@MEMOIZER.cache
+# @MEMOIZER.cache
 def levelvars(
     dataset: ProcessedDataset,
     degree: int,
@@ -210,6 +222,14 @@ def levelvars(
     L: ndarray = L_VALUES,
     parallel: bool = True,
 ) -> DataFrame:
+    L_hash = sha256(L.data.tobytes()).hexdigest()
+    to_hash = (dataset.id, degree, smoother.name, L_hash)
+    # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
+    hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
+    outfile = CACHE_DIR / f"{hsh}.json"
+    if outfile.exists():
+        return pd.read_json(outfile)
+
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
     if parallel:
@@ -231,6 +251,7 @@ def levelvars(
             labels.append(label)
     df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
     df["y"] = labels
+    df.to_json(outfile, indent=2)
     return df
 
 
@@ -241,4 +262,4 @@ if __name__ == "__main__":
         for degree in [5, 7, 9]:
             data = ProcessedDataset(source=source, full_pre=False)
             rigs = rigidities(dataset=data, degree=degree, parallel=False)
-            level_vars = levelvars(dataset=data, degree=degree, parallel=False)
+            level_vars = levelvars(dataset=data, degree=degree, parallel=True)
