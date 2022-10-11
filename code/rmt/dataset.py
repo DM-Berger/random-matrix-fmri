@@ -31,6 +31,7 @@ from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt.enumerables import Dataset
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
+CACHE_DIR.mkdir(exist_ok=True, parents=True)
 MEMOIZER = Memory(location=str(CACHE_DIR))
 L_VALUES = np.arange(1.0, 21.0, step=1.0)
 
