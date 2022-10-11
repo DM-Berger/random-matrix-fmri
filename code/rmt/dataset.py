@@ -261,5 +261,5 @@ if __name__ == "__main__":
             continue
         for degree in [5, 7, 9]:
             data = ProcessedDataset(source=source, full_pre=False)
-            rigs = rigidities(dataset=data, degree=degree, parallel=False)
+            rigs = rigidities(dataset=data, degree=degree, parallel=True)
             level_vars = levelvars(dataset=data, degree=degree, parallel=True)
