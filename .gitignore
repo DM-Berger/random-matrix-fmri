@@ -1,4 +1,5 @@
 __OBSERVABLES_CACHE__
+!__OBSERVABLES_CACHE__/*.json
 # **/*.csv
 **/*~lock*
 **/*.pdf
