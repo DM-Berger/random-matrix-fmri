@@ -188,14 +188,57 @@ def rigidities(
             _compute_rigidity, args, desc=f"Computing rigidities for {dataset}"
         )
     else:
-        rigidities = list(map(
-            _compute_rigidity, tqdm(args, desc=f"Computing rigidities for {dataset}")
-        ))
-    rigidities = [r for r in rigidities if r is not None]
-    return rigidities
+        rigidities = list(
+            map(_compute_rigidity, tqdm(args, desc=f"Computing rigidities for {dataset}"))
+        )
+
+    rigs, labels = [], []
+    for rig, label in zip(rigidities, dataset.labels()):
+        if rig is not None:
+            rigs.append(rig)
+            labels.append(label)
+    df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
+    df["y"] = labels
+    return df
+
+
+@MEMOIZER.cache
+def levelvars(
+    dataset: ProcessedDataset,
+    degree: int,
+    smoother: SmoothMethod = SmoothMethod.Polynomial,
+    L: ndarray = L_VALUES,
+    parallel: bool = True,
+) -> DataFrame:
+    unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
+    args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
+    if parallel:
+        rigidities = process_map(
+            _compute_levelvar, args, desc=f"Computing level variances for {dataset}"
+        )
+    else:
+        rigidities = list(
+            map(
+                _compute_levelvar,
+                tqdm(args, desc=f"Computing level variances for {dataset}"),
+            )
+        )
+
+    rigs, labels = [], []
+    for rig, label in zip(rigidities, dataset.labels()):
+        if rig is not None:
+            rigs.append(rig)
+            labels.append(label)
+    df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
+    df["y"] = labels
+    return df
 
 
 if __name__ == "__main__":
-    learning = ProcessedDataset(source=Dataset.Learning, full_pre=False)
-    rigs = rigidities(dataset=learning, degree=5, parallel=False)
-    print(rigs)
+    for source in Dataset:
+        if source in [Dataset.ReflectionInterleaved]:
+            continue
+        for degree in [5, 7, 9]:
+            data = ProcessedDataset(source=source, full_pre=False)
+            rigs = rigidities(dataset=data, degree=degree, parallel=False)
+            # level_vars = levelvars(dataset=data, degree=degree, parallel=False)
