@@ -12,4 +12,4 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=80
 
-bash run_python.sh code/rmt/dataset.py
+bash run_python.sh $(readlink -f code/rmt/dataset.py)
