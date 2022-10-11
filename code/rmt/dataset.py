@@ -185,7 +185,7 @@ def rigidities(
     parallel: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = (dataset.id, degree, smoother.name, L_hash)
+    to_hash = (dataset.id, str(degree), smoother.name, L_hash)
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
@@ -223,7 +223,7 @@ def levelvars(
     parallel: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = (dataset.id, degree, smoother.name, L_hash)
+    to_hash = (dataset.id, str(degree), smoother.name, L_hash)
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"

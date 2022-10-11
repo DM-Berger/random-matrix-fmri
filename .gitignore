@@ -1,5 +1,5 @@
 __OBSERVABLES_CACHE__
-**/*.csv
+# **/*.csv
 **/*~lock*
 **/*.pdf
 **/*.docx
