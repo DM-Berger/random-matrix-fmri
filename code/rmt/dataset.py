@@ -185,11 +185,12 @@ def rigidities(
     parallel: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = (dataset.id, str(degree), smoother.name, L_hash)
+    to_hash = ("rigidity", dataset.id, str(degree), smoother.name, L_hash)
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
     if outfile.exists():
+        print(f"Loading pre-computed rigidities from {outfile}")
         return pd.read_json(outfile)
 
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
@@ -211,6 +212,7 @@ def rigidities(
     df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
     df["y"] = labels
     df.to_json(outfile, indent=2)
+    print(f"Saved rigidities to {outfile}")
     return df
 
 
@@ -223,11 +225,12 @@ def levelvars(
     parallel: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = (dataset.id, str(degree), smoother.name, L_hash)
+    to_hash = ("levelvar", dataset.id, str(degree), smoother.name, L_hash)
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
     if outfile.exists():
+        print(f"Loading pre-computed levelvars from {outfile}")
         return pd.read_json(outfile)
 
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
@@ -252,13 +255,12 @@ def levelvars(
     df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
     df["y"] = labels
     df.to_json(outfile, indent=2)
+    print(f"Saved levelvars to {outfile}")
     return df
 
 
 if __name__ == "__main__":
     for source in Dataset:
-        if source in [Dataset.ReflectionInterleaved]:
-            continue
         for degree in [5, 7, 9]:
             data = ProcessedDataset(source=source, full_pre=False)
             rigs = rigidities(dataset=data, degree=degree, parallel=True)
