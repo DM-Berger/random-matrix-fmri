@@ -1,0 +1,15 @@
+,Dataset,Comparison,Raw Eigs,Largest,Largest20,Noise Ratio,Shifted Noise Ratio,Brody,Rigidity,Levelvar,Guess
+Logistic Regression,OSTEO,duloxetine_v_pain,0.661,0.661,0.643,0.661,0.661,0.661,0.661,0.643,0.661
+LDA,OSTEO,duloxetine_v_pain,0.625,0.643,0.607,0.661,0.661,0.661,0.732,0.554,0.661
+SVM,OSTEO,duloxetine_v_pain,0.643,0.589,0.661,0.661,0.661,0.661,0.643,0.643,0.661
+KNN-1,OSTEO,duloxetine_v_pain,0.536,0.571,0.589,0.357,0.304,0.375,0.554,0.607,0.661
+KNN-2,OSTEO,duloxetine_v_pain,0.464,0.625,0.518,0.321,0.304,0.375,0.446,0.518,0.661
+KNN-3,OSTEO,duloxetine_v_pain,0.536,0.643,0.571,0.393,0.25,0.375,0.554,0.607,0.661
+KNN-4,OSTEO,duloxetine_v_pain,0.446,0.554,0.482,0.429,0.304,0.339,0.536,0.5,0.661
+KNN-5,OSTEO,duloxetine_v_pain,0.571,0.571,0.571,0.482,0.321,0.339,0.518,0.643,0.661
+KNN-6,OSTEO,duloxetine_v_pain,0.536,0.5,0.607,0.482,0.321,0.339,0.446,0.536,0.661
+KNN-7,OSTEO,duloxetine_v_pain,0.589,0.643,0.643,0.661,0.357,0.339,0.589,0.643,0.661
+KNN-8,OSTEO,duloxetine_v_pain,0.446,0.554,0.607,0.661,0.357,0.339,0.554,0.518,0.661
+KNN-9,OSTEO,duloxetine_v_pain,0.518,0.589,0.643,0.661,0.625,0.339,0.589,0.607,0.661
+KNN-10,OSTEO,duloxetine_v_pain,0.464,0.536,0.625,0.661,0.625,0.339,0.554,0.554,0.661
+KNN-20,OSTEO,duloxetine_v_pain,0.589,0.661,0.625,0.536,0.661,0.339,0.607,0.393,0.661

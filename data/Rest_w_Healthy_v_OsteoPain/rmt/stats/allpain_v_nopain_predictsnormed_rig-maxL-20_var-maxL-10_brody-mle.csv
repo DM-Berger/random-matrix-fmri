@@ -1,0 +1,15 @@
+,Dataset,Comparison,Raw Eigs,Largest,Largest20,Noise Ratio,Shifted Noise Ratio,Brody,Rigidity,Levelvar,Guess
+Logistic Regression,OSTEO,allpain_v_nopain,0.671,0.737,0.724,0.737,0.737,0.737,0.763,0.737,0.737
+LDA,OSTEO,allpain_v_nopain,0.513,0.737,0.618,0.737,0.737,0.737,0.724,0.5,0.737
+SVM,OSTEO,allpain_v_nopain,0.737,0.737,0.737,0.724,0.724,0.737,0.737,0.737,0.737
+KNN-1,OSTEO,allpain_v_nopain,0.579,0.605,0.658,0.421,0.605,0.276,0.724,0.592,0.737
+KNN-2,OSTEO,allpain_v_nopain,0.671,0.684,0.724,0.724,0.724,0.737,0.724,0.645,0.737
+KNN-3,OSTEO,allpain_v_nopain,0.632,0.566,0.763,0.75,0.724,0.737,0.671,0.579,0.737
+KNN-4,OSTEO,allpain_v_nopain,0.684,0.684,0.789,0.724,0.737,0.737,0.75,0.724,0.737
+KNN-5,OSTEO,allpain_v_nopain,0.684,0.671,0.724,0.724,0.737,0.737,0.711,0.711,0.737
+KNN-6,OSTEO,allpain_v_nopain,0.671,0.684,0.737,0.737,0.737,0.737,0.763,0.711,0.737
+KNN-7,OSTEO,allpain_v_nopain,0.684,0.697,0.737,0.737,0.737,0.737,0.75,0.671,0.737
+KNN-8,OSTEO,allpain_v_nopain,0.711,0.697,0.724,0.737,0.737,0.737,0.711,0.711,0.737
+KNN-9,OSTEO,allpain_v_nopain,0.658,0.711,0.684,0.737,0.737,0.737,0.711,0.684,0.737
+KNN-10,OSTEO,allpain_v_nopain,0.711,0.697,0.711,0.737,0.737,0.737,0.724,0.711,0.737
+KNN-20,OSTEO,allpain_v_nopain,0.737,0.737,0.737,0.737,0.737,0.737,0.737,0.737,0.737

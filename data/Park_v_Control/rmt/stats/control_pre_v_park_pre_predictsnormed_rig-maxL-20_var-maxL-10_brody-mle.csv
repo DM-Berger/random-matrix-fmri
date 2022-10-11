@@ -1,0 +1,15 @@
+,Dataset,Comparison,Raw Eigs,Largest,Largest20,Noise Ratio,Shifted Noise Ratio,Brody,Rigidity,Levelvar,Guess
+Logistic Regression,PARKINSONS,control_pre_v_park_pre,0.652,0.612,0.627,0.543,0.522,0.554,0.572,0.558,0.543
+LDA,PARKINSONS,control_pre_v_park_pre,0.638,0.616,0.63,0.543,0.486,0.554,0.482,0.496,0.543
+SVM,PARKINSONS,control_pre_v_park_pre,0.685,0.598,0.67,0.543,0.424,0.525,0.54,0.529,0.543
+KNN-1,PARKINSONS,control_pre_v_park_pre,0.793,0.511,0.663,0.464,0.543,0.457,0.496,0.536,0.543
+KNN-2,PARKINSONS,control_pre_v_park_pre,0.764,0.562,0.634,0.471,0.62,0.547,0.529,0.554,0.543
+KNN-3,PARKINSONS,control_pre_v_park_pre,0.772,0.533,0.692,0.565,0.62,0.54,0.572,0.562,0.543
+KNN-4,PARKINSONS,control_pre_v_park_pre,0.739,0.572,0.667,0.453,0.612,0.547,0.562,0.583,0.543
+KNN-5,PARKINSONS,control_pre_v_park_pre,0.79,0.547,0.685,0.489,0.591,0.554,0.547,0.547,0.543
+KNN-6,PARKINSONS,control_pre_v_park_pre,0.75,0.554,0.652,0.507,0.525,0.558,0.551,0.562,0.543
+KNN-7,PARKINSONS,control_pre_v_park_pre,0.775,0.518,0.688,0.514,0.518,0.558,0.565,0.54,0.543
+KNN-8,PARKINSONS,control_pre_v_park_pre,0.743,0.562,0.674,0.572,0.518,0.554,0.587,0.558,0.543
+KNN-9,PARKINSONS,control_pre_v_park_pre,0.736,0.525,0.67,0.569,0.504,0.547,0.569,0.543,0.543
+KNN-10,PARKINSONS,control_pre_v_park_pre,0.685,0.543,0.667,0.507,0.511,0.529,0.562,0.58,0.543
+KNN-20,PARKINSONS,control_pre_v_park_pre,0.717,0.591,0.562,0.522,0.543,0.536,0.601,0.533,0.543
