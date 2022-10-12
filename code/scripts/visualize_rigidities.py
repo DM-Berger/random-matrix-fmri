@@ -47,7 +47,7 @@ from rmt.enumerables import Dataset
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
-PLOT_OUTDIR = RESULTS / "plots"
+PLOT_OUTDIR = RESULTS / "plots/rigidities"
 PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
 
 
