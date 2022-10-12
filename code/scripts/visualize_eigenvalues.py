@@ -45,263 +45,13 @@ from typing_extensions import Literal
 
 from rmt.dataset import ProcessedDataset, levelvars
 from rmt.enumerables import Dataset
+from rmt.predict import predict_feature
+from rmt.visualize import plot_feature, plot_feature_separation
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots/eigenvalues"
 PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
-
-
-def best_rect(m: int) -> Tuple[int, int]:
-    """returns dimensions (smaller, larger) of closest rectangle"""
-    low = int(np.floor(np.sqrt(m)))
-    high = int(np.ceil(np.sqrt(m)))
-    prods = [(low, low), (low, low + 1), (high, high), (high, high + 1)]
-    for prod in prods:
-        if prod[0] * prod[1] >= m:
-            return prod
-    raise ValueError("Unreachable!")
-
-
-def log_normalize_eigs(eigs: DataFrame, norm: bool) -> DataFrame:
-    x = eigs.drop(columns="y")
-    x[x > 0] = x[x > 0].applymap(np.log)
-    if norm:
-        try:
-            X = DataFrame(minmax_scale(x))
-        except ValueError:
-            traceback.print_exc()
-            print(x)
-            sys.exit(1)
-    else:
-        X = x
-    eigs = eigs.copy()
-    eigs.iloc[:, :-1] = X
-    return eigs
-
-
-def plot_eigenvalues(
-    eigs: DataFrame,
-    data: ProcessedDataset,
-    norm: bool = False,
-    save: bool = False,
-) -> None:
-    labels = eigs.y.unique().tolist()
-    eigs = log_normalize_eigs(eigs, norm)
-    combs = list(combinations(labels, 2))
-    N = len(combs)
-    L = np.array(eigs.drop(columns="y").columns.to_list(), dtype=np.float64)
-    L_diff = np.min(np.diff(L)) * 0.95
-    nrows, ncols = best_rect(N)
-    sbn.set_style("darkgrid")
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    fig.suptitle(f"{data}: norm={norm}")
-    ax_idx = 0
-    for i in range(len(labels)):
-        for j in range(i + 1, len(labels)):
-            label1 = labels[i]
-            label2 = labels[j]
-            title = f"{label1} v {label2}"
-            df1 = eigs.loc[eigs.y == label1].drop(columns="y")
-            df2 = eigs.loc[eigs.y == label2].drop(columns="y")
-            s = 2.0
-            alpha = 0.3
-            ax: Axes = axes.flat[ax_idx]  # type: ignore
-            for k in range(len(df1)):
-                ax.scatter(
-                    L + np.random.uniform(0, L_diff, len(L)),
-                    df1.iloc[k],
-                    s=s,
-                    alpha=alpha,
-                    color="#016afe",
-                    label=label1 if k == 1 else None,
-                )
-            for k in range(len(df2)):
-                ax.scatter(
-                    L + np.random.uniform(0, L_diff, len(L)),
-                    df2.iloc[k],
-                    s=s,
-                    alpha=alpha,
-                    color="#fe7b01",
-                    label=label2 if k == 1 else None,
-                )
-            ax.set_title(title)
-            ax.legend().set_visible(True)
-            ax_idx += 1
-
-    fig.set_size_inches(w=10, h=10)
-    if save:
-        return
-    plt.show(block=False)
-
-
-def plot_eigvals_sep(
-    eigs: DataFrame,
-    data: ProcessedDataset,
-    eig_idx: int = -2,
-    norm: bool = False,
-    save: bool = False,
-) -> None:
-    labels = eigs.y.unique().tolist()
-    eigs = log_normalize_eigs(eigs, norm)
-    combs = list(combinations(labels, 2))
-    N = len(combs)
-    L = np.array(eigs.drop(columns="y").columns.to_list(), dtype=np.float64)
-    nrows, ncols = best_rect(N)
-    sbn.set_style("darkgrid")
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols * 2, squeeze=False)
-    fig.suptitle(f"{data}: norm={norm}")
-    ax_idx = 0
-    for i in range(len(labels)):
-        for j in range(i + 1, len(labels)):
-            if eig_idx is None:
-                eig_idx = -2
-            df = eigs.iloc[:, [eig_idx - 1, -1]]
-            eig_label = f"{-eig_idx}th largest" if eig_idx < 0 else f"{eig_idx}"
-            title = f"{labels[i]} v {labels[j]}: eig_idx={eig_label}"
-            idx = (df.y == labels[i]) | (df.y == labels[j])
-            df = df.loc[idx]
-            # df2 = df.drop(columns="y").applymap(np.log)
-            df2 = df.drop(columns="y")
-            df2["log(eigenvalue + 1)"] = df.y
-            ax1: Axes = axes.flat[ax_idx]  # type: ignore
-            ax2: Axes = axes.flat[ax_idx + 1]  # type: ignore
-            sbn.histplot(
-                data=df,
-                x=df.columns[0],
-                hue="y",
-                element="step",
-                fill=True,
-                ax=ax1,
-                legend=True,
-                stat="density",
-                bins=20,  # type: ignore
-                common_norm=False,
-                common_bins=False,
-                log_scale=False,
-            )
-            sbn.stripplot(
-                data=df2,
-                x=df2.columns[0],
-                y="log(eigenvalue + 1)",
-                hue="log(eigenvalue + 1)",
-                legend=False,  # type: ignore
-                ax=ax2,
-                orient="h",
-            )
-            ax1.set_title(title)
-            ax2.set_title(title)
-            ax1.set_xlabel("log(eigenvalue + 1)")
-            ax2.set_xlabel("log(eigenvalue + 1)")
-            ax_idx += 2
-
-    fig.set_size_inches(w=ncols * 8, h=nrows * 5)
-    if save:
-        return
-    plt.show(block=False)
-
-
-def kfold_eval(
-    X: ndarray, y: ndarray, classifier: Type, norm: bool, title: str, **kwargs: Mapping
-) -> DataFrame:
-    if norm:
-        X = minmax_scale(X, axis=0)
-    cv = StratifiedKFold(n_splits=5)
-    scores = cross_val_score(classifier(**kwargs), X, y, cv=cv, scoring="accuracy")
-    guess = np.max([np.mean(y), np.mean(1 - y)])
-    mean = np.mean(scores).round(3)
-    mn = np.min(scores)
-    mx = np.max(scores)
-    # print(
-    #     f"  {title:>40} {classifier.__name__:>30} accs:mean={mean:0.3f} "
-    #     f"[{np.min(scores):0.3f}, {np.max(scores):0.3f}] "
-    #     f"({mean - guess:+0.3f})"
-    # )
-    return DataFrame(
-        {
-            "comparison": title,
-            "classifier": classifier.__name__,
-            "norm": norm,
-            "acc+": mean - guess,
-            "mean": mean,
-            "min": mn,
-            "max": mx,
-        },
-        index=[0],
-    )
-
-
-def predict_eigval_sep(
-    eigs: DataFrame,
-    data: ProcessedDataset,
-    eig_idx: int | slice | None = None,
-    norm: bool = False,
-) -> DataFrame:
-    DUDS = [
-        "control v control_pre",
-        "control v park_pre",
-        "parkinsons v control_pre",
-        "parkinsons v park_pre",
-    ]
-
-    eigs = log_normalize_eigs(eigs, norm)
-    labels = eigs.y.unique().tolist()
-    if eig_idx is None:
-        eig_label = "All"
-    elif isinstance(eig_idx, slice):
-        eig_label = f"[{eig_idx.start},{eig_idx.stop - 1}]"
-    else:
-        eig_label = eigs.columns[eig_idx - 1]
-    results = []
-    for i in range(len(labels)):
-        for j in range(i + 1, len(labels)):
-            if eig_idx is None:
-                df = eigs
-            elif isinstance(eig_idx, slice):
-                df = eigs.drop(columns="y").iloc[:, eig_idx]
-                df["y"] = eigs["y"]
-            else:
-                df = eigs.iloc[:, [eig_idx - 1, -1]]
-            title = f"{labels[i]} v {labels[j]}"
-            skip = False
-            for dud in DUDS:
-                if dud in title:
-                    skip = True
-                    break
-            if skip:
-                continue
-            idx = (df.y == labels[i]) | (df.y == labels[j])
-            df = df.loc[idx]
-            X = df.drop(columns="y").to_numpy()
-            y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
-            result_dfs = [
-                kfold_eval(X, y, SVC, norm=norm, title=title),
-                # kfold_eval(X, y, LR, norm=norm, title=title),
-                kfold_eval(X, y, GBC, norm=norm, title=title),
-            ]
-            results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
-    result = pd.concat(results, axis=0, ignore_index=True)
-
-    result["data"] = data.source.name
-    result["preproc"] = "full" if data.full_pre else "minimal"
-    result["idx"] = (
-        str(eig_idx).replace("slice", "").replace("(", "[").replace(", None", "")
-    )
-    return result.loc[
-        :,
-        [
-            "data",
-            "preproc",
-            "norm",
-            "idx",
-            "comparison",
-            "classifier",
-            "acc+",
-            "mean",
-            "min",
-            "max",
-        ],
-    ]
 
 
 def plot_all_eigvals(
@@ -333,9 +83,16 @@ def plot_all_eigvals(
         data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
         eigs = data.eigs_df(unify="pad", diff=True)
         if plot_separations:
-            plot_eigvals_sep(eigs, data, norm=args.norm, save=save, eig_idx=args.eig_idx)
+            plot_feature_separation(
+                data=data,
+                feature=eigs,
+                feature_name="eigenvalues",
+                norm=args.norm,
+                save=save,
+                feature_idx=args.eig_idx,
+            )
         else:
-            plot_eigenvalues(eigs, data, norm=args.norm, save=save)
+            plot_feature(feature=eigs, data=data, norm=args.norm, save=save)
         count += 1
         if save:
             fname = f"{args.source.name}_fullpre={args.full_pre}_norm={args.norm}.png"
@@ -352,11 +109,12 @@ def predict_data(args: Namespace) -> DataFrame:
     data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
     # eigs = data.eigs_df(unify="percentile", diff=True)
     eigs = data.eigs_df(unify="pad", diff=False)  # highest accs
-    return predict_eigval_sep(
+    return predict_feature(
         eigs,
         data,
-        eig_idx=args.eig_idx,
+        feature_idx=args.eig_idx,
         norm=args.norm,
+        logarithm=True,
     )
 
 
@@ -403,19 +161,20 @@ def summarize_all_predictions(
 if __name__ == "__main__":
     # EIG_IDXS: List[int | None] = [None]
     # EIG_IDXS = [None, -2]
-    EIG_IDXS: List[int | slice | None] = [
-        None,
-        slice(-80, -1),
-        slice(-40, -1),
-        slice(-20, -1),
-        slice(-10, -1),
-        # slice(-5, -1),
-    ]
-    # plot_all_eigvals(
-    #     plot_separations=False,
-    #     save=False,
-    # )
-    # sys.exit()
+    # EIG_IDXS: List[int | slice | None] = [
+    #     None,
+    #     slice(-80, -1),
+    #     slice(-40, -1),
+    #     slice(-20, -1),
+    #     slice(-10, -1),
+    #     # slice(-5, -1),
+    # ]
+    plot_all_eigvals(
+        # plot_separations=False,
+        plot_separations=True,
+        save=False,
+    )
+    sys.exit()
     summarize_all_predictions(
         eig_idxs=EIG_IDXS,
     )
