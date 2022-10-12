@@ -14,4 +14,3 @@ if __name__ == "__main__":
             for degree in [3, 5, 7, 9]:
                 data = ProcessedDataset(source=source, full_pre=preproc)
                 rigs = rigidities(dataset=data, degree=degree, parallel=True)
-                level_vars = levelvars(dataset=data, degree=degree, parallel=True)
