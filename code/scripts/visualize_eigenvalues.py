@@ -64,8 +64,8 @@ def best_rect(m: int) -> Tuple[int, int]:
 
 
 def log_normalize_eigs(eigs: DataFrame, norm: bool) -> DataFrame:
-    x = eigs.drop(columns="y") + 1
-    x = x.applymap(np.log)
+    x = eigs.drop(columns="y")
+    x[x > 0] = x[x > 0].applymap(np.log)
     if norm:
         try:
             X = DataFrame(minmax_scale(x))
@@ -244,6 +244,7 @@ def predict_eigval_sep(
         "parkinsons v park_pre",
     ]
 
+    eigs = log_normalize_eigs(eigs, norm)
     labels = eigs.y.unique().tolist()
     eig_label = eigs.columns[eig_idx - 1] if eig_idx is not None else "All"
     results = []
@@ -260,11 +261,11 @@ def predict_eigval_sep(
                 continue
             idx = (df.y == labels[i]) | (df.y == labels[j])
             df = df.loc[idx]
-            X = df.drop(columns="y").applymap(np.log).to_numpy()
+            X = df.drop(columns="y").to_numpy()
             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
             result_dfs = [
                 kfold_eval(X, y, SVC, norm=norm, title=title),
-                kfold_eval(X, y, LR, norm=norm, title=title),
+                # kfold_eval(X, y, LR, norm=norm, title=title),
                 kfold_eval(X, y, GBC, norm=norm, title=title),
             ]
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
@@ -317,7 +318,7 @@ def plot_all_eigvals(
     count = 0
     for args in tqdm(grid):
         data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
-        eigs = data.eigs_df()
+        eigs = data.eigs_df(unify="pad", diff=True)
         if plot_separations:
             plot_eigvals_sep(eigs, data, norm=args.norm, save=save, eig_idx=args.eig_idx)
         else:
@@ -336,7 +337,8 @@ def plot_all_eigvals(
 
 def predict_data(args: Namespace) -> DataFrame:
     data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
-    eigs = data.eigs_df()
+    # eigs = data.eigs_df(unify="percentile", diff=True)
+    eigs = data.eigs_df(unify="pad", diff=False)  # highest accs
     return predict_eigval_sep(
         eigs,
         data,
@@ -350,7 +352,7 @@ def summarize_all_predictions(
     eig_idxs: Optional[list[int | None]] = None,
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
-    print_rows: int = 200,
+    print_rows: int = 100,
 ) -> None:
     sources = sources or [*Dataset]
     eig_idxs = eig_idxs or [None, -2, 3]
@@ -388,11 +390,11 @@ def summarize_all_predictions(
 if __name__ == "__main__":
     # EIG_IDXS: List[int | None] = [None]
     EIG_IDXS = [None, -2]
-    plot_all_eigvals(
-        plot_separations=False,
-        save=False,
-    )
-    sys.exit()
+    # plot_all_eigvals(
+    #     plot_separations=False,
+    #     save=False,
+    # )
+    # sys.exit()
     summarize_all_predictions(
         eig_idxs=EIG_IDXS,
     )

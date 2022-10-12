@@ -142,17 +142,25 @@ class ProcessedDataset:
 
         return cast(list[ndarray], self.path_info["path"].apply(load).to_list())
 
-    def eigs_df(self) -> DataFrame:
+    def eigs_df(
+        self, unify: Literal["pad", "percentile"] = "pad", diff: bool = False
+    ) -> DataFrame:
         raw = self.eigs()
+        if diff:
+            raw = [np.diff(r) for r in raw]
         lengths = np.array([len(e) for e in raw])
-        if not np.all(lengths == lengths[0]):
+        if unify == "pad" and not np.all(lengths == lengths[0]):
             # front zero-pad
             length = np.max(lengths)
             resized = []
             for eig in raw:
                 padded = np.zeros(length)
-                padded[-len(eig):] = eig
+                padded[-len(eig) :] = eig
                 resized.append(padded)
+        elif unify == "percentile":
+            resized = []
+            for eig in raw:
+                resized.append(np.percentile(eig, np.linspace(0, 1, 100)))
         else:
             resized = raw
         vals = np.stack(resized, axis=0)
