@@ -184,6 +184,7 @@ def rigidities(
     smoother: SmoothMethod = SmoothMethod.Polynomial,
     L: ndarray = L_VALUES,
     parallel: bool = True,
+    silent: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
     to_hash = ("rigidity", dataset.id, str(degree), smoother.name, L_hash)
@@ -191,7 +192,8 @@ def rigidities(
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
     if outfile.exists():
-        print(f"Loading pre-computed rigidities from {outfile}")
+        if not silent:
+            print(f"Loading pre-computed rigidities from {outfile}")
         return pd.read_json(outfile)
 
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
@@ -224,6 +226,7 @@ def levelvars(
     smoother: SmoothMethod = SmoothMethod.Polynomial,
     L: ndarray = L_VALUES,
     parallel: bool = True,
+    silent: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
     to_hash = ("levelvar", dataset.id, str(degree), smoother.name, L_hash)
@@ -231,7 +234,8 @@ def levelvars(
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
     if outfile.exists():
-        print(f"Loading pre-computed levelvars from {outfile}")
+        if not silent:
+            print(f"Loading pre-computed levelvars from {outfile}")
         return pd.read_json(outfile)
 
     unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
