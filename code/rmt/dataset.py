@@ -142,6 +142,25 @@ class ProcessedDataset:
 
         return cast(list[ndarray], self.path_info["path"].apply(load).to_list())
 
+    def eigs_df(self) -> DataFrame:
+        raw = self.eigs()
+        lengths = np.array([len(e) for e in raw])
+        if not np.all(lengths == lengths[0]):
+            # front zero-pad
+            length = np.max(lengths)
+            resized = []
+            for eig in raw:
+                padded = np.zeros(length)
+                padded[-len(eig):] = eig
+                resized.append(padded)
+        else:
+            resized = raw
+        vals = np.stack(resized, axis=0)
+        vals[vals < 0.0] = 0.0
+        eigs = DataFrame(vals, columns=range(vals.shape[1]))
+        eigs["y"] = self.labels()
+        return eigs
+
     def unfolded(self, smoother: SmoothMethod, degree: int) -> list[Unfolded]:
         eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
         return [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
