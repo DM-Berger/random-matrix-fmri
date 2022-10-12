@@ -36,13 +36,19 @@ from pandas import DataFrame, Series
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.linear_model import LogisticRegression as LR
 from sklearn.model_selection import ParameterGrid, StratifiedKFold, cross_val_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, minmax_scale
 from sklearn.svm import SVC
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
 from rmt.dataset import ProcessedDataset, rigidities
 from rmt.enumerables import Dataset
+
+PROJECT = ROOT.parent
+RESULTS = PROJECT / "results"
+PLOT_OUTDIR = RESULTS / "plots"
+PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
 
 
 def best_rect(m: int) -> Tuple[int, int]:
@@ -56,8 +62,19 @@ def best_rect(m: int) -> Tuple[int, int]:
     raise ValueError("Unreachable!")
 
 
-def plot_rigidities(rigs: DataFrame, data: ProcessedDataset, degree: int) -> None:
+def plot_rigidities(
+    rigs: DataFrame,
+    data: ProcessedDataset,
+    degree: int,
+    norm: bool = False,
+    save: bool = False,
+) -> None:
     labels = rigs.y.unique().tolist()
+    if norm:
+        x = rigs.drop(columns="y").applymap(np.log)
+        X = DataFrame(minmax_scale(x)).applymap(np.exp)
+        rigs = rigs.copy()
+        rigs.iloc[:, :-1] = X
     combs = list(combinations(labels, 2))
     N = len(combs)
     L = np.array(rigs.drop(columns="y").columns.to_list(), dtype=np.float64)
@@ -65,7 +82,7 @@ def plot_rigidities(rigs: DataFrame, data: ProcessedDataset, degree: int) -> Non
     nrows, ncols = best_rect(N)
     sbn.set_style("darkgrid")
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    fig.suptitle(f"{data}: deg={degree}")
+    fig.suptitle(f"{data}: deg={degree} norm={norm}")
     ax_idx = 0
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
@@ -99,13 +116,25 @@ def plot_rigidities(rigs: DataFrame, data: ProcessedDataset, degree: int) -> Non
             ax_idx += 1
 
     fig.set_size_inches(w=10, h=10)
+    if save:
+        return
     plt.show(block=False)
 
 
 def plot_rigidity_sep(
-    rigs: DataFrame, data: ProcessedDataset, degree: int, L_idx: int = -2
+    rigs: DataFrame,
+    data: ProcessedDataset,
+    degree: int,
+    L_idx: int = -2,
+    norm: bool = False,
+    save: bool = False,
 ) -> None:
     labels = rigs.y.unique().tolist()
+    if norm:
+        x = rigs.drop(columns="y").applymap(np.log)
+        X = DataFrame(minmax_scale(x)).applymap(np.exp)
+        rigs = rigs.copy()
+        rigs.iloc[:, :-1] = X
     combs = list(combinations(labels, 2))
     N = len(combs)
     L = np.array(rigs.drop(columns="y").columns.to_list(), dtype=np.float64)
@@ -113,7 +142,7 @@ def plot_rigidity_sep(
     nrows, ncols = best_rect(N)
     sbn.set_style("darkgrid")
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols * 2, squeeze=False)
-    fig.suptitle(f"{data}: deg={degree}")
+    fig.suptitle(f"{data}: deg={degree} norm={norm}")
     ax_idx = 0
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
@@ -155,12 +184,16 @@ def plot_rigidity_sep(
             ax_idx += 2
 
     fig.set_size_inches(w=ncols * 8, h=nrows * 5)
+    if save:
+        return
     plt.show(block=False)
 
 
 def kfold_eval(
-    X: ndarray, y: ndarray, classifier: Type, title: str, **kwargs: Mapping
+    X: ndarray, y: ndarray, classifier: Type, norm: bool, title: str, **kwargs: Mapping
 ) -> DataFrame:
+    if norm:
+        X = minmax_scale(X, axis=0)
     cv = StratifiedKFold(n_splits=5)
     scores = cross_val_score(classifier(**kwargs), X, y, cv=cv, scoring="accuracy")
     guess = np.max([np.mean(y), np.mean(1 - y)])
@@ -176,6 +209,7 @@ def kfold_eval(
         {
             "comparison": title,
             "classifier": classifier.__name__,
+            "norm": norm,
             "acc+": mean - guess,
             "mean": mean,
             "min": mn,
@@ -186,7 +220,11 @@ def kfold_eval(
 
 
 def predict_rigidity_sep(
-    rigs: DataFrame, data: ProcessedDataset, degree: int, L_idx: int | None = None
+    rigs: DataFrame,
+    data: ProcessedDataset,
+    degree: int,
+    L_idx: int | None = None,
+    norm: bool = False,
 ) -> DataFrame:
     DUDS = [
         "control v control_pre",
@@ -214,23 +252,24 @@ def predict_rigidity_sep(
             X = df.drop(columns="y").applymap(np.log).to_numpy()
             y = LabelEncoder().fit_transform(df.y.to_numpy())
             result_dfs = [
-                kfold_eval(X, y, SVC, title),
-                kfold_eval(X, y, LR, title),
-                kfold_eval(X, y, GBC, title),
+                kfold_eval(X, y, SVC, norm=norm, title=title),
+                kfold_eval(X, y, LR, norm=norm, title=title),
+                kfold_eval(X, y, GBC, norm=norm, title=title),
             ]
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
     result = pd.concat(results, axis=0, ignore_index=True)
 
-    result["deg"] = degree
+    result["deg"] = str(degree)
     result["data"] = data.source.name
     result["preproc"] = "full" if data.full_pre else "minimal"
-    result["L"] = L_label
+    result["L"] = str(L_label)
     return result.loc[
         :,
         [
             "data",
             "preproc",
             "deg",
+            "norm",
             "L",
             "comparison",
             "classifier",
@@ -242,32 +281,121 @@ def predict_rigidity_sep(
     ]
 
 
-if __name__ == "__main__":
-    count = 0
-    dfs = []
-    DEGREES = [5, 7, 9]
+def plot_all_rigidities(
+    sources: Optional[list[Dataset]] = None,
+    degrees: Optional[list[int]] = None,
+    L_idxs: Optional[list[int | None]] = None,
+    full_pres: Optional[list[bool]] = None,
+    norms: Optional[list[bool]] = None,
+    plot_separations: bool = False,
+    save: bool = False,
+) -> None:
+    sources = sources or [*Dataset]
+    degrees = degrees or [3, 5, 7, 9]
+    L_idxs = L_idxs or [None, -2, 3]
+    full_pres = full_pres or [True, False]
+    norms = norms or [True, False]
     grid = [
         Namespace(**p)
         for p in ParameterGrid(
             dict(
-                source=[*Dataset],
-                degree=DEGREES,
-                L_idx=[None, -2, 3],
-                full_pre=[True, False],
+                source=sources,
+                L_idx=L_idxs,
+                full_pre=full_pres,
+                degree=degrees,  # important this is last
+                norm=norms,
             )
         )
     ]
-    for args in tqdm(grid, desc="Predicting"):
+
+    count = 0
+    for args in tqdm(grid):
         # data = ProcessedDataset(source=source, full_pre=False)
         data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
         rigs = rigidities(dataset=data, degree=args.degree, parallel=True)
-        dfs.append(predict_rigidity_sep(rigs, data, degree=args.degree, L_idx=args.L_idx))
         # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
-        # plot_rigidities(rigs, data, degree)
-        # plot_rigidity_sep(rigs, data, degree)
-        # count += 1
-        # if count % 3 == 0:
-        #     plt.show()
-        # sys.exit()
+        if plot_separations:
+            plot_rigidity_sep(rigs, data, args.degree, norm=args.norm, save=save)
+        else:
+            plot_rigidities(rigs, data, args.degree, norm=args.norm, save=save)
+        count += 1
+        if save:
+            fname = f"{args.source.name}_fullpre={args.full_pre}_norm={args.norm}_deg={args.degree}.png"
+            plt.savefig(PLOT_OUTDIR / fname, dpi=300)
+            plt.close()
+            continue
+        if count % 5 == 0:
+            plt.show()
+    if save:
+        print(f"Plots saved to {PLOT_OUTDIR}")
+
+
+def predict_data(args: Namespace) -> DataFrame:
+    data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
+    rigs = rigidities(dataset=data, degree=args.degree, parallel=True)
+    return predict_rigidity_sep(
+        rigs,
+        data,
+        degree=args.degree,
+        L_idx=args.L_idx,
+        norm=args.norm,
+    )
+
+
+def summarize_all_predictions(
+    sources: Optional[list[Dataset]] = None,
+    degrees: Optional[list[int]] = None,
+    L_idxs: Optional[list[int | None]] = None,
+    full_pres: Optional[list[bool]] = None,
+    norms: Optional[list[bool]] = None,
+    print_rows: int = 200,
+) -> None:
+    sources = sources or [*Dataset]
+    degrees = degrees or [3, 5, 7, 9]
+    L_idxs = L_idxs or [None, -2, 3]
+    full_pres = full_pres or [True, False]
+    norms = norms or [True, False]
+
+    grid = [
+        Namespace(**p)
+        for p in ParameterGrid(
+            dict(
+                source=sources,
+                degree=degrees,
+                L_idx=L_idxs,
+                full_pre=full_pres,
+                norm=norms,
+            )
+        )
+    ]
+    # grid = grid[:100]
+    dfs = process_map(predict_data, grid, desc="Predicting")
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
-    print(df.to_markdown(index=False, tablefmt="simple"))
+    print(df.iloc[:print_rows, :].to_markdown(index=False, tablefmt="simple"))
+
+    corrs = pd.get_dummies(df.drop(columns=["data", "comparison"]))
+    print("-" * 80)
+    print("Spearman correlations")
+    print("-" * 80)
+    print(corrs.corr(method="spearman").loc["acc+"])
+    corrs = corrs.loc[corrs["acc+"] > 0.0]
+    print("-" * 80)
+    print("Spearman correlations of actual predictive pairs")
+    print("-" * 80)
+    print(corrs.corr(method="spearman").loc["acc+"])
+
+
+if __name__ == "__main__":
+    DEGREES = [5, 7, 9]
+    L_IDXS: List[int | None] = [None]
+    plot_all_rigidities(
+        degrees=DEGREES,
+        plot_separations=True,
+        norms=[True],
+        save=True,
+    )
+    sys.exit()
+    summarize_all_predictions(
+        degrees=DEGREES,
+        L_idxs=L_IDXS,
+    )
