@@ -12,10 +12,9 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=80
 
-THIS_SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-CODE="$(dirname "$THIS_SCRIPT_DIR")"
-PROJECT="$(dirname "$CODE")"
-JOB_SCRIPTS="$CODE/job_scripts"
+SCRATCH="$(readlink -f "$SCRATCH")"
+PROJECT="$SCRATCH/random-matrix-fmri"
+CODE="$PROJECT/code"
 RUN_SCRIPT="$PROJECT/run_python.sh"
 
 PY_SCRIPTS="$CODE/scripts"
