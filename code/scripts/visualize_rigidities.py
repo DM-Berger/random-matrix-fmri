@@ -386,15 +386,16 @@ def summarize_all_predictions(
 
 
 if __name__ == "__main__":
-    DEGREES = [5, 7, 9]
-    L_IDXS: List[int | None] = [None]
-    plot_all_rigidities(
-        degrees=DEGREES,
-        plot_separations=True,
-        norms=[True],
-        save=True,
-    )
-    sys.exit()
+    DEGREES = [3, 5, 7, 9]
+    # L_IDXS: List[int | None] = [None]
+    L_IDXS: List[int | None] = [-2]
+    # plot_all_rigidities(
+    #     degrees=DEGREES,
+    #     plot_separations=True,
+    #     norms=[True],
+    #     save=True,
+    # )
+    # sys.exit()
     summarize_all_predictions(
         degrees=DEGREES,
         L_idxs=L_IDXS,

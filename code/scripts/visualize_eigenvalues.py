@@ -234,7 +234,7 @@ def kfold_eval(
 def predict_eigval_sep(
     eigs: DataFrame,
     data: ProcessedDataset,
-    eig_idx: int | None = None,
+    eig_idx: int | slice | None = None,
     norm: bool = False,
 ) -> DataFrame:
     DUDS = [
@@ -246,11 +246,22 @@ def predict_eigval_sep(
 
     eigs = log_normalize_eigs(eigs, norm)
     labels = eigs.y.unique().tolist()
-    eig_label = eigs.columns[eig_idx - 1] if eig_idx is not None else "All"
+    if eig_idx is None:
+        eig_label = "All"
+    elif isinstance(eig_idx, slice):
+        eig_label = f"[{eig_idx.start},{eig_idx.stop - 1}]"
+    else:
+        eig_label = eigs.columns[eig_idx - 1]
     results = []
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            df = eigs if eig_idx is None else eigs.iloc[:, [eig_idx - 1, -1]]
+            if eig_idx is None:
+                df = eigs
+            elif isinstance(eig_idx, slice):
+                df = eigs.drop(columns="y").iloc[:, eig_idx]
+                df["y"] = eigs["y"]
+            else:
+                df = eigs.iloc[:, [eig_idx - 1, -1]]
             title = f"{labels[i]} v {labels[j]}"
             skip = False
             for dud in DUDS:
@@ -273,7 +284,9 @@ def predict_eigval_sep(
 
     result["data"] = data.source.name
     result["preproc"] = "full" if data.full_pre else "minimal"
-    result["idx"] = str(eig_label)
+    result["idx"] = (
+        str(eig_idx).replace("slice", "").replace("(", "[").replace(", None", "")
+    )
     return result.loc[
         :,
         [
@@ -349,7 +362,7 @@ def predict_data(args: Namespace) -> DataFrame:
 
 def summarize_all_predictions(
     sources: Optional[list[Dataset]] = None,
-    eig_idxs: Optional[list[int | None]] = None,
+    eig_idxs: Optional[list[int | None | slice]] = None,
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
     print_rows: int = 100,
@@ -389,7 +402,15 @@ def summarize_all_predictions(
 
 if __name__ == "__main__":
     # EIG_IDXS: List[int | None] = [None]
-    EIG_IDXS = [None, -2]
+    # EIG_IDXS = [None, -2]
+    EIG_IDXS: List[int | slice | None] = [
+        None,
+        slice(-80, -1),
+        slice(-40, -1),
+        slice(-20, -1),
+        slice(-10, -1),
+        # slice(-5, -1),
+    ]
     # plot_all_eigvals(
     #     plot_separations=False,
     #     save=False,
