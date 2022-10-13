@@ -51,3 +51,6 @@ class Dataset(Enum):
             Dataset.TaskAttention: ["high", "low"],
             Dataset.WeeklyAttention: ["high", "low"],
         }[self]
+
+class NormMethod(Enum):
+    pass

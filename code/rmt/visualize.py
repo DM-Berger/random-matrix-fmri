@@ -1,4 +1,12 @@
+# fmt: off
+import sys  # isort: skip
+from pathlib import Path  # isort: skip
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT))
+# fmt: on
+
 import traceback
+from abc import ABC, abstractproperty
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import Enum
@@ -36,8 +44,20 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.dataset import ProcessedDataset
+from rmt.dataset import ProcessedDataset, levelvars, rigidities
+from rmt.enumerables import Dataset
+from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
 from rmt.predict import log_normalize
+
+PROJECT = ROOT.parent
+RESULTS = PROJECT / "results"
+PLOT_OUTDIR = RESULTS / "plots"
+
+
+def outdir(feature_name: str) -> Path:
+    out = PLOT_OUTDIR / feature_name
+    out.mkdir(exist_ok=True, parents=True)
+    return out
 
 
 def best_rect(m: int) -> Tuple[int, int]:
@@ -68,32 +88,27 @@ def is_not_dud_pairing(pair: tuple[str, str]) -> bool:
     return True
 
 
-@dataclass
-class Feature:
-    df: DataFrame
-    name: str
-
-
 def plot_feature(
-    feature: DataFrame,
-    data: ProcessedDataset,
-    norm: bool = False,
+    feature: Feature,
     save: bool = False,
 ) -> None:
-    labels = feature.y.unique().tolist()
-    feature = log_normalize(feature, norm)
+    data = feature.data
+    norm = feature.norm
+
+    labels = data.y.unique().tolist()
+    data = log_normalize(data, norm)
     combs = list(filter(is_not_dud_pairing, combinations(labels, 2)))
     N = len(combs)
-    L = np.array(feature.drop(columns="y").columns.to_list(), dtype=np.float64)
+    L = np.array(data.drop(columns="y").columns.to_list(), dtype=np.float64)
     L_diff = np.min(np.diff(L)) * 0.95
     nrows, ncols = best_rect(N)
     sbn.set_style("darkgrid")
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    fig.suptitle(f"{data}: norm={norm}")
+    fig.suptitle(feature.suptitle)
     for i, (label1, label2) in enumerate(combs):
         title = f"{label1} v {label2}"
-        df1 = feature.loc[feature.y == label1].drop(columns="y")
-        df2 = feature.loc[feature.y == label2].drop(columns="y")
+        df1 = data.loc[data.y == label1].drop(columns="y")
+        df2 = data.loc[data.y == label2].drop(columns="y")
         s = 2.0
         alpha = 0.3
         ax: Axes = axes.flat[i]  # type: ignore
@@ -132,26 +147,27 @@ def count_suffix(feature_idx: int) -> str:
 
 
 def plot_feature_separation(
-    data: ProcessedDataset,
-    feature: DataFrame,
-    feature_name: str,
+    feature: Feature,
     feature_idx: int = -1,
-    norm: bool = False,
     save: bool = False,
 ) -> None:
-    labels = feature.y.unique().tolist()
-    feature = log_normalize(feature, norm)
+    data = feature.data
+    norm = feature.norm
+    feature_name = feature.name
+
+    labels = data.y.unique().tolist()
+    data = log_normalize(data, norm)
     combs = list(filter(is_not_dud_pairing, combinations(labels, 2)))
     N = len(combs)
     nrows, ncols = best_rect(N)
     sbn.set_style("darkgrid")
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols * 2, squeeze=False)
-    fig.suptitle(f"{data}: norm={norm}")
+    fig.suptitle(feature.suptitle)
     ax_idx = 0
     for label1, label2 in combs:
         if feature_idx is None:
             feature_idx = -1
-        df = feature.iloc[:, [feature_idx - 1, -1]]
+        df = data.iloc[:, [feature_idx - 1, -1]]
         suffix = count_suffix(-feature_idx) if feature_idx < 0 else ""
         eig_label = (
             f"{-feature_idx}{suffix} largest" if feature_idx < 0 else f"{feature_idx}"
@@ -198,3 +214,54 @@ def plot_feature_separation(
     if save:
         return
     plt.show(block=False)
+
+
+def plot_all_features(
+    sources: Optional[list[Dataset]] = None,
+    feature_idxs: Optional[list[int | None]] = None,
+    feature_cls: Type[Rigidities] | Type[Levelvars] | Type[Eigenvalues] = Eigenvalues,
+    full_pres: Optional[list[bool]] = None,
+    norms: Optional[list[bool]] = None,
+    plot_separations: bool = False,
+    save: bool = False,
+) -> None:
+    sources = sources or [*Dataset]
+    feature_idxs = feature_idxs or [None, -2, 3]
+    full_pres = full_pres or [True, False]
+    degrees: list[int | None] = [None] if feature_cls is Eigenvalues else [3, 5, 7, 9]
+    norms = norms or [True, False]
+    grid = [
+        Namespace(**p)
+        for p in ParameterGrid(
+            dict(
+                source=sources,
+                feature_idx=feature_idxs,
+                full_pre=full_pres,
+                norm=norms,
+                degree=degrees,
+            )
+        )
+    ]
+
+    count = 0
+    for args in tqdm(grid):
+        feature = feature_cls(
+            source=args.source, full_pre=args.full_pre, norm=args.norm, degree=args.degree
+        )
+        if plot_separations:
+            plot_feature_separation(
+                feature=feature,
+                save=save,
+                feature_idx=args.feature_idx,
+            )
+        else:
+            plot_feature(feature=feature, save=save)
+        count += 1
+        if save:
+            plt.savefig(feature_cls.outdir() / feature.fname, dpi=300)
+            plt.close()
+            continue
+        if count % 5 == 0:
+            plt.show()
+    if save:
+        print(f"Plots saved to {feature.outdir}")  # type: ignore

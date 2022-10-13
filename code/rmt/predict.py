@@ -136,6 +136,7 @@ def select_features(
         df = feature.iloc[:, [feature_idx - 1, -1]]
     return df
 
+
 def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
     DUD_PAIRS = [
         "control v control_pre",
@@ -148,6 +149,7 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
         if dud in title:
             return True
     return False
+
 
 def predict_feature(
     feature: DataFrame,

@@ -45,64 +45,14 @@ from typing_extensions import Literal
 
 from rmt.dataset import ProcessedDataset, levelvars
 from rmt.enumerables import Dataset
+from rmt.features import Eigenvalues
 from rmt.predict import predict_feature
-from rmt.visualize import plot_feature, plot_feature_separation
+from rmt.visualize import plot_all_features, plot_feature, plot_feature_separation
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots/eigenvalues"
 PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
-
-
-def plot_all_eigvals(
-    sources: Optional[list[Dataset]] = None,
-    eig_idxs: Optional[list[int | None]] = None,
-    full_pres: Optional[list[bool]] = None,
-    norms: Optional[list[bool]] = None,
-    plot_separations: bool = False,
-    save: bool = False,
-) -> None:
-    sources = sources or [*Dataset]
-    eig_idxs = eig_idxs or [None, -2, 3]
-    full_pres = full_pres or [True, False]
-    norms = norms or [True, False]
-    grid = [
-        Namespace(**p)
-        for p in ParameterGrid(
-            dict(
-                source=sources,
-                eig_idx=eig_idxs,
-                full_pre=full_pres,
-                norm=norms,
-            )
-        )
-    ]
-
-    count = 0
-    for args in tqdm(grid):
-        data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
-        eigs = data.eigs_df(unify="pad", diff=True)
-        if plot_separations:
-            plot_feature_separation(
-                data=data,
-                feature=eigs,
-                feature_name="eigenvalues",
-                norm=args.norm,
-                save=save,
-                feature_idx=args.eig_idx,
-            )
-        else:
-            plot_feature(feature=eigs, data=data, norm=args.norm, save=save)
-        count += 1
-        if save:
-            fname = f"{args.source.name}_fullpre={args.full_pre}_norm={args.norm}.png"
-            plt.savefig(PLOT_OUTDIR / fname, dpi=300)
-            plt.close()
-            continue
-        if count % 5 == 0:
-            plt.show()
-    if save:
-        print(f"Plots saved to {PLOT_OUTDIR}")
 
 
 def predict_data(args: Namespace) -> DataFrame:
@@ -169,8 +119,13 @@ if __name__ == "__main__":
     #     slice(-10, -1),
     #     # slice(-5, -1),
     # ]
-    plot_all_eigvals(
-        # plot_separations=False,
+    # plot_all_eigvals(
+    #     # plot_separations=False,
+    #     plot_separations=True,
+    #     save=False,
+    # )
+    plot_all_features(
+        feature_cls=Eigenvalues,
         plot_separations=True,
         save=False,
     )
