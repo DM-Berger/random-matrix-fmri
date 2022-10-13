@@ -169,10 +169,10 @@ def plot_feature_separation(
             feature_idx = -1
         df = data.iloc[:, [feature_idx - 1, -1]]
         suffix = count_suffix(-feature_idx) if feature_idx < 0 else ""
-        eig_label = (
+        idx_label = (
             f"{-feature_idx}{suffix} largest" if feature_idx < 0 else f"{feature_idx}"
         )
-        title = f"{label1} v {label2}: eig_idx={eig_label}"
+        title = f"{label1} v {label2}: idx={idx_label}"
         idx = (df.y == label1) | (df.y == label2)
         df = df.loc[idx]
         # df2 = df.drop(columns="y").applymap(np.log)
@@ -222,13 +222,16 @@ def plot_all_features(
     feature_cls: Type[Rigidities] | Type[Levelvars] | Type[Eigenvalues] = Eigenvalues,
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
+    degrees: Optional[list[int]] = None,
     plot_separations: bool = False,
     save: bool = False,
 ) -> None:
     sources = sources or [*Dataset]
     feature_idxs = feature_idxs or [None, -2, 3]
     full_pres = full_pres or [True, False]
-    degrees: list[int | None] = [None] if feature_cls is Eigenvalues else [3, 5, 7, 9]
+    _degrees = degrees or [3, 5, 7, 9]
+    if feature_cls is Eigenvalues:
+        _degrees = [None]
     norms = norms or [True, False]
     grid = [
         Namespace(**p)
@@ -238,7 +241,7 @@ def plot_all_features(
                 feature_idx=feature_idxs,
                 full_pre=full_pres,
                 norm=norms,
-                degree=degrees,
+                degree=_degrees,
             )
         )
     ]

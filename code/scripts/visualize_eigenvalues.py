@@ -47,7 +47,7 @@ from rmt.dataset import ProcessedDataset, levelvars
 from rmt.enumerables import Dataset
 from rmt.features import Eigenvalues
 from rmt.predict import predict_feature
-from rmt.visualize import plot_all_features, plot_feature, plot_feature_separation
+from rmt.visualize import plot_all_features
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
