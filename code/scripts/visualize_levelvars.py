@@ -5,52 +5,24 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
-from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from enum import Enum
-from itertools import combinations
+from argparse import Namespace
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    cast,
-    no_type_check,
-)
+from typing import Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytest
-import seaborn as sbn
-from matplotlib.axes import Axes
-from numpy import ndarray
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.linear_model import LogisticRegression as LR
-from sklearn.model_selection import ParameterGrid, StratifiedKFold, cross_val_score
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, minmax_scale
+from sklearn.model_selection import ParameterGrid
+from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
-from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from rmt.dataset import ProcessedDataset, levelvars
 from rmt.enumerables import Dataset
 from rmt.features import Levelvars
 from rmt.visualize import plot_all_features
-
-PROJECT = ROOT.parent
-RESULTS = PROJECT / "results"
-PLOT_OUTDIR = RESULTS / "plots/levelvars"
-PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
 
 
 def predict_levelvar_sep(
@@ -180,13 +152,13 @@ if __name__ == "__main__":
     #     save=True,
     # )
 
-    plot_all_features(
-        feature_cls=Levelvars,
-        plot_separations=False,
-        degrees=DEGREES,
-        save=False,
-    )
-    sys.exit()
+    # plot_all_features(
+    #     feature_cls=Levelvars,
+    #     plot_separations=False,
+    #     degrees=DEGREES,
+    #     save=False,
+    # )
+    # sys.exit()
     summarize_all_predictions(
         degrees=DEGREES,
         L_idxs=L_IDXS,
