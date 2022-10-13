@@ -46,7 +46,6 @@ from typing_extensions import Literal
 
 from rmt.dataset import ProcessedDataset, levelvars, rigidities
 from rmt.enumerables import Dataset
-from rmt.predict import log_normalize
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"

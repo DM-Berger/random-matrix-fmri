@@ -44,7 +44,6 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.dataset import ProcessedDataset, levelvars, rigidities
 from rmt.enumerables import Dataset
 from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
 from rmt.predict import log_normalize

@@ -43,8 +43,8 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.dataset import ProcessedDataset, levelvars
 from rmt.enumerables import Dataset
+from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
@@ -152,21 +152,20 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
 
 
 def predict_feature(
-    feature: DataFrame,
-    data: ProcessedDataset,
+    feature: Feature,
     feature_idx: int | slice | None = None,
-    norm: bool = False,
-    logarithm: bool = False,
+    logarithm: bool = True,
 ) -> DataFrame:
-
+    data = feature.data
+    norm = feature.norm
     if logarithm:
-        feature = log_normalize(feature, norm)
-    labels = feature.y.unique().tolist()
+        data = log_normalize(data, norm)
+    labels = data.y.unique().tolist()
 
     results = []
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            df = select_features(feature, feature_idx)
+            df = select_features(data, feature_idx)
             if is_dud_comparison(labels, i, j):
                 continue
             title = f"{labels[i]} v {labels[j]}"
@@ -182,8 +181,8 @@ def predict_feature(
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
     result = pd.concat(results, axis=0, ignore_index=True)
 
-    result["data"] = data.source.name
-    result["preproc"] = "full" if data.full_pre else "minimal"
+    result["data"] = feature.name
+    result["preproc"] = "full" if feature.full_pre else "minimal"
     result["idx"] = feature_label(feature_idx)
     return result.loc[
         :,
@@ -200,3 +199,59 @@ def predict_feature(
             "max",
         ],
     ]
+
+
+def predict_all(args: Namespace) -> DataFrame:
+    feature = args.cls(
+        source=args.source, full_pre=args.full_pre, norm=args.norm, degree=args.degree
+    )
+    return predict_feature(
+        feature=feature,
+        feature_idx=args.feature_idx,
+        logarithm=True,
+    )
+
+
+def summarize_all_predictions(
+    feature_cls: Type[Rigidities] | Type[Levelvars] | Type[Eigenvalues] = Eigenvalues,
+    sources: Optional[list[Dataset]] = None,
+    degrees: Optional[list[int]] = None,
+    feature_idxs: Optional[list[int | None]] = None,
+    full_pres: Optional[list[bool]] = None,
+    norms: Optional[list[bool]] = None,
+    print_rows: int = 200,
+) -> None:
+    sources = sources or [*Dataset]
+    degrees = degrees or [3, 5, 7, 9]
+    feature_idxs = feature_idxs or [None, -2, 3]
+    full_pres = full_pres or [True, False]
+    norms = norms or [True, False]
+
+    grid = [
+        Namespace(**p)
+        for p in ParameterGrid(
+            dict(
+                cls=[feature_cls],
+                source=sources,
+                degree=degrees,
+                feature_idx=feature_idxs,
+                full_pre=full_pres,
+                norm=norms,
+            )
+        )
+    ]
+    # grid = grid[:100]
+    dfs = process_map(predict_all, grid, desc="Predicting")
+    df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
+    print(df.iloc[:print_rows, :].to_markdown(index=False, tablefmt="simple"))
+
+    corrs = pd.get_dummies(df.drop(columns=["data", "comparison"]))
+    print("-" * 80)
+    print("Spearman correlations")
+    print("-" * 80)
+    print(corrs.corr(method="spearman").loc["acc+"])
+    corrs = corrs.loc[corrs["acc+"] > 0.0]
+    print("-" * 80)
+    print("Spearman correlations of predictive pairs")
+    print("-" * 80)
+    print(corrs.corr(method="spearman").loc["acc+"])
