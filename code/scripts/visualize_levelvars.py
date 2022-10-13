@@ -53,133 +53,6 @@ PLOT_OUTDIR = RESULTS / "plots/levelvars"
 PLOT_OUTDIR.mkdir(exist_ok=True, parents=True)
 
 
-def plot_levelvars(
-    lvars: DataFrame,
-    data: ProcessedDataset,
-    degree: int,
-    norm: bool = False,
-    save: bool = False,
-) -> None:
-    labels = lvars.y.unique().tolist()
-    if norm:
-        x = lvars.drop(columns="y").applymap(np.log)
-        X = DataFrame(minmax_scale(x)).applymap(np.exp)
-        lvars = lvars.copy()
-        lvars.iloc[:, :-1] = X
-    combs = list(combinations(labels, 2))
-    N = len(combs)
-    L = np.array(lvars.drop(columns="y").columns.to_list(), dtype=np.float64)
-    L_diff = np.min(np.diff(L)) * 0.95
-    nrows, ncols = best_rect(N)
-    sbn.set_style("darkgrid")
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
-    fig.suptitle(f"{data}: deg={degree} norm={norm}")
-    ax_idx = 0
-    for i in range(len(labels)):
-        for j in range(i + 1, len(labels)):
-            label1 = labels[i]
-            label2 = labels[j]
-            title = f"{label1} v {label2}"
-            df1 = lvars.loc[lvars.y == label1].drop(columns="y")
-            df2 = lvars.loc[lvars.y == label2].drop(columns="y")
-            s = 2.0
-            alpha = 0.3
-            for k in range(len(df1)):
-                axes.flat[ax_idx].scatter(
-                    L + np.random.uniform(0, L_diff, len(L)),
-                    np.log(df1.iloc[k]),
-                    s=s,
-                    alpha=alpha,
-                    color="#016afe",
-                    label=label1 if k == 1 else None,
-                )
-            for k in range(len(df2)):
-                axes.flat[ax_idx].scatter(
-                    L + np.random.uniform(0, L_diff, len(L)),
-                    np.log(df2.iloc[k]),
-                    s=s,
-                    alpha=alpha,
-                    color="#fe7b01",
-                    label=label2 if k == 1 else None,
-                )
-            axes.flat[ax_idx].set_title(title)
-            axes.flat[ax_idx].legend().set_visible(True)
-            ax_idx += 1
-
-    fig.set_size_inches(w=10, h=10)
-    if save:
-        return
-    plt.show(block=False)
-
-
-# def plot_levelvar_sep(
-#     lvars: DataFrame,
-#     data: ProcessedDataset,
-#     degree: int,
-#     L_idx: int = -2,
-#     norm: bool = False,
-#     save: bool = False,
-# ) -> None:
-#     labels = lvars.y.unique().tolist()
-#     if norm:
-#         x = lvars.drop(columns="y").applymap(np.log)
-#         X = DataFrame(minmax_scale(x)).applymap(np.exp)
-#         lvars = lvars.copy()
-#         lvars.iloc[:, :-1] = X
-#     combs = list(combinations(labels, 2))
-#     N = len(combs)
-#     L = np.array(lvars.drop(columns="y").columns.to_list(), dtype=np.float64)
-#     L_diff = np.min(np.diff(L)) * 0.95
-#     nrows, ncols = best_rect(N)
-#     sbn.set_style("darkgrid")
-#     fig, axes = plt.subplots(nrows=nrows, ncols=ncols * 2, squeeze=False)
-#     fig.suptitle(f"{data}: deg={degree} norm={norm}")
-#     ax_idx = 0
-#     for i in range(len(labels)):
-#         for j in range(i + 1, len(labels)):
-#             df = lvars.iloc[:, [L_idx, -1]]
-#             title = f"{labels[i]} v {labels[j]}: L={df.columns[0]}"
-#             idx = (df.y == labels[i]) | (df.y == labels[j])
-#             df = df.loc[idx]
-#             df2 = df.drop(columns="y").applymap(np.log)
-#             df2["log(levelvar)"] = df.y
-#             ax1: Axes = axes.flat[ax_idx]  # type: ignore
-#             ax2: Axes = axes.flat[ax_idx + 1]  # type: ignore
-#             sbn.histplot(
-#                 data=df,
-#                 x=df.columns[0],
-#                 hue="y",
-#                 element="step",
-#                 fill=True,
-#                 ax=ax1,
-#                 legend=True,
-#                 stat="density",
-#                 bins=20,
-#                 common_norm=False,
-#                 common_bins=False,
-#                 log_scale=True,
-#             )
-#             sbn.stripplot(
-#                 data=df2,
-#                 x=df2.columns[0],
-#                 y="log(levelvar)",
-#                 hue="log(levelvar)",
-#                 legend=False,
-#                 ax=ax2,
-#                 orient="h",
-#             )
-#             ax1.set_title(title)
-#             ax2.set_title(title)
-#             ax1.set_xlabel("levelvar")
-#             ax2.set_xlabel("log(levelvar)")
-#             ax_idx += 2
-
-#     fig.set_size_inches(w=ncols * 8, h=nrows * 5)
-#     if save:
-#         return
-#     plt.show(block=False)
-
-
 def predict_levelvar_sep(
     lvars: DataFrame,
     data: ProcessedDataset,
@@ -240,53 +113,6 @@ def predict_levelvar_sep(
             "max",
         ],
     ]
-
-
-# def plot_all_levelvars(
-#     sources: Optional[list[Dataset]] = None,
-#     degrees: Optional[list[int]] = None,
-#     L_idxs: Optional[list[int | None]] = None,
-#     full_pres: Optional[list[bool]] = None,
-#     norms: Optional[list[bool]] = None,
-#     plot_separations: bool = False,
-#     save: bool = False,
-# ) -> None:
-#     sources = sources or [*Dataset]
-#     degrees = degrees or [3, 5, 7, 9]
-#     L_idxs = L_idxs or [None, -2, 3]
-#     full_pres = full_pres or [True, False]
-#     norms = norms or [True, False]
-#     grid = [
-#         Namespace(**p)
-#         for p in ParameterGrid(
-#             dict(
-#                 source=sources,
-#                 L_idx=L_idxs,
-#                 full_pre=full_pres,
-#                 degree=degrees,  # important this is last
-#                 norm=norms,
-#             )
-#         )
-#     ]
-
-#     count = 0
-#     for args in tqdm(grid):
-#         data = ProcessedDataset(source=args.source, full_pre=args.full_pre)
-#         lvars = levelvars(dataset=data, degree=args.degree, parallel=True)
-#         if plot_separations:
-#             plot_levelvar_sep(lvars, data, args.degree, norm=args.norm, save=save)
-#         else:
-#             plot_levelvars(lvars, data, args.degree, norm=args.norm, save=save)
-#         count += 1
-#         if save:
-#             fname = f"{args.source.name}_fullpre={args.full_pre}_norm={args.norm}_deg={args.degree}.png"
-#             plt.savefig(PLOT_OUTDIR / fname, dpi=300)
-#             plt.close()
-#             continue
-#         if count % 5 == 0:
-#             plt.show()
-#     if save:
-#         print(f"Plots saved to {PLOT_OUTDIR}")
 
 
 def predict_data(args: Namespace) -> DataFrame:
@@ -356,7 +182,7 @@ if __name__ == "__main__":
 
     plot_all_features(
         feature_cls=Levelvars,
-        plot_separations=True,
+        plot_separations=False,
         degrees=DEGREES,
         save=False,
     )
