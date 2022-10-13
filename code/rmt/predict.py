@@ -216,7 +216,7 @@ def summarize_all_predictions(
     feature_cls: Type[Rigidities] | Type[Levelvars] | Type[Eigenvalues] = Eigenvalues,
     sources: Optional[list[Dataset]] = None,
     degrees: Optional[list[int]] = None,
-    feature_idxs: Optional[list[int | None]] = None,
+    feature_idxs: Optional[list[int | slice | None]] = None,
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
     print_rows: int = 200,
