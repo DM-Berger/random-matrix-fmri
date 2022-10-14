@@ -13,16 +13,23 @@ from rmt.visualize import plot_all_features
 
 if __name__ == "__main__":
     DEGREES = [3, 5, 7, 9]
-    # L_IDXS: List[int | None] = [None]
-    L_IDXS: list[int | slice | None] = [-2]
-    plot_all_features(
+    FEATURE_IDXS: list[int | slice | None] = [
+        None,
+        slice(-10, -1),
+        slice(-5, -1),
+        slice(-3, -1),
+    ]
+    # plot_all_features(
+    #     feature_cls=Rigidities,
+    #     plot_separations=False,
+    #     degrees=DEGREES,
+    #     save=False,
+    # )
+    df = summarize_all_predictions(
         feature_cls=Rigidities,
-        plot_separations=False,
         degrees=DEGREES,
-        save=False,
+        feature_idxs=FEATURE_IDXS,
     )
-    summarize_all_predictions(
-        feature_cls=Rigidities,
-        degrees=DEGREES,
-        feature_idxs=L_IDXS,
-    )
+    outfile = ROOT.parent / "rigidity_predictions.json"
+    df.to_json(outfile)
+    print(f"Saved rigidity predictions to {outfile}")

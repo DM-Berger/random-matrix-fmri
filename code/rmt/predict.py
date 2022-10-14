@@ -36,7 +36,12 @@ from numpy import ndarray
 from pandas import DataFrame, Series
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.linear_model import LogisticRegression as LR
-from sklearn.model_selection import ParameterGrid, StratifiedKFold, cross_val_score
+from sklearn.model_selection import (
+    ParameterGrid,
+    StratifiedKFold,
+    cross_val_score,
+    cross_validate,
+)
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, minmax_scale
 from sklearn.svm import SVC
 from tqdm import tqdm
@@ -79,11 +84,19 @@ def kfold_eval(
     if norm:
         X = minmax_scale(X, axis=0)
     cv = StratifiedKFold(n_splits=5)
-    scores = cross_val_score(classifier(**kwargs), X, y, cv=cv, scoring="accuracy")
+    # scores = cross_val_score(classifier(**kwargs), X, y, cv=cv, scoring="accuracy")
+    scores = cross_validate(
+        classifier(**kwargs), X, y, cv=cv, scoring=["accuracy", "roc_auc"]
+    )
+    acc = scores["test_accuracy"]
+    auc = scores["test_roc_auc"]
     guess = np.max([np.mean(y), np.mean(1 - y)])
-    mean = np.mean(scores).round(3)
-    mn = np.min(scores)
-    mx = np.max(scores)
+    mean = np.mean(acc).round(3)
+    mn = np.min(acc)
+    mx = np.max(acc)
+    auroc = np.mean(auc)
+    auroc_mn = np.min(auc)
+    auroc_mx = np.max(auc)
     # print(
     #     f"  {title:>40} {classifier.__name__:>30} accs:mean={mean:0.3f} "
     #     f"[{np.min(scores):0.3f}, {np.max(scores):0.3f}] "
@@ -95,9 +108,12 @@ def kfold_eval(
             "classifier": classifier.__name__,
             "norm": norm,
             "acc+": mean - guess,
-            "mean": mean,
-            "min": mn,
-            "max": mx,
+            "auroc": auroc,
+            "mean_acc": mean,
+            "min_acc": mn,
+            "max_acc": mx,
+            "min_auroc": auroc_mn,
+            "max_auroc": auroc_mx,
         },
         index=[0],
     )
@@ -181,22 +197,29 @@ def predict_feature(
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
     result = pd.concat(results, axis=0, ignore_index=True)
 
-    result["data"] = feature.name
+    result["data"] = feature.source.name
+    result["feature"] = feature.name
     result["preproc"] = "full" if feature.full_pre else "minimal"
     result["idx"] = feature_label(feature_idx)
+    result["deg"] = str(feature.degree)
     return result.loc[
         :,
         [
             "data",
+            "feature",
             "preproc",
+            "deg",
             "norm",
             "idx",
             "comparison",
             "classifier",
             "acc+",
-            "mean",
-            "min",
-            "max",
+            "auroc",
+            "mean_acc",
+            "min_acc",
+            "max_acc",
+            "min_auroc",
+            "max_auroc",
         ],
     ]
 
@@ -220,7 +243,7 @@ def summarize_all_predictions(
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
     print_rows: int = 200,
-) -> None:
+) -> DataFrame:
     sources = sources or [*Dataset]
     degrees = degrees or [3, 5, 7, 9]
     feature_idxs = feature_idxs or [None, -2, 3]
@@ -250,8 +273,9 @@ def summarize_all_predictions(
     print("Spearman correlations")
     print("-" * 80)
     print(corrs.corr(method="spearman").loc["acc+"])
-    corrs = corrs.loc[corrs["acc+"] > 0.0]
+    corrs_pred = corrs.loc[corrs["acc+"] > 0.0]
     print("-" * 80)
     print("Spearman correlations of predictive pairs")
     print("-" * 80)
-    print(corrs.corr(method="spearman").loc["acc+"])
+    print(corrs_pred.corr(method="spearman").loc["acc+"])
+    return df

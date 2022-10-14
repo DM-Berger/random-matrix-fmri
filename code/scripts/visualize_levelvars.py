@@ -12,18 +12,24 @@ from rmt.predict import summarize_all_predictions
 from rmt.visualize import plot_all_features
 
 if __name__ == "__main__":
-    # DEGREES = [3, 5, 7, 9]
-    DEGREES = [5, 7, 9]
-    # L_IDXS: List[int | None] = [None]
-    L_IDXS: list[int | slice | None] = [-2]
-    plot_all_features(
+    DEGREES = [3, 5, 7, 9]
+    FEATURE_IDXS: list[int | slice | None] = [
+        None,
+        slice(-10, -1),
+        slice(-5, -1),
+        slice(-3, -1),
+    ]
+    # plot_all_features(
+    #     feature_cls=Levelvars,
+    #     plot_separations=False,
+    #     degrees=DEGREES,
+    #     save=False,
+    # )
+    df = summarize_all_predictions(
         feature_cls=Levelvars,
-        plot_separations=False,
         degrees=DEGREES,
-        save=False,
+        feature_idxs=FEATURE_IDXS,
     )
-    summarize_all_predictions(
-        feature_cls=Levelvars,
-        degrees=DEGREES,
-        feature_idxs=L_IDXS,
-    )
+    outfile = ROOT.parent / "levelvar_predictions.json"
+    df.to_json(outfile)
+    print(f"Saved levelvar predictions to {outfile}")
