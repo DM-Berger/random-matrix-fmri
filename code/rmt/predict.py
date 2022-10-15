@@ -140,17 +140,39 @@ def feature_label(feature_idx: int | slice | None) -> str:
 
 
 def select_features(
-    feature: DataFrame,
+    feature: Feature,
+    data: DataFrame,
     feature_idx: int | slice | None,
 ) -> DataFrame:
     if feature_idx is None:
-        df = feature
-    elif isinstance(feature_idx, slice):
-        df = feature.drop(columns="y").iloc[:, feature_idx]
-        df["y"] = feature["y"]
+        return data
+    if not feature.is_combined:
+        if isinstance(feature_idx, slice):
+            df = data.drop(columns="y").iloc[:, feature_idx]
+            df["y"] = data["y"]
+            return df
+        else:
+            return data.iloc[:, [feature_idx - 1, -1]]
+
+    # handle combined features
+    idxs = feature.feature_start_idxs
+    df = data.drop(columns="y")
+    sub_dfs = []
+    for i in range(len(idxs) - 1):
+        start = idxs[i]
+        stop = idxs[i + 1]
+        sub_dfs.append(df.iloc[:, start:stop])
+
+    if isinstance(feature_idx, slice):
+        selecteds = [sub_df.iloc[:, feature_idx] for sub_df in sub_dfs]
+        selected = pd.concat(selecteds, axis=1, ignore_index=True)
+        selected["y"] = data["y"]
+        return selected
     else:
-        df = feature.iloc[:, [feature_idx - 1, -1]]
-    return df
+        selecteds = [sub_df.iloc[:, feature_idx] for sub_df in sub_dfs]
+        selected = pd.concat(selecteds, axis=1, ignore_index=True)
+        selected["y"] = data["y"]
+        return selected
 
 
 def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
@@ -181,7 +203,7 @@ def predict_feature(
     results = []
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            df = select_features(data, feature_idx)
+            df = select_features(feature, data, feature_idx)
             if is_dud_comparison(labels, i, j):
                 continue
             title = f"{labels[i]} v {labels[j]}"
@@ -236,7 +258,7 @@ def predict_all(args: Namespace) -> DataFrame:
 
 
 def summarize_all_predictions(
-    feature_cls: Type[Rigidities] | Type[Levelvars] | Type[Eigenvalues] = Eigenvalues,
+    feature_cls: Type[Feature],
     sources: Optional[list[Dataset]] = None,
     degrees: Optional[list[int]] = None,
     feature_idxs: Optional[list[int | slice | None]] = None,

@@ -52,7 +52,6 @@ RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots"
 
 
-
 class Feature(ABC):
     def __init__(
         self, source: Dataset, full_pre: bool, norm: bool, degree: int | None = None
@@ -67,6 +66,8 @@ class Feature(ABC):
             source=self.source,
             full_pre=self.full_pre,
         )
+        self.is_combined = False
+        self.feature_start_idxs = [0]
 
     @property
     def suptitle(self) -> str:
@@ -89,6 +90,7 @@ class Feature(ABC):
     @abstractproperty
     def data(self) -> DataFrame:
         ...
+
 
 
 class Rigidities(Feature):
@@ -141,3 +143,99 @@ class Eigenvalues(Feature):
     @property
     def data(self) -> DataFrame:
         return self.dataset.eigs_df()
+
+
+class EigPlusRigidity(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        rigs.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, rigs], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+class EigPlusLevelvar(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+class RigidityPlusLevelvar(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        y = rigs["y"].copy()
+        rigs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(rigs.columns))
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([rigs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+class AllFeatures(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        rigs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(rigs.columns))
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, rigs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
