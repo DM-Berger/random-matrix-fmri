@@ -17,6 +17,8 @@ def describe(df: DataFrame) -> None:
     df.loc[:, "feature"] = df.feature.str.replace("plus", " + ").copy()
     df.loc[:, "feature"] = df.feature.str.replace("eig ", "eigs ").copy()
     df.loc[:, "feature"] = df.feature.str.replace("eigenvalues", "eigs").copy()
+    df.loc[:, "feature"] = df.feature.str.replace("eigssmoothed", "eigs_smoothed").copy()
+    df.loc[:, "feature"] = df.feature.str.replace("smoothed", "smooth").copy()
     df.loc[:, "feature"] = df.feature.str.replace(
         "allfeatures", "eigs + rigidity + levelvar"
     ).copy()
@@ -95,7 +97,7 @@ def describe(df: DataFrame) -> None:
     )
 
     print(f"{header}Best AUROCs by feature and dataset:{footer}")
-    print(
+    bests = (
         df.groupby(["feature", "data"])
         .describe()
         .loc[:, "auroc"]
@@ -108,6 +110,7 @@ def describe(df: DataFrame) -> None:
         .groupby(["Dataset", "Feature"])
         .max()
     )
+    print(bests.sort_values(by=["Dataset", "best_AUROC"], ascending=False))
 
     print(f"{header}Mean/Median AUROCs by feature and dataset:{footer}")
     descriptives = (
@@ -165,6 +168,8 @@ if __name__ == "__main__":
     paths = [
         PROJECT / "all_combined_predictions.json",
         PROJECT / "eigenvalue_predictions.json",
+        PROJECT / "eig_smoothed_predictions.json",
+        PROJECT / "eigenvalues+eig_smoothed_predictions.json",
         PROJECT / "rigidity_predictions.json",
         PROJECT / "levelvar_predictions.json",
         PROJECT / "eig+levelvar_predictions.json",

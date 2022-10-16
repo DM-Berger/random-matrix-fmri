@@ -7,7 +7,12 @@ sys.path.append(str(ROOT))
 
 from pathlib import Path
 
-from rmt.features import EigenvaluesPlusEigenvaluesSmoothed, EigenvaluesSmoothed
+from rmt.features import (
+    EigenvaluesPlusEigenvaluesSmoothed,
+    EigenvaluesPlusSavGol,
+    EigenvaluesSavGol,
+    EigenvaluesSmoothed,
+)
 from rmt.predict import summarize_all_predictions
 
 if __name__ == "__main__":
@@ -19,8 +24,10 @@ if __name__ == "__main__":
         slice(-3, -1),
     ]
     fnames = {
-        EigenvaluesSmoothed: "eig_smoothed_predictions.json",
-        EigenvaluesPlusEigenvaluesSmoothed: "eigenvalues+eig_smoothed_predictions.json",
+        # EigenvaluesSmoothed: "eig_smoothed_predictions.json",
+        EigenvaluesPlusSavGol: "eigenvalues+eig_savgol_predictions.json",
+        EigenvaluesSavGol: "eig_savgol_predictions.json",
+        # EigenvaluesPlusEigenvaluesSmoothed: "eigenvalues+eig_smoothed_predictions.json",
     }
     for feature, fname in fnames.items():
         df = summarize_all_predictions(

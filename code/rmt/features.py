@@ -37,6 +37,7 @@ from matplotlib.axes import Axes
 from numpy import ndarray
 from pandas import DataFrame, Series
 from scipy.ndimage import uniform_filter1d
+from scipy.signal import savgol_filter
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.linear_model import LogisticRegression as LR
 from sklearn.model_selection import ParameterGrid, StratifiedKFold, cross_val_score
@@ -169,6 +170,32 @@ class EigenvaluesSmoothed(Feature):
         return smoothed
 
 
+class EigenvaluesSavGol(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=degree,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        df = self.dataset.eigs_df()
+        y = df["y"].copy()
+        df.drop(columns="y", inplace=True)
+        order = 2 if self.degree == 3 else 3
+        smoothed = DataFrame(
+            savgol_filter(
+                df, window_length=self.degree, polyorder=order, axis=-1, mode="constant"
+            )
+        )
+        smoothed.columns = df.columns
+        smoothed["y"] = y
+        return smoothed
+
+
 class EigenvaluesPlusEigenvaluesSmoothed(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
@@ -190,6 +217,38 @@ class EigenvaluesPlusEigenvaluesSmoothed(Feature):
         df.drop(columns="y", inplace=True)
         smoothed = DataFrame(
             uniform_filter1d(df, size=self.degree, axis=-1, mode="constant")
+        )
+        smoothed.columns = df.columns
+
+        df = pd.concat([eigs, smoothed], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
+class EigenvaluesPlusSavGol(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=degree,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+
+        df = self.dataset.eigs_df()
+        df.drop(columns="y", inplace=True)
+        order = 2 if self.degree == 3 else 3
+        smoothed = DataFrame(
+            savgol_filter(
+                df, window_length=self.degree, polyorder=order, axis=-1, mode="constant"
+            )
         )
         smoothed.columns = df.columns
 
