@@ -82,7 +82,7 @@ def describe(df: DataFrame) -> None:
         .sort_values(by="mean", ascending=False)
     )
 
-    print(f"{header}AUROCs by feature and dataset:{footer}")
+    print(f"{header}Best AUROCs by feature and dataset:{footer}")
     print(
         df.groupby(["feature", "data"])
         .describe()
@@ -97,16 +97,36 @@ def describe(df: DataFrame) -> None:
         .max()
     )
 
+    print(f"{header}Mean/Median AUROCs by feature and dataset:{footer}")
+    print(
+        df.groupby(["feature", "data"])
+        .describe()
+        .rename(columns={"50%": "median"})
+        .loc[:, "auroc"]
+        .round(3)
+        .drop(columns=["count", "25%", "75%"])
+        .reset_index()
+        .sort_values(by=["data", "mean", "median"], ascending=False)
+        .rename(columns={"feature": "Feature", "data": "Dataset"})
+        .loc[:, ["Feature", "Dataset", "mean", "median", "std", "min", "max"]]
+        .groupby(["Dataset", "Feature"])
+        .max()
+    )
+
 
 if __name__ == "__main__":
     paths = [
         PROJECT / "all_combined_predictions.json",
-        PROJECT / "eigenvalue_predictions.json",
-        PROJECT / "levelvar_predictions.json",
-        PROJECT / "rigidity_predictions.json",
-        PROJECT / "eig+rigidity_predictions.json",
         PROJECT / "eig+levelvar_predictions.json",
+        PROJECT / "eig+rigidity_predictions.json",
+        PROJECT / "eig+unfolded_predictions.json",
+        PROJECT / "eig+unfolded+levelvar_predictions.json",
+        PROJECT / "eig+unfolded+rigidity_predictions.json",
         PROJECT / "rigidity+levelvar_predictions.json",
+        PROJECT / "unfolded_predictions.json",
+        PROJECT / "unfolded+levelvar_predictions.json",
+        PROJECT / "unfolded+rigidity_predictions.json",
+        PROJECT / "unfolded+rigidity+levelvar_predictions.json",
     ]
     df = pd.concat([pd.read_json(path) for path in paths], axis=0, ignore_index=True)
     describe(df)

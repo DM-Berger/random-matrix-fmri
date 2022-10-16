@@ -11,7 +11,14 @@ from rmt.features import (
     AllFeatures,
     EigPlusLevelvar,
     EigPlusRigidity,
+    EigPlusUnfolded,
+    EigPlusUnfoldedPlusLevelvar,
+    EigPlusUnfoldedPlusRigidity,
     RigidityPlusLevelvar,
+    Unfolded,
+    UnfoldedPlusLevelvar,
+    UnfoldedPlusRigidity,
+    UnfoldedPlusRigidityPlusLevelvar,
 )
 from rmt.predict import summarize_all_predictions
 
@@ -25,9 +32,16 @@ if __name__ == "__main__":
     ]
     fnames = {
         AllFeatures: "all_combined_predictions.json",
-        EigPlusRigidity: "eig+rigidity_predictions.json",
-        EigPlusLevelvar: "eig+levelvar_predictions.json",
-        RigidityPlusLevelvar: "rigidity+levelvar_predictions.json",
+        # EigPlusLevelvar: "eig+levelvar_predictions.json",
+        # EigPlusRigidity: "eig+rigidity_predictions.json",
+        EigPlusUnfolded: "eig+unfolded_predictions.json",
+        EigPlusUnfoldedPlusLevelvar: "eig+unfolded+levelvar_predictions.json",
+        EigPlusUnfoldedPlusRigidity: "eig+unfolded+rigidity_predictions.json",
+        # RigidityPlusLevelvar: "rigidity+levelvar_predictions.json",
+        # Unfolded: "unfolded_predictions.json",
+        UnfoldedPlusLevelvar: "unfolded+levelvar_predictions.json",
+        UnfoldedPlusRigidity: "unfolded+rigidity_predictions.json",
+        UnfoldedPlusRigidityPlusLevelvar: "unfolded+rigidity+levelvar_predictions.json",
     }
     for feature, fname in fnames.items():
         df = summarize_all_predictions(

@@ -32,6 +32,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sbn
+from empyricalRMT.smoother import SmoothMethod
 from matplotlib.axes import Axes
 from numpy import ndarray
 from pandas import DataFrame, Series
@@ -92,7 +93,6 @@ class Feature(ABC):
         ...
 
 
-
 class Rigidities(Feature):
     def __init__(
         self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
@@ -145,6 +145,45 @@ class Eigenvalues(Feature):
         return self.dataset.eigs_df()
 
 
+class Unfolded(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=degree,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        return self.dataset.unfolded_df(self.degree)
+
+
+class EigPlusUnfolded(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+        unfs = self.dataset.unfolded_df(self.degree)
+        unfs.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, unfs], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
 class EigPlusRigidity(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
@@ -167,6 +206,7 @@ class EigPlusRigidity(Feature):
         df = pd.concat([eigs, rigs], axis=1, ignore_index=True)
         df["y"] = y
         return df
+
 
 class EigPlusLevelvar(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
@@ -191,6 +231,115 @@ class EigPlusLevelvar(Feature):
         df["y"] = y
         return df
 
+
+class UnfoldedPlusLevelvar(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        unfs = self.dataset.unfolded_df(self.degree)
+        y = unfs["y"].copy()
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([unfs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
+class UnfoldedPlusRigidity(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        unfs = self.dataset.unfolded_df(self.degree)
+        y = unfs["y"].copy()
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        rigs.drop(columns="y", inplace=True)
+        df = pd.concat([unfs, rigs], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
+class EigPlusUnfoldedPlusRigidity(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+
+        unfs = self.dataset.unfolded_df(self.degree)
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        rigs.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, unfs, rigs], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
+class EigPlusUnfoldedPlusLevelvar(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)  # remove target column
+        self.feature_start_idxs.append(len(eigs.columns))
+
+        unfs = self.dataset.unfolded_df(self.degree)
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([eigs, unfs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
 class RigidityPlusLevelvar(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
@@ -214,6 +363,37 @@ class RigidityPlusLevelvar(Feature):
         df["y"] = y
         return df
 
+
+class UnfoldedPlusRigidityPlusLevelvar(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
+        self.degree: int
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=int(degree),
+        )
+        self.is_combined = True
+
+    @property
+    def data(self) -> DataFrame:
+        unfs = self.dataset.unfolded_df(self.degree)
+        y = unfs["y"].copy()
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
+        rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
+        y = rigs["y"].copy()
+        rigs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(rigs.columns))
+
+        lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
+        lvars.drop(columns="y", inplace=True)
+        df = pd.concat([unfs, rigs, lvars], axis=1, ignore_index=True)
+        df["y"] = y
+        return df
+
+
 class AllFeatures(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
@@ -231,11 +411,17 @@ class AllFeatures(Feature):
         y = eigs["y"].copy()
         eigs.drop(columns="y", inplace=True)  # remove target column
         self.feature_start_idxs.append(len(eigs.columns))
+
+        unfs = self.dataset.unfolded_df(self.degree)
+        unfs.drop(columns="y", inplace=True)
+        self.feature_start_idxs.append(len(unfs.columns))
+
         rigs = rigidities(dataset=self.dataset, degree=self.degree, parallel=True)
         rigs.drop(columns="y", inplace=True)
         self.feature_start_idxs.append(len(rigs.columns))
+
         lvars = levelvars(dataset=self.dataset, degree=self.degree, parallel=True)
         lvars.drop(columns="y", inplace=True)
-        df = pd.concat([eigs, rigs, lvars], axis=1, ignore_index=True)
+        df = pd.concat([eigs, unfs, rigs, lvars], axis=1, ignore_index=True)
         df["y"] = y
         return df

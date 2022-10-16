@@ -212,7 +212,7 @@ def predict_feature(
             X = df.drop(columns="y").to_numpy()
             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
             result_dfs = [
-                kfold_eval(X, y, SVC, norm=norm, title=title),
+                # kfold_eval(X, y, SVC, norm=norm, title=title),
                 # kfold_eval(X, y, LR, norm=norm, title=title),
                 kfold_eval(X, y, GBC, norm=norm, title=title),
             ]

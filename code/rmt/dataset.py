@@ -173,6 +173,23 @@ class ProcessedDataset:
         eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
         return [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
 
+    def unfolded_df(self, degree: int) -> DataFrame:
+        unfoldeds = self.unfolded(smoother=SmoothMethod.Polynomial, degree=degree)
+        unfs = [u.vals for u in unfoldeds]
+        lengths = np.array([len(u) for u in unfs])
+        # front zero-pad
+        length = np.max(lengths)
+        resized = []
+        for unf in unfs:
+            padded = np.zeros(length)
+            padded[-len(unf) :] = unf
+            resized.append(padded)
+        vals = np.stack(resized, axis=0)
+        vals[vals < 0.0] = 0.0
+        df = DataFrame(vals, columns=range(vals.shape[1]))
+        df["y"] = self.labels()
+        return df
+
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(source={self.source.name}, full_pre={self.full_pre})"
 
