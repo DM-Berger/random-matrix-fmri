@@ -24,8 +24,8 @@ def describe(df: DataFrame) -> None:
     df.loc[:, "feature"] = df.feature.str.replace("levelvars", "levelvar").copy()
     corrs = pd.get_dummies(df)
     corrs_pred = corrs.loc[corrs["acc+"] > 0.0]
-    header = "-" * 80 + "\n"
-    footer = "\n" + ("-" * 80)
+    header = "=" * 80 + "\n"
+    footer = "\n" + ("=" * 80)
     drops = [
         "acc+",
         "auroc",
@@ -37,17 +37,28 @@ def describe(df: DataFrame) -> None:
     ]
 
     print(f"{header}Spearman correlations with AUROC{footer}")
-    print(corrs.corr(method="spearman").loc["auroc"].drop(index=drops))
+    print(
+        corrs.corr(method="spearman")
+        .loc["auroc"]
+        .drop(index=drops)
+        .sort_values(ascending=False)
+    )
     print(f"{header}Spearman feature correlations with AUROC{footer}")
     print(
         corrs.corr(method="spearman")
         .loc["auroc"]
         .drop(index=drops)
         .filter(like="feature_")
+        .sort_values(ascending=False)
     )
 
     print(f"{header}Spearman correlations with AUROC for predictive pairs{footer}")
-    print(corrs_pred.corr(method="spearman").loc["auroc"].drop(index=drops))
+    print(
+        corrs_pred.corr(method="spearman")
+        .loc["auroc"]
+        .drop(index=drops)
+        .sort_values(ascending=False)
+    )
     print(
         f"{header}Spearman feature correlations with AUROC for predictive pairs{footer}"
     )
@@ -56,6 +67,7 @@ def describe(df: DataFrame) -> None:
         .loc["auroc"]
         .drop(index=drops)
         .filter(like="feature_")
+        .sort_values(ascending=False)
     )
 
     print(f"{header}Feature best AUROCs overall:{footer}")
@@ -98,7 +110,7 @@ def describe(df: DataFrame) -> None:
     )
 
     print(f"{header}Mean/Median AUROCs by feature and dataset:{footer}")
-    print(
+    descriptives = (
         df.groupby(["feature", "data"])
         .describe()
         .rename(columns={"50%": "median"})
@@ -110,13 +122,51 @@ def describe(df: DataFrame) -> None:
         .rename(columns={"feature": "Feature", "data": "Dataset"})
         .loc[:, ["Feature", "Dataset", "mean", "median", "std", "min", "max"]]
         .groupby(["Dataset", "Feature"])
-        .max()
     )
+    print(descriptives.max())
+    pd.options.display.max_info_rows = 1000
+    pd.options.display.max_rows = 1000
+    pd.options.display.expand_frame_repr = True
+    # print(df.groupby(["feature", "data", "comparison"]).count())
+
+    osteo = (
+        df.loc[df.data == "Osteo"]
+        .loc[df.comparison == "nopain v duloxetine"]
+        .drop(columns=["data", "comparison"])
+    )
+    print(
+        f"{header}Summary statistics of AUROCs for OSTEO dataset 'nopain v duloxetine' comparison:{footer}"
+    )
+    print(
+        osteo.groupby(["feature"])
+        .describe()
+        .loc[:, "auroc"]
+        .round(3)
+        .rename(columns={"50%": "median"})
+        .loc[:, ["mean", "median", "min", "max", "std"]]
+        # .reset_index()
+        # .sort_values(by=["max"], ascending=False)
+        # .rename(columns={"max": "best_AUROC", "feature": "Feature"})
+        # .loc[:, ["Feature", "best_AUROC"]]
+        # .groupby(["Feature"])
+        # .describe()
+        # .max()
+    )
+    # print(
+    #     df.groupby(["feature", "data"])
+    #     .describe()
+    #     .loc[:, "max_auroc"]
+    #     # .loc[["mean", "max", "std"]]
+    #     .corr(method="spearman", numeric_only=False)
+    # )
 
 
 if __name__ == "__main__":
     paths = [
         PROJECT / "all_combined_predictions.json",
+        PROJECT / "eigenvalue_predictions.json",
+        PROJECT / "rigidity_predictions.json",
+        PROJECT / "levelvar_predictions.json",
         PROJECT / "eig+levelvar_predictions.json",
         PROJECT / "eig+rigidity_predictions.json",
         PROJECT / "eig+unfolded_predictions.json",
@@ -129,7 +179,7 @@ if __name__ == "__main__":
         PROJECT / "unfolded+rigidity+levelvar_predictions.json",
     ]
     df = pd.concat([pd.read_json(path) for path in paths], axis=0, ignore_index=True)
-    describe(df)
+    # describe(df)
 
     non_reflects = df.data.apply(lambda s: "Reflect" not in s)
     df = df.loc[non_reflects]
