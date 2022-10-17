@@ -103,31 +103,86 @@ def flattenize(df: DataFrame) -> DataFrame:
     return pd.concat(dfs, axis=0, ignore_index=True)
 
 
-def plot_multi_raw_eigs(
-    df_eigs: DataFrame,
+def get_plot_dfs_colors(
+    data: DataFrame, label1: str, label2: str, palette: list[tuple[float, float, float]]
+) -> tuple[DataFrame, DataFrame, dict[str, tuple[float, float, float]]]:
+    df = data
+    idx = (df.y == label1) | (df.y == label2)
+    df = df.loc[idx]
+    df_flat = flattenize(df)
+    colors = {y_: palette[i] for i, y_ in enumerate(np.unique(df["y"]))}
+    return df, df_flat, colors
+
+
+def plot_multi_raw(
+    df: DataFrame,
     ax: Axes,
-    colors: dict[str, tuple[float, float, float]]
+    feature_name: str,
+    colors: dict[str, tuple[float, float, float]],
+    dodge: float | None = None,
 ) -> None:
-    ax.set_title("Raw Eigenvalues", **TITLE_ARGS)
-    ax.set_xlabel("Eigenvalue Index")
-    ax.set_ylabel("log(eigenvalue)")
+    capitalized = feature_name.capitalize()
+    plural = (
+        f"{capitalized}s"
+        if not capitalized.endswith("y")
+        else capitalized.replace("y", "ies")
+    )
+    ax.set_title(f"Raw {plural}", **TITLE_ARGS)
+    ax.set_xlabel(f"{capitalized} Index")
+    ax.set_ylabel(f"log({feature_name.lower()})")
+    y = df["y"].copy().to_numpy().ravel()
 
-    y = df_eigs["y"].copy().to_numpy().ravel()
-
-    for row in range(len(df_eigs)):
-        cols = df_eigs.iloc[:, :-1].columns
-        x = df_eigs.iloc[row, :-1].to_numpy()
+    for row in range(len(df)):
+        cols = df.iloc[:, :-1].columns
+        x = df.iloc[row, :-1].to_numpy()
         x[x >= 1.0] = np.nan
         ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=0.75)
+
+
+def plot_multi_raw_observable(
+    df: DataFrame,
+    ax: Axes,
+    feature_name: str,
+    colors: dict[str, tuple[float, float, float]],
+    degree: float,
+) -> None:
+    capitalized = feature_name.capitalize()
+    plural = (
+        f"{capitalized}s"
+        if not capitalized.endswith("y")
+        else capitalized.replace("y", "ies")
+    )
+    ax.set_title(f"Raw {plural}", **TITLE_ARGS)
+    ax.set_xlabel("L")
+    ax.set_ylabel(f"Unfolding Degree + log({feature_name.lower()})")
+    y = df["y"].copy().to_numpy().ravel()
+    df = df.copy()
+    values = df.iloc[:, :-1].to_numpy()
+    values += degree - 0.5
+    df.iloc[:, :-1] = values
+
+    for row in range(len(df)):
+        cols = df.iloc[:, :-1].columns
+        x = df.iloc[row, :-1].to_numpy()
+        x[x >= 1.0 + degree - 0.5] = np.nan
+        ax.plot(cols, x, color=colors[y[row]], lw=0.25, alpha=0.5)
+    xlabels = list(df.iloc[:, :-1].columns)[::2]
+    ylabels = [3, 5, 7, 9]
+    ax.set_xticks(ticks=xlabels, labels=xlabels)
+    ax.set_yticks(ticks=ylabels, labels=ylabels)
 
 
 def plot_multi_hist_grouped(
     df: DataFrame,
     ax: Axes,
-    colors: dict[str, tuple[float, float, float]]
+    feature_name: str,
+    colors: dict[str, tuple[float, float, float]],
+    dodge: float | None = None,
 ) -> None:
-    ax.set_title("Eigenvalue Distributions (per subject)", **TITLE_ARGS)
-    ax.set_xlabel("Eigenvalue")
+    capitalized = feature_name.capitalize()
+
+    ax.set_title(f"{capitalized} Distributions (per sample)", **TITLE_ARGS)
+    ax.set_xlabel(f"{capitalized}")
 
     y = df["y"].copy().to_numpy().ravel()
 
@@ -143,7 +198,7 @@ def plot_multi_hist_grouped(
             ax=ax,
             legend=True,
             stat="density",
-            bins=np.linspace(0, 1.0, 50),  # type: ignore
+            bins=np.linspace(0, 1.0, 20),  # type: ignore
             common_norm=False,
             common_bins=False,
             log_scale=False,
@@ -171,6 +226,36 @@ def plot_multi_flat_hist(
     )
     ax.set_xlabel(f"log({feature_name.lower()})")
     ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
+
+
+def plot_multi_flat_hist_observables(
+    df_flat: DataFrame,
+    ax: Axes,
+    feature_name: str,
+    degree: float,
+) -> None:
+    values = df_flat.drop(columns="y").to_numpy() + degree - 0.5
+    df = df_flat.copy()
+    df.iloc[:, :-1] = values
+
+    sbn.histplot(
+        data=df,
+        x="all",
+        hue="y",
+        element="step",
+        fill=True,
+        ax=ax,
+        legend=True,
+        stat="density",
+        bins=20,  # type: ignore
+        common_norm=False,
+        common_bins=False,
+        log_scale=False,
+    )
+    ax.set_xlabel(f"Unfolding degree + log({feature_name.lower()})")
+    ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
+    xlabels = [3, 5, 7, 9]
+    ax.set_xticks(ticks=xlabels, labels=xlabels)
 
 
 def plot_multi_flat_strip(
@@ -359,16 +444,22 @@ def plot_feature_multi(
         fig, axes = plt.subplots(nrows=3, ncols=4, squeeze=False)
         fig.suptitle(f"{source.name}: {label1} v {label2} - All Features")
 
-        df_eigs = eigs_data
-        idx = (df_eigs.y == label1) | (df_eigs.y == label2)
-        df_eigs = df_eigs.loc[idx]
-        df_flat = flattenize(df_eigs)
-        colors = {y_: palette[i] for i, y_ in enumerate(np.unique(df_eigs["y"]))}
+        df_eigs, df_flat, colors = get_plot_dfs_colors(eigs_data, label1, label2, palette)
+        # plot_multi_raw(df_eigs, axes[0][0], "eigenvalue", colors)
+        # plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue")
+        # plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue")
+        # plot_multi_hist_grouped(df_eigs, axes[0][3], "eigenvalue", colors)
 
-        plot_multi_raw_eigs(df_eigs, axes[0][0], colors)
-        plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue")
-        plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue")
-        plot_multi_hist_grouped(df_eigs, axes[0][3], colors)
+        for degree, rig_data in rigs_data.items():
+            df_rigs, df_flat, colors = get_plot_dfs_colors(
+                rig_data, label1, label2, palette
+            )
+            # plot_multi_raw_observable(
+            #     df_rigs, axes[1][0], "rigidity", colors, degree=degree
+            # )
+            plot_multi_flat_hist_observables(df_flat, axes[1][1], "rigidity", degree)
+            # plot_multi_flat_strip(df_flat, axes[1][2], "rigidity")
+            # plot_multi_hist_grouped(df_rigs, axes[1][3], "rigidity", colors)
 
         fig.set_size_inches(w=18, h=8)
         fig.tight_layout()
