@@ -52,6 +52,8 @@ PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots"
 
+TITLE_ARGS = dict(fontsize=10)
+
 
 def outdir(feature_name: str) -> Path:
     out = PLOT_OUTDIR / feature_name
@@ -85,6 +87,110 @@ def is_not_dud_pairing(pair: tuple[str, str]) -> bool:
         if dud == pair:
             return False
     return True
+
+
+def flattenize(df: DataFrame) -> DataFrame:
+    """make single-column, but retain labels"""
+    dfs = []
+    y = df["y"].copy()
+    df = df.drop(columns="y")
+    for row in range(len(df)):
+        flat = DataFrame(
+            data=df.iloc[row, :].to_numpy(), columns=["all"], index=range(len(df.columns))
+        )
+        flat["y"] = y.iloc[row]
+        dfs.append(flat)
+    return pd.concat(dfs, axis=0, ignore_index=True)
+
+
+def plot_multi_raw_eigs(
+    df_eigs: DataFrame,
+    ax: Axes,
+    colors: dict[str, tuple[float, float, float]]
+) -> None:
+    ax.set_title("Raw Eigenvalues", **TITLE_ARGS)
+    ax.set_xlabel("Eigenvalue Index")
+    ax.set_ylabel("log(eigenvalue)")
+
+    y = df_eigs["y"].copy().to_numpy().ravel()
+
+    for row in range(len(df_eigs)):
+        cols = df_eigs.iloc[:, :-1].columns
+        x = df_eigs.iloc[row, :-1].to_numpy()
+        x[x >= 1.0] = np.nan
+        ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=0.75)
+
+
+def plot_multi_hist_grouped(
+    df: DataFrame,
+    ax: Axes,
+    colors: dict[str, tuple[float, float, float]]
+) -> None:
+    ax.set_title("Eigenvalue Distributions (per subject)", **TITLE_ARGS)
+    ax.set_xlabel("Eigenvalue")
+
+    y = df["y"].copy().to_numpy().ravel()
+
+    for row in range(len(df)):
+        x = df.iloc[row, :-1].to_numpy()
+        x[x >= 1.0] = np.nan
+        sbn.histplot(
+            x=x,
+            color=colors[y[row]],
+            alpha=0.10,
+            element="step",
+            fill=True,
+            ax=ax,
+            legend=True,
+            stat="density",
+            bins=np.linspace(0, 1.0, 50),  # type: ignore
+            common_norm=False,
+            common_bins=False,
+            log_scale=False,
+        )
+
+
+def plot_multi_flat_hist(
+    df_flat: DataFrame,
+    ax: Axes,
+    feature_name: str,
+) -> None:
+    sbn.histplot(
+        data=df_flat,
+        x="all",
+        hue="y",
+        element="step",
+        fill=True,
+        ax=ax,
+        legend=True,
+        stat="density",
+        bins=20,  # type: ignore
+        common_norm=False,
+        common_bins=False,
+        log_scale=False,
+    )
+    ax.set_xlabel(f"log({feature_name.lower()})")
+    ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
+
+
+def plot_multi_flat_strip(
+    df_flat: DataFrame,
+    ax: Axes,
+    feature_name: str,
+) -> None:
+    sbn.stripplot(
+        data=df_flat,
+        x="all",
+        y="y",
+        hue="y",
+        legend=False,  # type: ignore
+        ax=ax,
+        orient="h",
+        s=1.0,
+        alpha=0.5,
+    )
+    ax.set_xlabel(f"log({feature_name.lower()})")
+    ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
 
 
 def plot_feature(
@@ -215,6 +321,65 @@ def plot_feature_separation(
     plt.show(block=False)
 
 
+def plot_feature_multi(
+    source: Dataset,
+    full_pre: bool,
+    norm: bool,
+    save: bool = False,
+) -> None:
+    """Plot all features in various ways to visualize separations"""
+    eigs = Eigenvalues(source=source, full_pre=full_pre, norm=norm, degree=None)
+    rigs: dict[int, Rigidities] = {
+        deg: Rigidities(source=source, full_pre=full_pre, norm=norm, degree=deg)
+        for deg in [3, 5, 7, 9]
+    }
+    lvars: dict[int, Levelvars] = {
+        deg: Levelvars(source=source, full_pre=full_pre, norm=norm, degree=deg)
+        for deg in [3, 5, 7, 9]
+    }
+
+    eigs_data = eigs.data
+    labels = eigs_data.y.unique().tolist()
+    outdir = eigs.outdir().parent / "all_in_one"
+    outdir.mkdir(exist_ok=True, parents=True)
+
+    eigs_data = log_normalize(eigs_data, norm)
+    rigs_data = {deg: log_normalize(rig.data, norm) for deg, rig in rigs.items()}
+    lvar_data = {deg: log_normalize(lvar.data, norm) for deg, lvar in lvars.items()}
+
+    combs = list(filter(is_not_dud_pairing, combinations(labels, 2)))
+    N = len(combs)
+    sbn.set_style("darkgrid")
+    palette = [(0.0, 0.0, 0.0)] + sbn.color_palette("dark")  # type: ignore
+    palette[1] = tuple(np.array((1, 70, 198)) / 255)
+    sbn.set_palette(palette)
+    # nrows, ncols = best_rect(N)
+    for k in range(N):
+        label1, label2 = combs[k]
+        fig, axes = plt.subplots(nrows=3, ncols=4, squeeze=False)
+        fig.suptitle(f"{source.name}: {label1} v {label2} - All Features")
+
+        df_eigs = eigs_data
+        idx = (df_eigs.y == label1) | (df_eigs.y == label2)
+        df_eigs = df_eigs.loc[idx]
+        df_flat = flattenize(df_eigs)
+        colors = {y_: palette[i] for i, y_ in enumerate(np.unique(df_eigs["y"]))}
+
+        plot_multi_raw_eigs(df_eigs, axes[0][0], colors)
+        plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue")
+        plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue")
+        plot_multi_hist_grouped(df_eigs, axes[0][3], colors)
+
+        fig.set_size_inches(w=18, h=8)
+        fig.tight_layout()
+        plt.show()
+        sys.exit()
+        # plt.close()
+        # if save:
+        #     return
+        # plt.show(block=False)
+
+
 def plot_all_features(
     sources: Optional[list[Dataset]] = None,
     feature_idxs: Optional[list[int | None]] = None,
@@ -267,3 +432,32 @@ def plot_all_features(
             plt.show()
     if save:
         print(f"Plots saved to {feature.outdir}")  # type: ignore
+
+
+def plot_all_features_multi(
+    sources: Optional[list[Dataset]] = None,
+    full_pres: Optional[list[bool]] = None,
+    norms: Optional[list[bool]] = None,
+    save: bool = False,
+) -> None:
+    sources = sources or [*Dataset]
+    full_pres = full_pres or [True, False]
+    norms = norms or [True, False]
+    grid = [
+        Namespace(**p)
+        for p in ParameterGrid(
+            dict(
+                source=sources,
+                full_pre=full_pres,
+                norm=norms,
+            )
+        )
+    ]
+
+    for args in tqdm(grid):
+        plot_feature_multi(
+            source=args.source,
+            full_pre=args.full_pre,
+            norm=args.norm,
+            save=save,
+        )

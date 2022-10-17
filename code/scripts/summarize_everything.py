@@ -10,14 +10,23 @@ from pandas import DataFrame
 
 PROJECT = ROOT.parent
 
+def corr_renamer(s: str) -> str:
+    if "feature_" in s:
+        return s.replace("feature_", "")
+    return s
 
 def describe(df: DataFrame) -> None:
-    pd.options.display.max_rows = 200
+    # pd.options.display. = True
+    pd.options.display.max_info_rows = None
+    pd.options.display.max_rows = None
+    pd.options.display.expand_frame_repr = True
+
     df = df.loc[df.classifier != "SVC"].copy()
     df.loc[:, "feature"] = df.feature.str.replace("plus", " + ").copy()
     df.loc[:, "feature"] = df.feature.str.replace("eig ", "eigs ").copy()
     df.loc[:, "feature"] = df.feature.str.replace("eigenvalues", "eigs").copy()
     df.loc[:, "feature"] = df.feature.str.replace("eigssmoothed", "eigs_smoothed").copy()
+    df.loc[:, "feature"] = df.feature.str.replace("eigssavgol", "eigs_savgol").copy()
     df.loc[:, "feature"] = df.feature.str.replace("smoothed", "smooth").copy()
     df.loc[:, "feature"] = df.feature.str.replace(
         "allfeatures", "eigs + rigidity + levelvar"
@@ -45,12 +54,13 @@ def describe(df: DataFrame) -> None:
         .drop(index=drops)
         .sort_values(ascending=False)
     )
-    print(f"{header}Spearman feature correlations with AUROC{footer}")
+    print(f"{header}Correlation (Spearman) between feature inclusion and AUROC{footer}")
     print(
         corrs.corr(method="spearman")
         .loc["auroc"]
         .drop(index=drops)
         .filter(like="feature_")
+        .rename(index=corr_renamer)
         .sort_values(ascending=False)
     )
 
@@ -62,13 +72,14 @@ def describe(df: DataFrame) -> None:
         .sort_values(ascending=False)
     )
     print(
-        f"{header}Spearman feature correlations with AUROC for predictive pairs{footer}"
+        f"{header}Correlation (Spearman) between feature inclusion and AUROC for predictive pairs{footer}"
     )
     print(
         corrs_pred.corr(method="spearman")
         .loc["auroc"]
         .drop(index=drops)
         .filter(like="feature_")
+        .rename(index=corr_renamer)
         .sort_values(ascending=False)
     )
 
@@ -84,7 +95,7 @@ def describe(df: DataFrame) -> None:
         .sort_values(by="best", ascending=False)
     )
 
-    print(f"{header}Feature mean and median AUROCs overall:{footer}")
+    print(f"{header}Feature mean and median AUROCs overall (median-sorted):{footer}")
     print(
         df.groupby("feature")
         .describe()
@@ -93,7 +104,7 @@ def describe(df: DataFrame) -> None:
         .round(4)
         .drop(columns="count")
         .loc[:, ["mean", "median"]]
-        .sort_values(by="mean", ascending=False)
+        .sort_values(by="median", ascending=False)
     )
 
     print(f"{header}Best AUROCs by feature and dataset:{footer}")
@@ -112,7 +123,7 @@ def describe(df: DataFrame) -> None:
     )
     print(bests.sort_values(by=["Dataset", "best_AUROC"], ascending=False))
 
-    print(f"{header}Mean/Median AUROCs by feature and dataset:{footer}")
+    print(f"{header}Mean/Median AUROCs by feature and dataset (median-sorted):{footer}")
     descriptives = (
         df.groupby(["feature", "data"])
         .describe()
@@ -126,10 +137,7 @@ def describe(df: DataFrame) -> None:
         .loc[:, ["Feature", "Dataset", "mean", "median", "std", "min", "max"]]
         .groupby(["Dataset", "Feature"])
     )
-    print(descriptives.max())
-    pd.options.display.max_info_rows = 1000
-    pd.options.display.max_rows = 1000
-    pd.options.display.expand_frame_repr = True
+    print(descriptives.max().sort_values(by=["Dataset", "median"], ascending=False))
     # print(df.groupby(["feature", "data", "comparison"]).count())
 
     osteo = (
@@ -138,7 +146,7 @@ def describe(df: DataFrame) -> None:
         .drop(columns=["data", "comparison"])
     )
     print(
-        f"{header}Summary statistics of AUROCs for OSTEO dataset 'nopain v duloxetine' comparison:{footer}"
+        f"{header}Summary stats of AUROCs for 'nopain v duloxetine' comparison (max-sorted):{footer}"
     )
     print(
         osteo.groupby(["feature"])
@@ -147,6 +155,7 @@ def describe(df: DataFrame) -> None:
         .round(3)
         .rename(columns={"50%": "median"})
         .loc[:, ["mean", "median", "min", "max", "std"]]
+        .sort_values(by=["max", "median"], ascending=False)
         # .reset_index()
         # .sort_values(by=["max"], ascending=False)
         # .rename(columns={"max": "best_AUROC", "feature": "Feature"})
@@ -170,6 +179,8 @@ if __name__ == "__main__":
         PROJECT / "eigenvalue_predictions.json",
         PROJECT / "eig_smoothed_predictions.json",
         PROJECT / "eigenvalues+eig_smoothed_predictions.json",
+        PROJECT / "eigenvalues+eig_savgol_predictions.json",
+        PROJECT / "eig_savgol_predictions.json",
         PROJECT / "rigidity_predictions.json",
         PROJECT / "levelvar_predictions.json",
         PROJECT / "eig+levelvar_predictions.json",
