@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # )
     df = summarize_all_predictions(
         feature_cls=Eigenvalues,
-        feature_idxs=FEATURE_IDXS,
+        feature_slices=FEATURE_IDXS,
     )
     outfile = ROOT.parent / "eigenvalue_predictions.json"
     df.to_json(outfile)

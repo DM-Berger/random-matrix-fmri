@@ -47,7 +47,7 @@ if __name__ == "__main__":
         df = summarize_all_predictions(
             feature_cls=feature,
             degrees=DEGREES,
-            feature_idxs=FEATURE_IDXS,
+            feature_slices=FEATURE_IDXS,
         )
         outfile = ROOT.parent / fname
         df.to_json(outfile)

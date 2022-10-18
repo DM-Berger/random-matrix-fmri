@@ -35,6 +35,7 @@ from matplotlib.axes import Axes
 from numpy import ndarray
 from pandas import DataFrame, Series
 from sklearn.ensemble import GradientBoostingClassifier as GBC
+from sklearn.ensemble import RandomForestClassifier as RF
 from sklearn.linear_model import LogisticRegression as LR
 from sklearn.model_selection import (
     ParameterGrid,
@@ -42,6 +43,7 @@ from sklearn.model_selection import (
     cross_val_score,
     cross_validate,
 )
+from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, minmax_scale
 from sklearn.svm import SVC
 from tqdm import tqdm
@@ -53,6 +55,70 @@ from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
+
+# from source code
+KNN_DEFAULTS = dict(
+    weights="uniform",
+    algorithm="auto",
+    leaf_size=30,
+    p=2,
+    metric="minkowski",
+    metric_params=None,
+    n_jobs=None,
+)
+
+
+class FeatureSlice(Enum):
+    All = "all"
+    Min_05 = "min-05"
+    Min_10 = "min-10"
+    Min_25 = "min-25"
+    Mid_05 = "mid-05"
+    Mid_10 = "mid-10"
+    Mid_25 = "mid-25"
+    Max_05 = "max-05"
+    Max_10 = "max-10"
+    Max_25 = "max-25"
+
+    def region(self) -> str:
+        if self is FeatureSlice.All:
+            return "all"
+        return self.name.split("_")[0].lower()
+
+    def slicer(self, feature_length: int) -> slice:
+        if self is FeatureSlice.All:
+            return slice(None)
+        r = float(self.name.split("_")[1]) / 100
+        base = r * feature_length
+        region = self.region()
+        idx = base // 2 if region == "mid" else round(base)
+        if region == "min":
+            idx = round(base)
+            return slice(None, idx)
+        elif region == "mid":
+            idx = base // 2
+            half = feature_length // 2
+            return slice(half - idx, half + idx)
+        elif region == "max":
+            idx = round(base)
+            return slice(-idx, None)
+        else:
+            raise ValueError("Impossible!")
+
+
+class KNN3(KNN):
+    def __init__(self) -> None:
+        super().__init__(n_neighbors=3, **KNN_DEFAULTS)
+
+
+class KNN5(KNN):
+    def __init__(self) -> None:
+        super().__init__(n_neighbors=5, **KNN_DEFAULTS)
+
+
+class KNN9(KNN):
+    def __init__(self) -> None:
+        super().__init__(n_neighbors=9, **KNN_DEFAULTS)
 
 
 def log_normalize(df: DataFrame, norm: bool) -> DataFrame:
@@ -84,24 +150,15 @@ def kfold_eval(
     if norm:
         X = minmax_scale(X, axis=0)
     cv = StratifiedKFold(n_splits=5)
-    # scores = cross_val_score(classifier(**kwargs), X, y, cv=cv, scoring="accuracy")
     scores = cross_validate(
-        classifier(**kwargs), X, y, cv=cv, scoring=["accuracy", "roc_auc"]
+        classifier(**kwargs), X, y, cv=cv, scoring=["accuracy", "roc_auc", "f1"]
     )
     acc = scores["test_accuracy"]
     auc = scores["test_roc_auc"]
+    f1 = np.mean(scores["test_f1"])
     guess = np.max([np.mean(y), np.mean(1 - y)])
-    mean = np.mean(acc).round(3)
-    mn = np.min(acc)
-    mx = np.max(acc)
+    mean = np.mean(acc)
     auroc = np.mean(auc)
-    auroc_mn = np.min(auc)
-    auroc_mx = np.max(auc)
-    # print(
-    #     f"  {title:>40} {classifier.__name__:>30} accs:mean={mean:0.3f} "
-    #     f"[{np.min(scores):0.3f}, {np.max(scores):0.3f}] "
-    #     f"({mean - guess:+0.3f})"
-    # )
     return DataFrame(
         {
             "comparison": title,
@@ -109,50 +166,27 @@ def kfold_eval(
             "norm": norm,
             "acc+": mean - guess,
             "auroc": auroc,
-            "mean_acc": mean,
-            "min_acc": mn,
-            "max_acc": mx,
-            "min_auroc": auroc_mn,
-            "max_auroc": auroc_mx,
+            "acc": mean,
+            "f1": f1,
         },
         index=[0],
     )
 
 
-def feature_label(feature_idx: int | slice | None) -> str:
-    if feature_idx is None:
-        feat_label = "All"
-    elif isinstance(feature_idx, slice):
-        start, stop = feature_idx.start, feature_idx.stop
-        if start is None and stop is not None:
-            feat_label = f"[:{stop}]"
-        elif start is None and stop is None:
-            feat_label = f"[:]"
-        elif start is not None and stop is None:
-            feat_label = f"[{start}:]"
-        elif start is not None and stop is not None:
-            feat_label = f"[{start}:{stop}]"
-        else:
-            raise ValueError(f"Cannot interpret slice {feature_idx}")
-    else:
-        feat_label = str(int(feature_idx))
-    return feat_label
-
-
 def select_features(
     feature: Feature,
     data: DataFrame,
-    feature_idx: int | slice | None,
+    feature_slice: FeatureSlice,
 ) -> DataFrame:
-    if feature_idx is None:
+    if feature_slice is FeatureSlice.All:
         return data
+
     if not feature.is_combined:
-        if isinstance(feature_idx, slice):
-            df = data.drop(columns="y").iloc[:, feature_idx]
-            df["y"] = data["y"]
-            return df
-        else:
-            return data.iloc[:, [feature_idx - 1, -1]]
+        length = len(data.columns) - 1
+        slicer = feature_slice.slicer(length)
+        df = data.drop(columns="y").iloc[:, slicer]
+        df["y"] = data["y"]
+        return df
 
     # handle combined features
     idxs = feature.feature_start_idxs
@@ -163,16 +197,14 @@ def select_features(
         stop = idxs[i + 1]
         sub_dfs.append(df.iloc[:, start:stop])
 
-    if isinstance(feature_idx, slice):
-        selecteds = [sub_df.iloc[:, feature_idx] for sub_df in sub_dfs]
-        selected = pd.concat(selecteds, axis=1, ignore_index=True)
-        selected["y"] = data["y"]
-        return selected
-    else:
-        selecteds = [sub_df.iloc[:, feature_idx] for sub_df in sub_dfs]
-        selected = pd.concat(selecteds, axis=1, ignore_index=True)
-        selected["y"] = data["y"]
-        return selected
+    selecteds = []
+    for sub_df in sub_dfs:
+        length = len(sub_df.columns)
+        slicer = feature_slice.slicer(length)
+        selecteds.append(sub_df.iloc[:, slicer])
+    selected = pd.concat(selecteds, axis=1, ignore_index=True)
+    selected["y"] = data["y"]
+    return selected
 
 
 def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
@@ -191,7 +223,7 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
 
 def predict_feature(
     feature: Feature,
-    feature_idx: int | slice | None = None,
+    feature_slice: FeatureSlice,
     logarithm: bool = True,
 ) -> DataFrame:
     data = feature.data
@@ -203,7 +235,7 @@ def predict_feature(
     results = []
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            df = select_features(feature, data, feature_idx)
+            df = select_features(feature, data, feature_slice)
             if is_dud_comparison(labels, i, j):
                 continue
             title = f"{labels[i]} v {labels[j]}"
@@ -212,9 +244,13 @@ def predict_feature(
             X = df.drop(columns="y").to_numpy()
             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
             result_dfs = [
-                # kfold_eval(X, y, SVC, norm=norm, title=title),
-                # kfold_eval(X, y, LR, norm=norm, title=title),
+                kfold_eval(X, y, SVC, norm=norm, title=title),
+                kfold_eval(X, y, LR, norm=norm, title=title, max_iter=500),
+                kfold_eval(X, y, RF, norm=norm, title=title),
                 kfold_eval(X, y, GBC, norm=norm, title=title),
+                kfold_eval(X, y, KNN3, norm=norm, title=title),
+                kfold_eval(X, y, KNN5, norm=norm, title=title),
+                kfold_eval(X, y, KNN9, norm=norm, title=title),
             ]
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
     result = pd.concat(results, axis=0, ignore_index=True)
@@ -222,7 +258,7 @@ def predict_feature(
     result["data"] = feature.source.name
     result["feature"] = feature.name
     result["preproc"] = "full" if feature.full_pre else "minimal"
-    result["idx"] = feature_label(feature_idx)
+    result["slice"] = feature_slice.value
     result["deg"] = str(feature.degree)
     return result.loc[
         :,
@@ -232,16 +268,13 @@ def predict_feature(
             "preproc",
             "deg",
             "norm",
-            "idx",
+            "slice",
             "comparison",
             "classifier",
             "acc+",
             "auroc",
-            "mean_acc",
-            "min_acc",
-            "max_acc",
-            "min_auroc",
-            "max_auroc",
+            "acc",
+            "f1"
         ],
     ]
 
@@ -252,7 +285,7 @@ def predict_all(args: Namespace) -> DataFrame:
     )
     return predict_feature(
         feature=feature,
-        feature_idx=args.feature_idx,
+        feature_slice=args.feature_idx,
         logarithm=True,
     )
 
@@ -261,14 +294,13 @@ def summarize_all_predictions(
     feature_cls: Type[Feature],
     sources: Optional[list[Dataset]] = None,
     degrees: Optional[list[int]] = None,
-    feature_idxs: Optional[list[int | slice | None]] = None,
+    feature_slices: List[FeatureSlice] = [*FeatureSlice],
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
     print_rows: int = 200,
 ) -> DataFrame:
     sources = sources or [*Dataset]
     degrees = degrees or [3, 5, 7, 9]
-    feature_idxs = feature_idxs or [None, -2, 3]
     full_pres = full_pres or [True, False]
     norms = norms or [True, False]
 
@@ -279,7 +311,7 @@ def summarize_all_predictions(
                 cls=[feature_cls],
                 source=sources,
                 degree=degrees,
-                feature_idx=feature_idxs,
+                feature_idx=feature_slices,
                 full_pre=full_pres,
                 norm=norms,
             )

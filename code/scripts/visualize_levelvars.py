@@ -28,7 +28,7 @@ if __name__ == "__main__":
     df = summarize_all_predictions(
         feature_cls=Levelvars,
         degrees=DEGREES,
-        feature_idxs=FEATURE_IDXS,
+        feature_slices=FEATURE_IDXS,
     )
     outfile = ROOT.parent / "levelvar_predictions.json"
     df.to_json(outfile)

@@ -20,7 +20,7 @@ if __name__ == "__main__":
     for feature, fname in fnames.items():
         df = summarize_all_predictions(
             feature_cls=feature,
-            feature_idxs=FEATURE_IDXS,
+            feature_slices=FEATURE_IDXS,
         )
         outfile = ROOT.parent / fname
         df.to_json(outfile)

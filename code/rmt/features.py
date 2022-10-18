@@ -683,6 +683,35 @@ class AllFeatures(Feature):
         return df
 
 
+FEATURE_OUTFILES: dict[Type[Feature], Path] = {
+    AllFeatures: PROJECT / "all_combined_predictions.json",
+    Eigenvalues: PROJECT / "eigenvalue_predictions.json",
+    EigsMinMax5: PROJECT / "eigs-minmax-5_predictions.json",
+    EigsMinMax10: PROJECT / "eigs-minmax-10_predictions.json",
+    EigsMinMax20: PROJECT / "eigs-minmax-20_predictions.json",
+    EigsMiddle10: PROJECT / "eigs-middle-10_predictions.json",
+    EigsMiddle20: PROJECT / "eigs-middle-20_predictions.json",
+    EigsMiddle40: PROJECT / "eigs-middle-40_predictions.json",
+    EigenvaluesSmoothed: PROJECT / "eig_smoothed_predictions.json",
+    EigenvaluesPlusEigenvaluesSmoothed: PROJECT
+    / "eigenvalues+eig_smoothed_predictions.json",
+    EigenvaluesPlusSavGol: PROJECT / "eigenvalues+eig_savgol_predictions.json",
+    EigenvaluesSavGol: PROJECT / "eig_savgol_predictions.json",
+    Rigidities: PROJECT / "rigidity_predictions.json",
+    Levelvars: PROJECT / "levelvar_predictions.json",
+    EigPlusLevelvar: PROJECT / "eig+levelvar_predictions.json",
+    EigPlusRigidity: PROJECT / "eig+rigidity_predictions.json",
+    EigPlusUnfolded: PROJECT / "eig+unfolded_predictions.json",
+    EigPlusUnfoldedPlusLevelvar: PROJECT / "eig+unfolded+levelvar_predictions.json",
+    EigPlusUnfoldedPlusRigidity: PROJECT / "eig+unfolded+rigidity_predictions.json",
+    RigidityPlusLevelvar: PROJECT / "rigidity+levelvar_predictions.json",
+    Unfolded: PROJECT / "unfolded_predictions.json",
+    UnfoldedPlusLevelvar: PROJECT / "unfolded+levelvar_predictions.json",
+    UnfoldedPlusRigidity: PROJECT / "unfolded+rigidity_predictions.json",
+    UnfoldedPlusRigidityPlusLevelvar: PROJECT
+    / "unfolded+rigidity+levelvar_predictions.json",
+}
+
 if __name__ == "__main__":
     feature = EigenvaluesSmoothed(Dataset.Learning, full_pre=False, norm=True, degree=3)
     print(feature.data)
