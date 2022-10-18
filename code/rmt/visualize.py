@@ -134,7 +134,7 @@ def plot_multi_raw(
         cols = df.iloc[:, :-1].columns
         x = df.iloc[row, :-1].to_numpy()
         x[x >= 1.0] = np.nan
-        ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=0.75)
+        ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=0.5)
 
 
 def plot_multi_raw_observable(
@@ -159,7 +159,7 @@ def plot_multi_raw_observable(
         cols = df.iloc[:, :-1].columns
         x = df.iloc[row, :-1].to_numpy()
         x[x >= 1.0 + degree - 0.5] = np.nan
-        ax.plot(cols, x, color=colors[y[row]], lw=0.25, alpha=0.5)
+        ax.plot(cols, x, color=colors[y[row]], lw=0.25, alpha=0.2)
     xlabels = list(df.iloc[:, :-1].columns)[::2]
     ylabels = [3, 5, 7, 9]
     ax.set_xticks(ticks=xlabels, labels=xlabels)
@@ -346,7 +346,7 @@ def plot_multi_flat_strip(
         ax=ax,
         orient="h",
         s=1.0,
-        alpha=0.5,
+        alpha=0.2,
     )
     ax.set_xlabel(f"log({feature_name.lower()})")
     ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
@@ -372,7 +372,7 @@ def plot_multi_flat_strip_observables(
         ax=ax,
         orient="h",
         s=1.0,
-        alpha=0.5,
+        alpha=0.2,
     )
     ax.set_xlabel(f"Unfolding degree + log({feature_name.lower()})")
     ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
