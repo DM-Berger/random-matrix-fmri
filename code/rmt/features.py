@@ -147,6 +147,66 @@ class Eigenvalues(Feature):
         return self.dataset.eigs_df()
 
 
+class EigsMinMax5(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        min5 = eigs.iloc[:, :5]
+        max5 = eigs.drop(columns="y").iloc[:, -5:]
+        df = pd.concat([min5, max5])
+        df["y"] = y
+        return df
+
+
+class EigsMinMax10(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        min10 = eigs.iloc[:, :10]
+        max10 = eigs.drop(columns="y").iloc[:, -10:]
+        df = pd.concat([min10, max10])
+        df["y"] = y
+        return df
+
+
+class EigsMinMax20(Feature):
+    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+
+    @property
+    def data(self) -> DataFrame:
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        min20 = eigs.iloc[:, :20]
+        max20 = eigs.drop(columns="y").iloc[:, -20:]
+        df = pd.concat([min20, max20])
+        df["y"] = y
+        return df
+
+
 class EigenvaluesSmoothed(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
