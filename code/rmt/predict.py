@@ -36,7 +36,6 @@ from numpy import ndarray
 from pandas import DataFrame, Series
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.ensemble import RandomForestClassifier as RF
-from sklearn.linear_model import LogisticRegression as LR
 from sklearn.model_selection import (
     ParameterGrid,
     StratifiedKFold,
@@ -245,7 +244,6 @@ def predict_feature(
             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
             result_dfs = [
                 kfold_eval(X, y, SVC, norm=norm, title=title),
-                kfold_eval(X, y, LR, norm=norm, title=title, max_iter=500),
                 kfold_eval(X, y, RF, norm=norm, title=title),
                 kfold_eval(X, y, GBC, norm=norm, title=title),
                 kfold_eval(X, y, KNN3, norm=norm, title=title),
