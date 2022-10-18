@@ -251,6 +251,10 @@ class EigsMiddle20(EigsMiddle10):
         )
         self.length = 20
 
+    @property
+    def data(self) -> DataFrame:
+        return super().data
+
 
 class EigsMiddle40(Feature):
     def __init__(
@@ -263,6 +267,10 @@ class EigsMiddle40(Feature):
             degree=None,
         )
         self.length = 50
+
+    @property
+    def data(self) -> DataFrame:
+        return super().data
 
 
 class EigenvaluesSmoothed(Feature):
