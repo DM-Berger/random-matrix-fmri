@@ -233,7 +233,7 @@ class EigsMiddle10(Feature):
         eigs.drop(columns="y", inplace=True)
         half = len(eigs.columns) // 2
         left = eigs.iloc[:, half - (length // 2) : half]
-        right = eigs.drop(columns="y").iloc[:, half : half + (length // 2)]
+        right = eigs.iloc[:, half : half + (length // 2)]
         df = pd.concat([left, right], axis=1)
         df["y"] = y
         return df
