@@ -70,7 +70,7 @@ class Feature(ABC):
             full_pre=self.full_pre,
         )
         self.is_combined = False
-        self.feature_start_idxs = [0]
+        self.feature_start_idxs = [int(0)]
 
     @property
     def suptitle(self) -> str:

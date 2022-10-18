@@ -90,16 +90,15 @@ class FeatureSlice(Enum):
         r = float(self.name.split("_")[1]) / 100
         base = r * feature_length
         region = self.region()
-        idx = base // 2 if region == "mid" else round(base)
         if region == "min":
-            idx = round(base)
+            idx = int(round(base))
             return slice(None, idx)
         elif region == "mid":
-            idx = base // 2
-            half = feature_length // 2
+            idx = int(base // 2)
+            half = int(feature_length // 2)
             return slice(half - idx, half + idx)
         elif region == "max":
-            idx = round(base)
+            idx = int(round(base))
             return slice(-idx, None)
         else:
             raise ValueError("Impossible!")
