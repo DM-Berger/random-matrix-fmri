@@ -107,6 +107,12 @@ def flattenize(df: DataFrame) -> DataFrame:
     return pd.concat(dfs, axis=0, ignore_index=True)
 
 
+def get_alpha(df: DataFrame) -> float:
+    a = 2 / len(df)
+    a = float(np.clip(a, a_min=0.3, a_max=0.5))
+    return a
+
+
 def get_plot_dfs(
     data: DataFrame, label1: str, label2: str
 ) -> tuple[DataFrame, DataFrame]:
@@ -134,7 +140,7 @@ def plot_multi_raw(
         cols = df.iloc[:, :-1].columns
         x = df.iloc[row, :-1].to_numpy()
         x[x >= 1.0] = np.nan
-        ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=0.5)
+        ax.scatter(cols, x, color=colors[y[row]], s=0.25, alpha=get_alpha(df))
 
 
 def plot_multi_raw_observable(
@@ -159,7 +165,7 @@ def plot_multi_raw_observable(
         cols = df.iloc[:, :-1].columns
         x = df.iloc[row, :-1].to_numpy()
         x[x >= 1.0 + degree - 0.5] = np.nan
-        ax.plot(cols, x, color=colors[y[row]], lw=0.25, alpha=0.2)
+        ax.plot(cols, x, color=colors[y[row]], lw=0.25, alpha=get_alpha(df))
     xlabels = list(df.iloc[:, :-1].columns)[::2]
     ylabels = [3, 5, 7, 9]
     ax.set_xticks(ticks=xlabels, labels=xlabels)
@@ -187,13 +193,13 @@ def plot_multi_hist_grouped(
         sbn.kdeplot(
             x=x,
             color=colors[y[row]],
-            alpha=0.20,
+            alpha=get_alpha(df),
             fill=False,
             ax=ax,
             legend=True,
             # common_norm=False,
             log_scale=False,
-            lw=0.5,
+            lw=1.0,
         )
         # sbn.histplot(
         #     x=x,
@@ -211,7 +217,7 @@ def plot_multi_hist_grouped(
         # )
     ymin, ymax = ax.get_ylim()
     if ymax > 100:
-        ax.set_ylim(ymin, 50)
+        ax.set_ylim(ymin, 100)
 
 
 def plot_multi_hist_grouped_observables(
@@ -241,13 +247,13 @@ def plot_multi_hist_grouped_observables(
         sbn.kdeplot(
             x=x,
             color=colors[y[row]],
-            alpha=0.20,
+            alpha=get_alpha(df),
             # fill=True,
             ax=ax,
             legend=True,
             # common_norm=False,
             log_scale=False,
-            lw=0.5,
+            lw=1.0,
         )
         # sbn.histplot(
         #     x=x,
@@ -268,7 +274,7 @@ def plot_multi_hist_grouped_observables(
         # )
     ymin, ymax = ax.get_ylim()
     if ymax > 100:
-        ax.set_ylim(ymin, 50)
+        ax.set_ylim(ymin, 100)
     xlabels = [3, 5, 7, 9]
     ax.set_xticks(ticks=xlabels, labels=xlabels)
 
@@ -512,7 +518,6 @@ def plot_feature_multi(
     source: Dataset,
     full_pre: bool,
     norm: bool,
-    pbar: tqdm,
     save: bool = False,
 ) -> None:
     """Plot all features in various ways to visualize separations"""
@@ -542,42 +547,63 @@ def plot_feature_multi(
     palette[1] = tuple(np.array((1, 70, 198)) / 255)
     sbn.set_palette(palette)
     # nrows, ncols = best_rect(N)
+    pbar = tqdm(total=N * (4 + 2 * 4 * 4))  # 4 eigs, 2 obs, 4 plots per obs, 4 degrees
     for k in range(N):
         label1, label2 = sorted(combs[k])  # need sorted for hue_order
+        if not is_not_dud_pairing(combs[k]):
+            continue
+        if source is Dataset.Osteo:
+            if label1 != "duloxetine":
+                continue
+            if label2 != "nopain":
+                continue
         colors: Colors = {label1: palette[0], label2: palette[1]}
         fig, axes = plt.subplots(nrows=3, ncols=4, squeeze=False)
         desc = f"{source.name}: {label1} v {label2}"
+        pbdesc = f"{label1} v {label2}"
         fig.suptitle(f"{desc} - All Features")
-        pbar.set_description(desc)
+        pbar.set_description(pbdesc)
 
-        pbar.set_description(f"{desc} - Eigenvalues")
+        pbar.set_description(f"{pbdesc} - Eigenvalues")
         df_eigs, df_flat = get_plot_dfs(eigs_data, label1, label2)
         plot_multi_raw(df_eigs, axes[0][0], "eigenvalue", colors)
+        pbar.update()
         plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue", colors)
+        pbar.update()
         plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue", colors)
+        pbar.update()
         plot_multi_hist_grouped(df_eigs, axes[0][3], "eigenvalue", colors)
+        pbar.update()
 
         for degree, rig_data in rigs_data.items():
-            pbar.set_description(f"{desc} - Rigidities [deg={degree}]")
+            pbar.set_description(f"{pbdesc} - Rigidities [deg={degree}]")
             df_rigs, df_flat = get_plot_dfs(rig_data, label1, label2)
             args: Mapping[str, Any] = dict(feature_name="rigidity", degree=degree)
             cargs: Mapping[str, Any] = {**args, **dict(colors=colors)}
             plot_multi_raw_observable(df_rigs, axes[1][0], **cargs)
+            pbar.update()
             plot_multi_flat_hist_observables(df_flat, axes[1][1], **cargs)
+            pbar.update()
             plot_multi_flat_strip_observables(df_flat, axes[1][2], **cargs)
+            pbar.update()
             plot_multi_hist_grouped_observables(df_rigs, axes[1][3], **cargs)
+            pbar.update()
 
         for degree, lvar_data in lvars_data.items():
-            pbar.set_description(f"{desc} - Levelvars [deg={degree}]")
+            pbar.set_description(f"{pbdesc} - Levelvars [deg={degree}]")
             df_lvar, df_flat = get_plot_dfs(lvar_data, label1, label2)
             args = dict(feature_name="level variance", degree=degree)
             cargs = {**args, **dict(colors=colors)}
             plot_multi_raw_observable(df_lvar, axes[2][0], **cargs)
+            pbar.update()
             plot_multi_flat_hist_observables(df_flat, axes[2][1], **cargs)
+            pbar.update()
             plot_multi_flat_strip_observables(df_flat, axes[2][2], **cargs)
+            pbar.update()
             plot_multi_hist_grouped_observables(df_lvar, axes[2][3], **cargs)
+            pbar.update()
 
-        pbar.set_description(f"{desc} - Saving")
+        pbar.set_description(f"{pbdesc} - Saving")
         color1 = colors[label1]
         color1_alpha = (*color1, 0.3)
         color2 = colors[label2]
@@ -590,12 +616,19 @@ def plot_feature_multi(
 
         fig.set_size_inches(w=18, h=8)
         fig.tight_layout()
-        plt.show()
-        sys.exit()
         # plt.close()
-        # if save:
-        #     return
+        if save:
+            normed = "_normed" if norm else ""
+            fname = f"{source.name.lower()}_{label1}_v_{label2}_fullpre={full_pre}{normed}.png"
+            outfile = outdir / fname
+            pbar.set_description(f"{pbdesc} - Saving to {outfile}")
+            fig.savefig(str(outfile), dpi=300)
+            pbar.set_description(f"{pbdesc} - Saved to {outfile}")
+            plt.close()
+        else:
+            plt.show()
         # plt.show(block=False)
+    pbar.close()
 
 
 def plot_all_features(
@@ -655,29 +688,29 @@ def plot_all_features(
 def plot_all_features_multi(
     sources: Optional[list[Dataset]] = None,
     full_pres: Optional[list[bool]] = None,
-    norms: Optional[list[bool]] = None,
     save: bool = False,
 ) -> None:
     sources = sources or [*Dataset]
     full_pres = full_pres or [True, False]
-    norms = norms or [True, False]
     grid = [
         Namespace(**p)
         for p in ParameterGrid(
             dict(
                 source=sources,
                 full_pre=full_pres,
-                norm=norms,
+                norm=[True],  # visualization too hard without
             )
         )
     ]
 
-    pbar = tqdm(grid)
+    pbar = tqdm(grid, leave=True)
     for args in pbar:
+        fullpre = "fullpre" if args.full_pre else ""
+        pbar.set_description(f"{args.source.name}: {fullpre}")
         plot_feature_multi(
             source=args.source,
             full_pre=args.full_pre,
             norm=args.norm,
-            pbar=pbar,
             save=save,
         )
+    pbar.close()

@@ -12,6 +12,11 @@ from rmt.visualize import plot_all_features_multi
 
 if __name__ == "__main__":
     plot_all_features_multi(
-        sources=[*Dataset],
-        save=False,
+        # sources=[*Dataset],
+        sources=[
+            Dataset.TaskAttention,
+            Dataset.Parkinsons,
+            Dataset.Osteo,
+        ],
+        save=True,
     )
