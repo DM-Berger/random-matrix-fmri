@@ -13,7 +13,7 @@ from rmt.predict import summarize_all_predictions
 if __name__ == "__main__":
     FEATURE_IDXS: list[int | slice | None] = [None]
     fnames = {
-        EigsMinMax5: "eigs-minmax-5_predictions.json",
+        # EigsMinMax5: "eigs-minmax-5_predictions.json",
         EigsMinMax10: "eigs-minmax-10_predictions.json",
         EigsMinMax20: "eigs-minmax-20_predictions.json",
     }
