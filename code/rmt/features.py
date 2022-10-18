@@ -253,7 +253,16 @@ class EigsMiddle20(EigsMiddle10):
 
     @property
     def data(self) -> DataFrame:
-        return super().data
+        length = self.length
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)
+        half = len(eigs.columns) // 2
+        left = eigs.iloc[:, half - (length // 2) : half]
+        right = eigs.iloc[:, half : half + (length // 2)]
+        df = pd.concat([left, right], axis=1)
+        df["y"] = y
+        return df
 
 
 class EigsMiddle40(Feature):
@@ -270,7 +279,16 @@ class EigsMiddle40(Feature):
 
     @property
     def data(self) -> DataFrame:
-        return super().data
+        length = self.length
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)
+        half = len(eigs.columns) // 2
+        left = eigs.iloc[:, half - (length // 2) : half]
+        right = eigs.iloc[:, half : half + (length // 2)]
+        df = pd.concat([left, right], axis=1)
+        df["y"] = y
+        return df
 
 
 class EigenvaluesSmoothed(Feature):
