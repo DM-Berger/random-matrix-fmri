@@ -164,7 +164,7 @@ class EigsMinMax5(Feature):
         y = eigs["y"].copy()
         min5 = eigs.iloc[:, :5]
         max5 = eigs.drop(columns="y").iloc[:, -5:]
-        df = pd.concat([min5, max5])
+        df = pd.concat([min5, max5], axis=1)
         df["y"] = y
         return df
 
@@ -186,7 +186,7 @@ class EigsMinMax10(Feature):
         y = eigs["y"].copy()
         min10 = eigs.iloc[:, :10]
         max10 = eigs.drop(columns="y").iloc[:, -10:]
-        df = pd.concat([min10, max10])
+        df = pd.concat([min10, max10], axis=1)
         df["y"] = y
         return df
 
@@ -208,7 +208,7 @@ class EigsMinMax20(Feature):
         y = eigs["y"].copy()
         min20 = eigs.iloc[:, :20]
         max20 = eigs.drop(columns="y").iloc[:, -20:]
-        df = pd.concat([min20, max20])
+        df = pd.concat([min20, max20], axis=1)
         df["y"] = y
         return df
 
