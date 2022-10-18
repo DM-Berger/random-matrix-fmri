@@ -213,6 +213,58 @@ class EigsMinMax20(Feature):
         return df
 
 
+class EigsMiddle10(Feature):
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+        self.length = 10
+
+    @property
+    def data(self) -> DataFrame:
+        length = self.length
+        eigs = self.dataset.eigs_df()
+        y = eigs["y"].copy()
+        eigs.drop(columns="y", inplace=True)
+        half = len(eigs.columns) // 2
+        left = eigs.iloc[:, half - (length // 2) : half]
+        right = eigs.drop(columns="y").iloc[:, half : half + (length // 2)]
+        df = pd.concat([left, right], axis=1)
+        df["y"] = y
+        return df
+
+
+class EigsMiddle20(EigsMiddle10):
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+        self.length = 20
+
+
+class EigsMiddle40(Feature):
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
+        super().__init__(
+            source=source,
+            full_pre=full_pre,
+            norm=norm,
+            degree=None,
+        )
+        self.length = 50
+
+
 class EigenvaluesSmoothed(Feature):
     def __init__(self, source: Dataset, full_pre: bool, norm: bool, degree: int) -> None:
         self.degree: int
