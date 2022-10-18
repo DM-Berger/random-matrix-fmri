@@ -180,6 +180,9 @@ if __name__ == "__main__":
         PROJECT / "eigs-minmax-5_predictions.json",
         PROJECT / "eigs-minmax-10_predictions.json",
         PROJECT / "eigs-minmax-20_predictions.json",
+        PROJECT / "eigs-middle-10_predictions.json",
+        PROJECT / "eigs-middle-20_predictions.json",
+        PROJECT / "eigs-middle-40_predictions.json",
         PROJECT / "eig_smoothed_predictions.json",
         PROJECT / "eigenvalues+eig_smoothed_predictions.json",
         PROJECT / "eigenvalues+eig_savgol_predictions.json",
@@ -198,6 +201,7 @@ if __name__ == "__main__":
         PROJECT / "unfolded+rigidity+levelvar_predictions.json",
     ]
     df = pd.concat([pd.read_json(path) for path in paths], axis=0, ignore_index=True)
+    df = df.loc[df.preproc == "minimal"]
     # describe(df)
 
     non_reflects = df.data.apply(lambda s: "Reflect" not in s)
