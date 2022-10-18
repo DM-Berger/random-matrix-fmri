@@ -24,7 +24,7 @@ if __name__ == "__main__":
         slice(0, 40),
         slice(10, -10),
         slice(20, -20),
-        slice(40, -40),
+        slice(30, -30),
     ]
     # plot_all_features(
     #     feature_cls=Rigidities,
