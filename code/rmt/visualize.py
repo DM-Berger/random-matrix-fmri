@@ -26,6 +26,7 @@ from typing import (
     cast,
     no_type_check,
 )
+from warnings import filterwarnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,6 +34,7 @@ import pandas as pd
 import pytest
 import seaborn as sbn
 from matplotlib.axes import Axes
+from matplotlib.patches import Patch
 from numpy import ndarray
 from pandas import DataFrame, Series
 from sklearn.ensemble import GradientBoostingClassifier as GBC
@@ -53,6 +55,8 @@ RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots"
 
 TITLE_ARGS = dict(fontsize=10)
+
+Colors = dict[str, tuple[float, float, float]]
 
 
 def outdir(feature_name: str) -> Path:
@@ -103,30 +107,24 @@ def flattenize(df: DataFrame) -> DataFrame:
     return pd.concat(dfs, axis=0, ignore_index=True)
 
 
-def get_plot_dfs_colors(
-    data: DataFrame, label1: str, label2: str, palette: list[tuple[float, float, float]]
-) -> tuple[DataFrame, DataFrame, dict[str, tuple[float, float, float]]]:
+def get_plot_dfs(
+    data: DataFrame, label1: str, label2: str
+) -> tuple[DataFrame, DataFrame]:
     df = data
     idx = (df.y == label1) | (df.y == label2)
     df = df.loc[idx]
     df_flat = flattenize(df)
-    colors = {y_: palette[i] for i, y_ in enumerate(np.unique(df["y"]))}
-    return df, df_flat, colors
+    return df, df_flat
 
 
 def plot_multi_raw(
     df: DataFrame,
     ax: Axes,
     feature_name: str,
-    colors: dict[str, tuple[float, float, float]],
-    dodge: float | None = None,
+    colors: Colors,
 ) -> None:
     capitalized = feature_name.capitalize()
-    plural = (
-        f"{capitalized}s"
-        if not capitalized.endswith("y")
-        else capitalized.replace("y", "ies")
-    )
+    plural = f"{capitalized[:-1]}ies" if "rigidity" in feature_name else f"{capitalized}s"
     ax.set_title(f"Raw {plural}", **TITLE_ARGS)
     ax.set_xlabel(f"{capitalized} Index")
     ax.set_ylabel(f"log({feature_name.lower()})")
@@ -143,15 +141,11 @@ def plot_multi_raw_observable(
     df: DataFrame,
     ax: Axes,
     feature_name: str,
-    colors: dict[str, tuple[float, float, float]],
+    colors: Colors,
     degree: float,
 ) -> None:
     capitalized = feature_name.capitalize()
-    plural = (
-        f"{capitalized}s"
-        if not capitalized.endswith("y")
-        else capitalized.replace("y", "ies")
-    )
+    plural = f"{capitalized[:-1]}ies" if "rigidity" in feature_name else f"{capitalized}s"
     ax.set_title(f"Raw {plural}", **TITLE_ARGS)
     ax.set_xlabel("L")
     ax.set_ylabel(f"Unfolding Degree + log({feature_name.lower()})")
@@ -176,8 +170,7 @@ def plot_multi_hist_grouped(
     df: DataFrame,
     ax: Axes,
     feature_name: str,
-    colors: dict[str, tuple[float, float, float]],
-    dodge: float | None = None,
+    colors: Colors,
 ) -> None:
     capitalized = feature_name.capitalize()
 
@@ -187,37 +180,114 @@ def plot_multi_hist_grouped(
     y = df["y"].copy().to_numpy().ravel()
 
     for row in range(len(df)):
-        x = df.iloc[row, :-1].to_numpy()
+        x = df.iloc[row, :-1].to_numpy().astype(np.float64)
         x[x >= 1.0] = np.nan
-        sbn.histplot(
+        if np.sum(~np.isnan(x)) == 0 or np.nanvar(x) == 0:
+            continue  # this bungles the KDE
+        sbn.kdeplot(
             x=x,
             color=colors[y[row]],
-            alpha=0.10,
-            element="step",
-            fill=True,
+            alpha=0.20,
+            fill=False,
             ax=ax,
             legend=True,
-            stat="density",
-            bins=np.linspace(0, 1.0, 20),  # type: ignore
-            common_norm=False,
-            common_bins=False,
+            # common_norm=False,
             log_scale=False,
+            lw=0.5,
         )
+        # sbn.histplot(
+        #     x=x,
+        #     color=colors[y[row]],
+        #     alpha=0.10,
+        #     element="step",
+        #     fill=True,
+        #     ax=ax,
+        #     legend=True,
+        #     stat="density",
+        #     bins=np.linspace(0, 1.0, 20),  # type: ignore
+        #     common_norm=False,
+        #     common_bins=False,
+        #     log_scale=False,
+        # )
+    ymin, ymax = ax.get_ylim()
+    if ymax > 100:
+        ax.set_ylim(ymin, 50)
+
+
+def plot_multi_hist_grouped_observables(
+    df: DataFrame,
+    ax: Axes,
+    feature_name: str,
+    colors: Colors,
+    degree: float,
+) -> None:
+    capitalized = feature_name.capitalize()
+
+    ax.set_title(f"{capitalized} Distributions (per sample)", **TITLE_ARGS)
+    ax.set_xlabel(f"Unfolding Degree + {capitalized}")
+
+    dodge = degree - 0.5
+    values = df.drop(columns="y").to_numpy() + dodge
+    df = df.copy()
+    df.iloc[:, :-1] = values
+
+    y = df["y"].copy().to_numpy().ravel()
+
+    for row in range(len(df)):
+        x = df.iloc[row, :-1].to_numpy().astype(np.float64)
+        x[x >= 1.0 + dodge] = np.nan
+        if np.sum(~np.isnan(x)) == 0 or np.nanvar(x) == 0:
+            continue
+        sbn.kdeplot(
+            x=x,
+            color=colors[y[row]],
+            alpha=0.20,
+            # fill=True,
+            ax=ax,
+            legend=True,
+            # common_norm=False,
+            log_scale=False,
+            lw=0.5,
+        )
+        # sbn.histplot(
+        #     x=x,
+        #     color=colors[y[row]],
+        #     alpha=0.10,
+        #     element="step",
+        #     fill=True,
+        #     kde=True,
+        #     ax=ax,
+        #     legend=True,
+        #     stat="density",
+        #     bins=np.linspace(0 + dodge, 1.0 + dodge, 20),  # type: ignore
+        #     common_norm=False,
+        #     common_bins=False,
+        #     log_scale=False,
+        #     line_kws=dict(lw=0.5),
+        #     lw=0.5,
+        # )
+    ymin, ymax = ax.get_ylim()
+    if ymax > 100:
+        ax.set_ylim(ymin, 50)
+    xlabels = [3, 5, 7, 9]
+    ax.set_xticks(ticks=xlabels, labels=xlabels)
 
 
 def plot_multi_flat_hist(
     df_flat: DataFrame,
     ax: Axes,
     feature_name: str,
+    colors: Colors,
 ) -> None:
     sbn.histplot(
         data=df_flat,
         x="all",
         hue="y",
+        hue_order=sorted(colors.keys()),
         element="step",
         fill=True,
         ax=ax,
-        legend=True,
+        legend=False,
         stat="density",
         bins=20,  # type: ignore
         common_norm=False,
@@ -232,6 +302,7 @@ def plot_multi_flat_hist_observables(
     df_flat: DataFrame,
     ax: Axes,
     feature_name: str,
+    colors: Colors,
     degree: float,
 ) -> None:
     values = df_flat.drop(columns="y").to_numpy() + degree - 0.5
@@ -242,10 +313,11 @@ def plot_multi_flat_hist_observables(
         data=df,
         x="all",
         hue="y",
+        hue_order=sorted(colors.keys()),
         element="step",
         fill=True,
         ax=ax,
-        legend=True,
+        legend=False,
         stat="density",
         bins=20,  # type: ignore
         common_norm=False,
@@ -262,12 +334,14 @@ def plot_multi_flat_strip(
     df_flat: DataFrame,
     ax: Axes,
     feature_name: str,
+    colors: Colors,
 ) -> None:
     sbn.stripplot(
         data=df_flat,
         x="all",
         y="y",
         hue="y",
+        hue_order=sorted(colors.keys()),
         legend=False,  # type: ignore
         ax=ax,
         orient="h",
@@ -276,6 +350,34 @@ def plot_multi_flat_strip(
     )
     ax.set_xlabel(f"log({feature_name.lower()})")
     ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
+
+
+def plot_multi_flat_strip_observables(
+    df_flat: DataFrame,
+    ax: Axes,
+    feature_name: str,
+    colors: Colors,
+    degree: float,
+) -> None:
+    values = df_flat.drop(columns="y").to_numpy() + degree - 0.5
+    df = df_flat.copy()
+    df.iloc[:, :-1] = values
+    sbn.stripplot(
+        data=df,
+        x="all",
+        y="y",
+        hue="y",
+        hue_order=sorted(colors.keys()),
+        legend=False,  # type: ignore
+        ax=ax,
+        orient="h",
+        s=1.0,
+        alpha=0.5,
+    )
+    ax.set_xlabel(f"Unfolding degree + log({feature_name.lower()})")
+    ax.set_title(f"{feature_name.capitalize()} Distributions", **TITLE_ARGS)
+    xlabels = [3, 5, 7, 9]
+    ax.set_xticks(ticks=xlabels, labels=xlabels)
 
 
 def plot_feature(
@@ -410,6 +512,7 @@ def plot_feature_multi(
     source: Dataset,
     full_pre: bool,
     norm: bool,
+    pbar: tqdm,
     save: bool = False,
 ) -> None:
     """Plot all features in various ways to visualize separations"""
@@ -430,7 +533,7 @@ def plot_feature_multi(
 
     eigs_data = log_normalize(eigs_data, norm)
     rigs_data = {deg: log_normalize(rig.data, norm) for deg, rig in rigs.items()}
-    lvar_data = {deg: log_normalize(lvar.data, norm) for deg, lvar in lvars.items()}
+    lvars_data = {deg: log_normalize(lvar.data, norm) for deg, lvar in lvars.items()}
 
     combs = list(filter(is_not_dud_pairing, combinations(labels, 2)))
     N = len(combs)
@@ -440,26 +543,50 @@ def plot_feature_multi(
     sbn.set_palette(palette)
     # nrows, ncols = best_rect(N)
     for k in range(N):
-        label1, label2 = combs[k]
+        label1, label2 = sorted(combs[k])  # need sorted for hue_order
+        colors: Colors = {label1: palette[0], label2: palette[1]}
         fig, axes = plt.subplots(nrows=3, ncols=4, squeeze=False)
-        fig.suptitle(f"{source.name}: {label1} v {label2} - All Features")
+        desc = f"{source.name}: {label1} v {label2}"
+        fig.suptitle(f"{desc} - All Features")
+        pbar.set_description(desc)
 
-        df_eigs, df_flat, colors = get_plot_dfs_colors(eigs_data, label1, label2, palette)
-        # plot_multi_raw(df_eigs, axes[0][0], "eigenvalue", colors)
-        # plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue")
-        # plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue")
-        # plot_multi_hist_grouped(df_eigs, axes[0][3], "eigenvalue", colors)
+        pbar.set_description(f"{desc} - Eigenvalues")
+        df_eigs, df_flat = get_plot_dfs(eigs_data, label1, label2)
+        plot_multi_raw(df_eigs, axes[0][0], "eigenvalue", colors)
+        plot_multi_flat_hist(df_flat, axes[0][1], "eigenvalue", colors)
+        plot_multi_flat_strip(df_flat, axes[0][2], "eigenvalue", colors)
+        plot_multi_hist_grouped(df_eigs, axes[0][3], "eigenvalue", colors)
 
         for degree, rig_data in rigs_data.items():
-            df_rigs, df_flat, colors = get_plot_dfs_colors(
-                rig_data, label1, label2, palette
-            )
-            # plot_multi_raw_observable(
-            #     df_rigs, axes[1][0], "rigidity", colors, degree=degree
-            # )
-            plot_multi_flat_hist_observables(df_flat, axes[1][1], "rigidity", degree)
-            # plot_multi_flat_strip(df_flat, axes[1][2], "rigidity")
-            # plot_multi_hist_grouped(df_rigs, axes[1][3], "rigidity", colors)
+            pbar.set_description(f"{desc} - Rigidities [deg={degree}]")
+            df_rigs, df_flat = get_plot_dfs(rig_data, label1, label2)
+            args: Mapping[str, Any] = dict(feature_name="rigidity", degree=degree)
+            cargs: Mapping[str, Any] = {**args, **dict(colors=colors)}
+            plot_multi_raw_observable(df_rigs, axes[1][0], **cargs)
+            plot_multi_flat_hist_observables(df_flat, axes[1][1], **cargs)
+            plot_multi_flat_strip_observables(df_flat, axes[1][2], **cargs)
+            plot_multi_hist_grouped_observables(df_rigs, axes[1][3], **cargs)
+
+        for degree, lvar_data in lvars_data.items():
+            pbar.set_description(f"{desc} - Levelvars [deg={degree}]")
+            df_lvar, df_flat = get_plot_dfs(lvar_data, label1, label2)
+            args = dict(feature_name="level variance", degree=degree)
+            cargs = {**args, **dict(colors=colors)}
+            plot_multi_raw_observable(df_lvar, axes[2][0], **cargs)
+            plot_multi_flat_hist_observables(df_flat, axes[2][1], **cargs)
+            plot_multi_flat_strip_observables(df_flat, axes[2][2], **cargs)
+            plot_multi_hist_grouped_observables(df_lvar, axes[2][3], **cargs)
+
+        pbar.set_description(f"{desc} - Saving")
+        color1 = colors[label1]
+        color1_alpha = (*color1, 0.3)
+        color2 = colors[label2]
+        color2_alpha = (*color2, 0.3)
+        patches = [
+            Patch(facecolor=color1_alpha, edgecolor=color1, label=label1),
+            Patch(facecolor=color2_alpha, edgecolor=color2, label=label2),
+        ]
+        fig.legend(handles=patches, loc="upper right")
 
         fig.set_size_inches(w=18, h=8)
         fig.tight_layout()
@@ -545,10 +672,12 @@ def plot_all_features_multi(
         )
     ]
 
-    for args in tqdm(grid):
+    pbar = tqdm(grid)
+    for args in pbar:
         plot_feature_multi(
             source=args.source,
             full_pre=args.full_pre,
             norm=args.norm,
+            pbar=pbar,
             save=save,
         )
