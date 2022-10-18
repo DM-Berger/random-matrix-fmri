@@ -148,7 +148,9 @@ class Eigenvalues(Feature):
 
 
 class EigsMinMax5(Feature):
-    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
         super().__init__(
             source=source,
             full_pre=full_pre,
@@ -168,7 +170,9 @@ class EigsMinMax5(Feature):
 
 
 class EigsMinMax10(Feature):
-    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
         super().__init__(
             source=source,
             full_pre=full_pre,
@@ -188,7 +192,9 @@ class EigsMinMax10(Feature):
 
 
 class EigsMinMax20(Feature):
-    def __init__(self, source: Dataset, full_pre: bool, norm: bool) -> None:
+    def __init__(
+        self, source: Dataset, full_pre: bool, norm: bool, degree: int | None
+    ) -> None:
         super().__init__(
             source=source,
             full_pre=full_pre,
