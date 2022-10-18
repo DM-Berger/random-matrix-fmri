@@ -243,6 +243,7 @@ def predict_feature(
             X = df.drop(columns="y").to_numpy()
             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
             result_dfs = [
+                # LR never converges, pointless
                 kfold_eval(X, y, SVC, norm=norm, title=title),
                 kfold_eval(X, y, RF, norm=norm, title=title),
                 kfold_eval(X, y, GBC, norm=norm, title=title),
@@ -316,7 +317,7 @@ def summarize_all_predictions(
         )
     ]
     # grid = grid[:100]
-    dfs = process_map(predict_all, grid, desc="Predicting")
+    dfs = process_map(predict_all, grid, desc="Predicting", chunksize=1)
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
     print(df.iloc[:print_rows, :].to_markdown(index=False, tablefmt="simple"))
 
