@@ -177,6 +177,9 @@ if __name__ == "__main__":
     paths = [
         PROJECT / "all_combined_predictions.json",
         PROJECT / "eigenvalue_predictions.json",
+        PROJECT / "eigs-minmax-5_predictions.json",
+        PROJECT / "eigs-minmax-10_predictions.json",
+        PROJECT / "eigs-minmax-20_predictions.json",
         PROJECT / "eig_smoothed_predictions.json",
         PROJECT / "eigenvalues+eig_smoothed_predictions.json",
         PROJECT / "eigenvalues+eig_savgol_predictions.json",
