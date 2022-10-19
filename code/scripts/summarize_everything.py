@@ -8,11 +8,14 @@ sys.path.append(str(ROOT))
 from typing import Literal
 
 import pandas as pd
+from joblib import Memory
 from pandas import DataFrame
+from tqdm import tqdm
 
 from rmt.features import FEATURE_OUTFILES as PATHS
 
 PROJECT = ROOT.parent
+MEMORY = Memory(ROOT / "__JOBLIB_CACHE__")
 
 HEADER = "=" * 80 + "\n"
 FOOTER = "\n" + ("=" * 80)
@@ -27,6 +30,16 @@ def corr_renamer(s: str) -> str:
     if "feature_" in s:
         return s.replace("feature_", "")
     return s
+
+
+@MEMORY.cache
+def get_described(df: DataFrame, metric: Literal["auroc", "f1"] = "auroc") -> DataFrame:
+    return (
+        df.groupby(["feature", "data", "comparison", "slice"])
+        .describe(percentiles=[0.05, 0.95])
+        .loc[:, metric]
+        .drop(columns=["count"])
+    )
 
 
 def auroc_correlations(
@@ -97,46 +110,12 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
         ordering = ["median", "best", "mean", "std", "5%", "95%"]
     else:
         raise NotImplementedError()
+    desc = get_described(df, metric="auroc").loc[:, "max"].reset_index()
+    print(desc)
     processed = (
-        df.groupby(["feature", "data", "comparison", "slice"])
-        .describe(percentiles=[0.05, 0.95])
-        .loc[:, "auroc"]
-        .drop(columns=["count"])
-        .reset_index()
-        .rename(
-            columns={
-                "max": "best",
-                "feature": "Feature",
-                "data": "Dataset",
-                "50%": "median",
-            }
-        )
-        .sort_values(
-            by=["Dataset", "Feature", "comparison", "slice", sorter], ascending=False
-        )
-        .groupby(["Dataset", "Feature", "comparison", "slice"])
-        # .sort_values(by=["Dataset", sorter], ascending=False)  # type: ignore
-        # .sort(by=["Dataset", sorter], ascending=False)  # type: ignore
-        .max()
-        .loc[:, ordering]
-        .sort_values(
-            by=["Dataset", "Feature", "comparison", sorter, "slice"],
-            ascending=False,
-        )  # type: ignore
-        .iloc[::10]  # 10 slices
-        .reset_index()
-        .sort_values(
-            by=[
-                sorter,
-                "Dataset",
-                "Feature",
-                "comparison",
-            ],
-            ascending=False,
-        )  # type: ignore
-        .groupby(["Dataset", "Feature", "comparison"])
-        .max()
-        .sort_values(by="best", ascending=False)
+        desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
+        .groupby(["data", "feature", "comparison"])
+        .apply(lambda grp: grp.nlargest(3, columns="max"))
     )
 
     print(processed)
@@ -152,19 +131,6 @@ def naive_describe(df: DataFrame) -> None:
     pd.options.display.expand_frame_repr = True
 
     # df = df.loc[df.classifier != "SVC"].copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
-    df.loc[:, "feature"] = (
-        df["feature"].str.replace("eigssmoothed", "eigs_smoothed").copy()
-    )
-    df.loc[:, "feature"] = df["feature"].str.replace("eigssavgol", "eigs_savgol").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("smoothed", "smooth").copy()
-    df.loc[:, "feature"] = (
-        df["feature"].str.replace("allfeatures", "eigs + rigidity + levelvar").copy()
-    )
-    df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
 
     # auroc_correlations(df, subset="all", predictive_only=False)
     # auroc_correlations(df, subset="features", predictive_only=False)
@@ -174,8 +140,11 @@ def naive_describe(df: DataFrame) -> None:
     # feature_aurocs(df, sorter="best")
     # feature_aurocs(df, sorter="median")
 
+    # FOR FAST TESTING
+    # df = df.loc[df.data == "Osteo"]
+
     feature_dataset_aurocs(df, sorter="best")
-    feature_dataset_aurocs(df, sorter="median")
+    # feature_dataset_aurocs(df, sorter="median")
 
     # osteo = (
     #     df.loc[df.data == "Osteo"]
@@ -196,16 +165,37 @@ def naive_describe(df: DataFrame) -> None:
     # )
 
 
+@MEMORY.cache
+def load_all_renamed() -> DataFrame:
+    df = pd.concat(
+        [pd.read_json(path) for path in tqdm(PATHS.values(), desc="loading")],
+        axis=0,
+        ignore_index=True,
+    )
+    print("\n\nRemoving meaningless 'REFLECT' data:\n")
+    non_reflects = df.data.apply(lambda s: "Reflect" not in s)
+    df = df.loc[non_reflects]
+    df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("eigssmoothed", "eigs_smoothed").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("eigssavgol", "eigs_savgol").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("smoothed", "smooth").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("allfeatures", "eigs + rigidity + levelvar").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
+    return df
+
+
 if __name__ == "__main__":
     print("\n" * 50)
-    df = pd.concat(
-        [pd.read_json(path) for path in PATHS.values()], axis=0, ignore_index=True
-    )
+    df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
     df = df.loc[df.preproc == "minimal"]
     # naive_describe(df)
 
-    print("\n\nRemoving meaningless 'REFLECT' data:\n")
-    non_reflects = df.data.apply(lambda s: "Reflect" not in s)
-    df = df.loc[non_reflects]
     naive_describe(df)

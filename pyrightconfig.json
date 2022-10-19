@@ -3,6 +3,9 @@
     "exclude": [
         "**/__CACHE__",
         "**/__MAPPINGS_CACHE__",
+        "**/*_CACHE__",
+        "**/apptainer",
+        "**/__JOBLIB_CACHE__",
         "**/__pycache__",
         "**/__WAVEFORM_CACHE__",
         "**/data",
@@ -15,6 +18,9 @@
     "ignore": [
         "**/__CACHE__",
         "**/__MAPPINGS_CACHE__",
+        "**/*_CACHE__",
+        "**/apptainer",
+        "**/__JOBLIB_CACHE__",
         "**/__pycache__",
         "**/__WAVEFORM_CACHE__",
         "**/data",
