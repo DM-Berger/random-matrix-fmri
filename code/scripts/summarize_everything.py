@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
+from typing import Literal
+
 import pandas as pd
 from pandas import DataFrame
 
@@ -31,7 +33,95 @@ def corr_renamer(s: str) -> str:
     return s
 
 
-def describe(df: DataFrame) -> None:
+def auroc_correlations(
+    df: DataFrame, subset: Literal["all", "features"], predictive_only: bool
+) -> DataFrame:
+    dummies = pd.get_dummies(df)
+    if predictive_only:
+        dummies = dummies.loc[dummies["acc+"] > 0.0]
+    corrs: DataFrame = (
+        dummies.corr(method="spearman").loc["auroc"].drop(index=DROPS)  # type: ignore
+    )
+    corrs = corrs.filter(like="feature_") if subset == "all" else corrs
+
+    if subset == "all":
+        print(f"{HEADER}Spearman correlations with AUROC{FOOTER}")
+    else:
+        print(
+            f"{HEADER}Correlation (Spearman) between feature inclusion and AUROC{FOOTER}"
+        )
+    result: DataFrame = corrs.rename(index=corr_renamer).sort_values(
+        ascending=False
+    )  # type: ignore
+    print(result)
+    return result
+
+
+def feature_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
+    if sorter == "best":
+        print(f"{HEADER}Feature best AUROCs overall:{FOOTER}")
+    elif sorter == "median":
+        print(f"{HEADER}Feature mean and median AUROCs overall (median-sorted):{FOOTER}")
+    grouped = (
+        df.groupby("feature")
+        .describe(percentiles=[0.05, 0.95])
+        .rename(columns={"max": "best", "50%": "median"})
+        .loc[:, "auroc"]
+        .drop(columns="count")
+        .sort_values(by=sorter, ascending=False)  # type: ignore
+        .round(3)
+    )
+    if sorter == "best":
+        ordering = ["best", "median", "mean", "std", "5%", "95%"]
+    elif sorter == "median":
+        ordering = ["median", "best", "mean", "std", "5%", "95%"]
+    else:
+        raise NotImplementedError()
+    result = grouped.loc[:, ordering]
+    print(result)
+    return result
+
+
+def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
+    if sorter == "best":
+        print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
+    else:
+        print(
+            f"{HEADER}Mean/Median AUROCs by feature and dataset (median-sorted):{FOOTER}"
+        )
+
+    if sorter == "best":
+        ordering = ["best", "median", "mean", "std", "5%", "95%"]
+    elif sorter == "median":
+        ordering = ["median", "best", "mean", "std", "5%", "95%"]
+    else:
+        raise NotImplementedError()
+    processed = (
+        df.groupby(["feature", "data"])
+        .describe(percentiles=[0.05, 0.95])
+        .loc[:, "auroc"]
+        .drop(columns=["count"])
+        .reset_index()
+        .rename(
+            columns={
+                "max": "best",
+                "feature": "Feature",
+                "data": "Dataset",
+                "50%": "median",
+            }
+        )
+        .sort_values(by=["Dataset", sorter], ascending=False)
+        .groupby(["Dataset", "Feature"])
+        # .sort_values(by=["Dataset", sorter], ascending=False)  # type: ignore
+        # .sort(by=["Dataset", sorter], ascending=False)  # type: ignore
+        .max()
+        .loc[:, ordering]
+    )
+    print(processed)
+    return processed
+
+
+def naive_describe(df: DataFrame) -> None:
     # pd.options.display. = True
     pd.options.display.max_info_rows = None
     pd.options.display.max_rows = None
@@ -49,102 +139,17 @@ def describe(df: DataFrame) -> None:
     ).copy()
     df.loc[:, "feature"] = df.feature.str.replace("rigidities", "rigidity").copy()
     df.loc[:, "feature"] = df.feature.str.replace("levelvars", "levelvar").copy()
-    corrs = pd.get_dummies(df)
-    corrs_pred = corrs.loc[corrs["acc+"] > 0.0]
 
-    print(f"{HEADER}Spearman correlations with AUROC{FOOTER}")
-    print(
-        corrs.corr(method="spearman")
-        .loc["auroc"]
-        .drop(index=DROPS)
-        .rename(index=corr_renamer)
-        .sort_values(ascending=False)
-    )
-    print(f"{HEADER}Correlation (Spearman) between feature inclusion and AUROC{FOOTER}")
-    print(
-        corrs.corr(method="spearman")
-        .loc["auroc"]
-        .drop(index=DROPS)
-        .filter(like="feature_")
-        .rename(index=corr_renamer)
-        .sort_values(ascending=False)
-    )
+    auroc_correlations(df, subset="all", predictive_only=False)
+    auroc_correlations(df, subset="features", predictive_only=False)
+    auroc_correlations(df, subset="all", predictive_only=True)
+    auroc_correlations(df, subset="features", predictive_only=True)
 
-    print(f"{HEADER}Spearman correlations with AUROC for predictive pairs{FOOTER}")
-    print(
-        corrs_pred.corr(method="spearman")
-        .loc["auroc"]
-        .drop(index=DROPS)
-        .sort_values(ascending=False)
-    )
-    print(
-        f"{HEADER}Correlation (Spearman) between feature inclusion and AUROC for predictive pairs{FOOTER}"
-    )
-    print(
-        corrs_pred.corr(method="spearman")
-        .loc["auroc"]
-        .drop(index=DROPS)
-        .filter(like="feature_")
-        .rename(index=corr_renamer)
-        .sort_values(ascending=False)
-    )
+    feature_aurocs(df, sorter="best")
+    feature_aurocs(df, sorter="median")
 
-    print(f"{HEADER}Feature best AUROCs overall:{FOOTER}")
-    print(
-        df.groupby("feature")
-        .describe()
-        .rename(columns={"max": "best"})
-        .loc[:, "auroc"]
-        .round(4)
-        .drop(columns="count")
-        .loc[:, ["best"]]
-        .sort_values(by="best", ascending=False)
-    )
-
-    print(f"{HEADER}Feature mean and median AUROCs overall (median-sorted):{FOOTER}")
-    print(
-        df.groupby("feature")
-        .describe()
-        .rename(columns={"50%": "median"})
-        .loc[:, "auroc"]
-        .round(4)
-        .drop(columns="count")
-        .loc[:, ["mean", "median"]]
-        .sort_values(by="median", ascending=False)
-    )
-
-    print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
-    bests = (
-        df.groupby(["feature", "data"])
-        .describe()
-        .loc[:, "auroc"]
-        .round(3)
-        .drop(columns=["count", "min", "25%", "50%", "75%"])
-        .reset_index()
-        .sort_values(by=["data", "max"], ascending=False)
-        .rename(columns={"max": "best_AUROC", "feature": "Feature", "data": "Dataset"})
-        .loc[:, ["Feature", "Dataset", "best_AUROC"]]
-        .groupby(["Dataset", "Feature"])
-        .max()
-    )
-    print(bests.sort_values(by=["Dataset", "best_AUROC"], ascending=False))
-
-    print(f"{HEADER}Mean/Median AUROCs by feature and dataset (median-sorted):{FOOTER}")
-    descriptives = (
-        df.groupby(["feature", "data"])
-        .describe()
-        .rename(columns={"50%": "median"})
-        .loc[:, "auroc"]
-        .round(3)
-        .drop(columns=["count", "25%", "75%"])
-        .reset_index()
-        .sort_values(by=["data", "mean", "median"], ascending=False)
-        .rename(columns={"feature": "Feature", "data": "Dataset"})
-        .loc[:, ["Feature", "Dataset", "mean", "median", "std", "min", "max"]]
-        .groupby(["Dataset", "Feature"])
-    )
-    print(descriptives.max().sort_values(by=["Dataset", "median"], ascending=False))
-    # print(df.groupby(["feature", "data", "comparison"]).count())
+    feature_dataset_aurocs(df, sorter="best")
+    feature_dataset_aurocs(df, sorter="median")
 
     osteo = (
         df.loc[df.data == "Osteo"]
@@ -159,7 +164,7 @@ def describe(df: DataFrame) -> None:
         .describe()
         .loc[:, "auroc"]
         .round(3)
-        .rename(columns={"50%": "median"})
+        .rename(columns={"50%": "median"})  # type: ignore
         .loc[:, ["mean", "median", "min", "max", "std"]]
         .sort_values(by=["max", "median"], ascending=False)
         # .reset_index()
@@ -184,9 +189,9 @@ if __name__ == "__main__":
         [pd.read_json(path) for path in PATHS.values()], axis=0, ignore_index=True
     )
     df = df.loc[df.preproc != "minimal"]
-    describe(df)
+    naive_describe(df)
 
     non_reflects = df.data.apply(lambda s: "Reflect" not in s)
     df = df.loc[non_reflects]
     print("\n\nRemoving meaningless 'REFLECT' data:\n")
-    describe(df)
+    naive_describe(df)
