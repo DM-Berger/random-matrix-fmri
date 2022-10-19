@@ -12,12 +12,13 @@ import pandas as pd
 import seaborn as sbn
 from joblib import Memory
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 from pandas import DataFrame
 from tqdm import tqdm
 
 from rmt.features import FEATURE_OUTFILES as PATHS
-from rmt.visualize import BLUE, best_rect
+from rmt.visualize import PLOT_OUTDIR, best_rect
 
 PROJECT = ROOT.parent
 MEMORY = Memory(ROOT / "__JOBLIB_CACHE__")
@@ -29,6 +30,11 @@ DROPS = [
     "auroc",
     "classifier_GradientBoostingClassifier",
 ]
+BLUE = "#004cc7"
+ORNG = "#f68a0e"
+GREY = "#5c5c5c"
+BLCK = "#000000"
+PURP = "#8e02c5"
 
 
 def corr_renamer(s: str) -> str:
@@ -101,6 +107,41 @@ def is_rmt(s: str) -> bool:
     return ("rig" in s) or ("level" in s) or ("unf" in s)
 
 
+def is_rmt_only(s: str) -> bool:
+    return is_rmt(s) and ("eigs" not in s)
+
+
+def is_smoothed(s: str) -> bool:
+    return ("savgol" in s) or ("smooth" in s)
+
+
+def make_palette(features: list[str]) -> dict[str, str]:
+    palette = {}
+    for feature in features:
+        if is_rmt_only(feature):
+            palette[feature] = PURP
+        elif is_rmt(feature):
+            palette[feature] = BLUE
+        elif "max" in feature:
+            palette[feature] = ORNG
+        elif is_smoothed(feature):
+            palette[feature] = GREY
+        else:
+            palette[feature] = BLCK
+    return palette
+
+
+def make_legend(fig: Figure) -> None:
+    patches = [
+        Patch(facecolor=BLUE, edgecolor="white", label="RMT-only feature"),
+        Patch(facecolor=BLCK, edgecolor="white", label="eigenvalues only feature"),
+        Patch(facecolor=GREY, edgecolor="white", label="smoothed eigenvalues feature"),
+        Patch(facecolor=ORNG, edgecolor="white", label="max eigenvalues feature"),
+        Patch(facecolor=PURP, edgecolor="white", label="RMT + eigenvalues feature"),
+    ]
+    fig.legend(handles=patches, loc="upper right")
+
+
 def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
     df = bests3.reset_index().loc[:, "feature"]
 
@@ -108,7 +149,7 @@ def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
     rmt_special = sorted(filter(is_rmt, order))
     eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
     order = eigs_only + rmt_special
-    palette = {feat: BLUE if feat in rmt_special else (0.0, 0.0, 0.0) for feat in order}
+    palette = make_palette(order)
 
     sbn.set_style("darkgrid")
     fig, ax = plt.subplots()
@@ -116,10 +157,16 @@ def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
         y=df, order=df.value_counts().index, color="black", palette=palette, ax=ax
     )
     ax.set_title(
-        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
+        f"Overall Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
     )
+    make_legend(fig)
     fig.set_size_inches(w=12, h=6)
     fig.tight_layout()
+    outdir = PLOT_OUTDIR / "top3_counts"
+    outdir.mkdir(exist_ok=True, parents=True)
+    outfile = outdir / f"{sorter}_AUROC_overall.png"
+    fig.savefig(outfile, dpi=300)
+    print(f"Saved plot to {outfile}")
     plt.show(block=False)
 
 
@@ -132,7 +179,7 @@ def plot_feature_counts_grouped(
     rmt_special = sorted(filter(is_rmt, order))
     eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
     order = eigs_only + rmt_special
-    palette = {feat: BLUE if feat in rmt_special else (0.0, 0.0, 0.0) for feat in order}
+    palette = make_palette(order)
     drop = "classifier" if by == "data" else "data"
     df = df.drop(columns=drop)
     groups = df[by].unique().tolist()
@@ -144,21 +191,20 @@ def plot_feature_counts_grouped(
         bests = df.loc[df[by] == group, "feature"]
         sbn.countplot(y=bests, order=order, palette=palette, color="black", ax=ax)
         ax.set_title(str(group))
-    white = (1.0, 1.0, 1.0)
-    black = (0.0, 0.0, 0.0)
-    patches = [
-        Patch(facecolor=BLUE, edgecolor="white", label="RMT feature"),
-        Patch(facecolor="black", edgecolor="white", label="Eigenvalue-only feature"),
-    ]
-    fig.legend(handles=patches, loc="upper right")
+    make_legend(fig)
     fig.suptitle(
-        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs: by {by.capitalize()}"
+        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs by {by.capitalize()}"
     )
     fig.set_size_inches(w=16, h=16)
     fig.tight_layout()
     fig.subplots_adjust(
         top=0.92, bottom=0.05, left=0.119, right=0.991, hspace=0.175, wspace=0.107
     )
+    outdir = PLOT_OUTDIR / "top3_counts"
+    outdir.mkdir(exist_ok=True, parents=True)
+    outfile = outdir / f"{sorter}_AUROC_by_{by}.png"
+    fig.savefig(outfile, dpi=300)
+    print(f"Saved plot to {outfile}")
     plt.show(block=False)
 
 
@@ -319,7 +365,7 @@ def naive_describe(df: DataFrame) -> None:
     # FOR FAST TESTING
     # df = df.loc[df.data == "Osteo"]
 
-    # feature_dataset_aurocs(sorter="best")
+    feature_dataset_aurocs(sorter="best")
     feature_dataset_classifier_aurocs(sorter="best")
     feature_dataset_aurocs(sorter="median")
     feature_dataset_classifier_aurocs(sorter="median")
