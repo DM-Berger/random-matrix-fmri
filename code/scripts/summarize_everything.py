@@ -7,8 +7,11 @@ sys.path.append(str(ROOT))
 
 from typing import Literal
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sbn
 from joblib import Memory
+from matplotlib.axes import Axes
 from pandas import DataFrame
 from tqdm import tqdm
 
@@ -82,6 +85,31 @@ def get_described_w_classifier(metric: Literal["auroc", "f1"] = "auroc") -> Data
     )
 
 
+def print_correlations(df: DataFrame, sorter: str) -> None:
+    print(
+        pd.get_dummies(df.reset_index())
+        .corr(method="spearman")
+        .round(3)
+        .loc[sorter]
+        .sort_values(ascending=False)
+    )
+
+
+def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
+    best3_counts = bests3.reset_index().loc[:, "feature"]
+    sbn.set_style("darkgrid")
+    fig, ax = plt.subplots()
+    sbn.countplot(
+        y=best3_counts, order=best3_counts.value_counts().index, color="black", ax=ax
+    )
+    ax.set_title(
+        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
+    )
+    fig.set_size_inches(w=12, h=6)
+    fig.tight_layout()
+    plt.show(block=False)
+
+
 def auroc_correlations(
     df: DataFrame, subset: Literal["all", "features"], predictive_only: bool
 ) -> DataFrame:
@@ -136,28 +164,9 @@ def feature_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
 # row an index, use group operations (e.g. .loc[...].max()) to get ids, and then
 # subset by ids, and group again (lol). But basically better to ungroup and do
 # manual table creation
-def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
-    if sorter == "best":
-        print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
-    else:
-        print(
-            f"{HEADER}Mean/Median AUROCs by feature and dataset (median-sorted):{FOOTER}"
-        )
+def feature_dataset_aurocs(sorter: str = "best") -> DataFrame:
 
-    if sorter == "best":
-        ordering = ["best", "median", "mean", "std", "5%", "95%"]
-    elif sorter == "median":
-        ordering = ["median", "best", "mean", "std", "5%", "95%"]
-    else:
-        raise NotImplementedError()
     desc = get_described(metric="auroc").loc[:, sorter].reset_index()
-    # print(desc)
-    # processed = (
-    #     desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
-    #     .groupby(["data", "feature", "comparison"])
-    #     .apply(lambda grp: grp.nlargest(3, columns="max"))
-    # ).loc[:, ["slice", "max"]]
-
     bests = (
         (
             desc.sort_values(
@@ -173,53 +182,32 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
         .groupby(["data", "comparison", "feature"], group_keys=True)
         .max()
         .sort_values(by=["data", "comparison", sorter], ascending=False)
-        # .apply(lambda grp: grp.nlargest(1, columns=["max"]))
     )
-    print(bests)
 
-    print(
+    summary = sorter.capitalize()
+    groupers = "feature, dataset"
+    # CORRELATIONS
+    print(f"{HEADER}Correlations of {summary} AUROCs by {groupers}:{FOOTER}")
+    print_correlations(bests, sorter)
+
+    print(f"{HEADER}Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
+    bests3 = (
         bests.reset_index()
         .groupby(["data", "comparison"], group_keys=True)
         .apply(lambda grp: grp.nlargest(3, columns=[sorter]))
         .loc[:, ["feature", "slice", sorter]]
     )
-    return bests
+    print(bests3)
+    plot_feature_counts(bests3, sorter)
 
-    print(processed)
-    print(
-        pd.get_dummies(processed.reset_index())
-        .corr("spearman")
-        .round(3)
-        .loc["max"]
-        .sort_values(ascending=False)
-    )
-    # print(processed.columns)
-    # print(processed.loc[:, :, :3])
-    return processed
+    # CORRELATIONS
+    print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
+    print_correlations(bests3, sorter)
+    return bests3
 
 
-def feature_dataset_classifier_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
-    if sorter == "best":
-        print(f"{HEADER}Best AUROCs by feature, dataset, and classifier:{FOOTER}")
-    else:
-        print(
-            f"{HEADER}Mean/Median AUROCs by feature, dataset, and classifier (median-sorted):{FOOTER}"
-        )
-
-    if sorter == "best":
-        ordering = ["best", "median", "mean", "std", "5%", "95%"]
-    elif sorter == "median":
-        ordering = ["median", "best", "mean", "std", "5%", "95%"]
-    else:
-        raise NotImplementedError()
+def feature_dataset_classifier_aurocs(sorter: str = "best") -> DataFrame:
     desc = get_described_w_classifier(metric="auroc").loc[:, sorter].reset_index()
-    # print(desc)
-    # processed = (
-    #     desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
-    #     .groupby(["data", "feature", "comparison"])
-    #     .apply(lambda grp: grp.nlargest(3, columns="max"))
-    # ).loc[:, ["slice", "max"]]
-
     bests = (
         (
             desc.sort_values(
@@ -231,34 +219,32 @@ def feature_dataset_classifier_aurocs(df: DataFrame, sorter: str = "best") -> Da
         )
         .loc[:, ["slice", sorter]]
         .reset_index()
-        # .drop(columns="level_3")
         .sort_values(by=["data", "comparison", "classifier", sorter])
         .groupby(["data", "comparison", "feature", "classifier"], group_keys=True)
         .max()
         .sort_values(by=["data", "comparison", "classifier", sorter], ascending=False)
-        # .apply(lambda grp: grp.nlargest(1, columns=["max"]))
     )
-    print(bests)
 
-    print(
+    # CORRELATIONS
+    summary = sorter.capitalize()
+    groupers = "feature, dataset, classifier"
+    print(f"{HEADER}Correlations of {summary} AUROCs by {groupers}:{FOOTER}")
+    print_correlations(bests, sorter)
+
+    print(f"{HEADER}Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
+    bests3 = (
         bests.reset_index()
         .groupby(["data", "comparison", "classifier"], group_keys=True)
         .apply(lambda grp: grp.nlargest(3, columns=[sorter]))
         .loc[:, ["feature", "slice", sorter]]
     )
-    return bests
+    print(bests3)
+    plot_feature_counts(bests3, sorter)
 
-    print(processed)
-    print(
-        pd.get_dummies(processed.reset_index())
-        .corr("spearman")
-        .round(3)
-        .loc["max"]
-        .sort_values(ascending=False)
-    )
-    # print(processed.columns)
-    # print(processed.loc[:, :, :3])
-    return processed
+    # CORRELATIONS
+    print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
+    print_correlations(bests3, sorter)
+    return bests3
 
 
 def naive_describe(df: DataFrame) -> None:
@@ -280,9 +266,11 @@ def naive_describe(df: DataFrame) -> None:
     # FOR FAST TESTING
     # df = df.loc[df.data == "Osteo"]
 
-    # feature_dataset_aurocs(df, sorter="best")
-    feature_dataset_classifier_aurocs(df, sorter="best")
-    # feature_dataset_aurocs(df, sorter="median")
+    feature_dataset_aurocs(sorter="best")
+    feature_dataset_classifier_aurocs(sorter="best")
+    feature_dataset_aurocs(sorter="median")
+    feature_dataset_classifier_aurocs(sorter="median")
+    plt.show()
 
     # osteo = (
     #     df.loc[df.data == "Osteo"]
@@ -307,7 +295,8 @@ if __name__ == "__main__":
     print("\n" * 50)
     df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
-    df = df.loc[df.preproc == "minimal"]
+    # df = df.loc[df.preproc == "minimal"]
     # naive_describe(df)
 
     naive_describe(df)
+    print(f"Summarized {len(df)} 5-fold runs")
