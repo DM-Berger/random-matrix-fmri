@@ -16,7 +16,7 @@ if __name__ == "__main__":
         df = summarize_all_predictions(
             feature_cls=feature,
             degrees=DEGREES,
-            feature_slices=[*FeatureSlice][1:],
+            feature_slices=[*FeatureSlice],
         )
         outfile = ROOT.parent / fname
         df.to_json(outfile)
