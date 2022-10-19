@@ -81,7 +81,8 @@ def feature_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
 # Pandas multi-indexes are hot garbage, nothing works in any sensible kind of way.
 # Better to just write your own looping code (as usual), OR, give each grouped DF
 # row an index, use group operations (e.g. .loc[...].max()) to get ids, and then
-# subset by ids, and group again (lol)
+# subset by ids, and group again (lol). But basically better to ungroup and do
+# manual table creation
 def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     if sorter == "best":
         print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
@@ -118,10 +119,29 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
         # .sort(by=["Dataset", sorter], ascending=False)  # type: ignore
         .max()
         .loc[:, ordering]
-        .sort_values(by=["Dataset", "Feature", "comparison", sorter], ascending=False)  # type: ignore
+        .sort_values(
+            by=["Dataset", "Feature", "comparison", sorter, "slice"],
+            ascending=False,
+        )  # type: ignore
+        .iloc[::10]  # 10 slices
+        .reset_index()
+        .sort_values(
+            by=[
+                sorter,
+                "Dataset",
+                "Feature",
+                "comparison",
+            ],
+            ascending=False,
+        )  # type: ignore
+        .groupby(["Dataset", "Feature", "comparison"])
+        .max()
+        .sort_values(by="best", ascending=False)
     )
-    print(processed.columns)
-    print(processed.loc[:, :, :3])
+
+    print(processed)
+    # print(processed.columns)
+    # print(processed.loc[:, :, :3])
     return processed
 
 
