@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=def-jlevman
+#SBATCH --account=rrg-jlevman
 #SBATCH --mail-user=dberger@stfx.ca
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
@@ -9,9 +9,10 @@
 #SBATCH --job-name=predict_all
 #SBATCH --array=0-23
 #SBATCH --output=all_levelvars_%j_%a.out
-#SBATCH --time=00-24:00:00
+#SBATCH --time=00-05:00:00
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=80
+#SBATCH --ntasks-per-node=48
+#SBATCH --mem=0
 
 SCRATCH="$(readlink -f "$SCRATCH")"
 PROJECT="$SCRATCH/random-matrix-fmri"
