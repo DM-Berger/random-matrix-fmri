@@ -33,10 +33,50 @@ def corr_renamer(s: str) -> str:
 
 
 @MEMORY.cache
-def get_described(df: DataFrame, metric: Literal["auroc", "f1"] = "auroc") -> DataFrame:
+def load_all_renamed() -> DataFrame:
+    df = pd.concat(
+        [pd.read_json(path) for path in tqdm(PATHS.values(), desc="loading")],
+        axis=0,
+        ignore_index=True,
+    )
+    print("\n\nRemoving meaningless 'REFLECT' data:\n")
+    non_reflects = df.data.apply(lambda s: "Reflect" not in s)
+    df = df.loc[non_reflects]
+    df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("eigssmoothed", "eigs_smoothed").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("eigssavgol", "eigs_savgol").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("smoothed", "smooth").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("allfeatures", "eigs + rigidity + levelvar").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
+    return df
+
+
+@MEMORY.cache
+def get_described(metric: Literal["auroc", "f1"] = "auroc") -> DataFrame:
+    df = load_all_renamed()
     return (
         df.groupby(["feature", "data", "comparison", "slice"])
         .describe(percentiles=[0.05, 0.95])
+        .rename(columns={"max": "best", "50%": "median"})
+        .loc[:, metric]
+        .drop(columns=["count"])
+    )
+
+
+@MEMORY.cache
+def get_described_w_classifier(metric: Literal["auroc", "f1"] = "auroc") -> DataFrame:
+    df = load_all_renamed()
+    return (
+        df.groupby(["feature", "data", "comparison", "classifier", "slice"])
+        .describe(percentiles=[0.05, 0.95])
+        .rename(columns={"max": "best", "50%": "median"})
         .loc[:, metric]
         .drop(columns=["count"])
     )
@@ -110,31 +150,103 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
         ordering = ["median", "best", "mean", "std", "5%", "95%"]
     else:
         raise NotImplementedError()
-    desc = get_described(df, metric="auroc").loc[:, "max"].reset_index()
+    desc = get_described(metric="auroc").loc[:, sorter].reset_index()
     # print(desc)
-    processed = (
-        desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
-        .groupby(["data", "feature", "comparison"])
-        .apply(lambda grp: grp.nlargest(3, columns="max"))
-    ).loc[:, ["slice", "max"]]
+    # processed = (
+    #     desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
+    #     .groupby(["data", "feature", "comparison"])
+    #     .apply(lambda grp: grp.nlargest(3, columns="max"))
+    # ).loc[:, ["slice", "max"]]
 
     bests = (
         (
-            desc.sort_values(by=["data", "comparison", "feature", "max"], ascending=False)
+            desc.sort_values(
+                by=["data", "comparison", "feature", sorter], ascending=False
+            )
             .groupby(["data", "comparison", "feature"])
-            .apply(lambda grp: grp.nlargest(1, columns="max"))
+            .apply(lambda grp: grp.nlargest(1, columns=sorter))
         )
-        .loc[:, ["slice", "max"]]
+        .loc[:, ["slice", sorter]]
         .reset_index()
         .drop(columns="level_3")
-        .sort_values(by=["data", "comparison", "max"])
+        .sort_values(by=["data", "comparison", sorter])
         .groupby(["data", "comparison", "feature"], group_keys=True)
         .max()
-        .sort_values(by=["data", "comparison", "max"], ascending=False)
+        .sort_values(by=["data", "comparison", sorter], ascending=False)
         # .apply(lambda grp: grp.nlargest(1, columns=["max"]))
     )
     print(bests)
-    sys.exit()
+
+    print(
+        bests.reset_index()
+        .groupby(["data", "comparison"], group_keys=True)
+        .apply(lambda grp: grp.nlargest(3, columns=[sorter]))
+        .loc[:, ["feature", "slice", sorter]]
+    )
+    return bests
+
+    print(processed)
+    print(
+        pd.get_dummies(processed.reset_index())
+        .corr("spearman")
+        .round(3)
+        .loc["max"]
+        .sort_values(ascending=False)
+    )
+    # print(processed.columns)
+    # print(processed.loc[:, :, :3])
+    return processed
+
+
+def feature_dataset_classifier_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
+    if sorter == "best":
+        print(f"{HEADER}Best AUROCs by feature, dataset, and classifier:{FOOTER}")
+    else:
+        print(
+            f"{HEADER}Mean/Median AUROCs by feature, dataset, and classifier (median-sorted):{FOOTER}"
+        )
+
+    if sorter == "best":
+        ordering = ["best", "median", "mean", "std", "5%", "95%"]
+    elif sorter == "median":
+        ordering = ["median", "best", "mean", "std", "5%", "95%"]
+    else:
+        raise NotImplementedError()
+    desc = get_described_w_classifier(metric="auroc").loc[:, sorter].reset_index()
+    # print(desc)
+    # processed = (
+    #     desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
+    #     .groupby(["data", "feature", "comparison"])
+    #     .apply(lambda grp: grp.nlargest(3, columns="max"))
+    # ).loc[:, ["slice", "max"]]
+
+    bests = (
+        (
+            desc.sort_values(
+                by=["data", "comparison", "feature", "classifier", sorter],
+                ascending=False,
+            )
+            .groupby(["data", "comparison", "feature", "classifier"])
+            .apply(lambda grp: grp.nlargest(1, columns=sorter))
+        )
+        .loc[:, ["slice", sorter]]
+        .reset_index()
+        # .drop(columns="level_3")
+        .sort_values(by=["data", "comparison", "classifier", sorter])
+        .groupby(["data", "comparison", "feature", "classifier"], group_keys=True)
+        .max()
+        .sort_values(by=["data", "comparison", "classifier", sorter], ascending=False)
+        # .apply(lambda grp: grp.nlargest(1, columns=["max"]))
+    )
+    print(bests)
+
+    print(
+        bests.reset_index()
+        .groupby(["data", "comparison", "classifier"], group_keys=True)
+        .apply(lambda grp: grp.nlargest(3, columns=[sorter]))
+        .loc[:, ["feature", "slice", sorter]]
+    )
+    return bests
 
     print(processed)
     print(
@@ -168,7 +280,8 @@ def naive_describe(df: DataFrame) -> None:
     # FOR FAST TESTING
     # df = df.loc[df.data == "Osteo"]
 
-    feature_dataset_aurocs(df, sorter="best")
+    # feature_dataset_aurocs(df, sorter="best")
+    feature_dataset_classifier_aurocs(df, sorter="best")
     # feature_dataset_aurocs(df, sorter="median")
 
     # osteo = (
@@ -188,32 +301,6 @@ def naive_describe(df: DataFrame) -> None:
     #     .loc[:, ["mean", "median", "min", "max", "std"]]
     #     .sort_values(by=["max", "median"], ascending=False)
     # )
-
-
-@MEMORY.cache
-def load_all_renamed() -> DataFrame:
-    df = pd.concat(
-        [pd.read_json(path) for path in tqdm(PATHS.values(), desc="loading")],
-        axis=0,
-        ignore_index=True,
-    )
-    print("\n\nRemoving meaningless 'REFLECT' data:\n")
-    non_reflects = df.data.apply(lambda s: "Reflect" not in s)
-    df = df.loc[non_reflects]
-    df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
-    df.loc[:, "feature"] = (
-        df["feature"].str.replace("eigssmoothed", "eigs_smoothed").copy()
-    )
-    df.loc[:, "feature"] = df["feature"].str.replace("eigssavgol", "eigs_savgol").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("smoothed", "smooth").copy()
-    df.loc[:, "feature"] = (
-        df["feature"].str.replace("allfeatures", "eigs + rigidity + levelvar").copy()
-    )
-    df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
-    df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
-    return df
 
 
 if __name__ == "__main__":
