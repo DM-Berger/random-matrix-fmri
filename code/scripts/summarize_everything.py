@@ -19,10 +19,6 @@ FOOTER = "\n" + ("=" * 80)
 DROPS = [
     "acc+",
     "auroc",
-    "mean_acc",
-    "min_acc",
-    "min_auroc",
-    "max_auroc",
     "classifier_GradientBoostingClassifier",
 ]
 
@@ -82,6 +78,8 @@ def feature_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     return result
 
 
+# Pandas multi-indexes are hot garbage, nothing works in any sensible kind of way.
+# Better to just write your own looping code (as usual).
 def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     if sorter == "best":
         print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
@@ -97,7 +95,7 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     else:
         raise NotImplementedError()
     processed = (
-        df.groupby(["feature", "data"])
+        df.groupby(["feature", "data", "comparison", "slice"])
         .describe(percentiles=[0.05, 0.95])
         .loc[:, "auroc"]
         .drop(columns=["count"])
@@ -110,14 +108,18 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
                 "50%": "median",
             }
         )
-        .sort_values(by=["Dataset", sorter], ascending=False)
-        .groupby(["Dataset", "Feature"])
+        .sort_values(
+            by=["Dataset", "Feature", "comparison", "slice", sorter], ascending=False
+        )
+        .groupby(["Dataset", "Feature", "comparison", "slice"])
         # .sort_values(by=["Dataset", sorter], ascending=False)  # type: ignore
         # .sort(by=["Dataset", sorter], ascending=False)  # type: ignore
         .max()
         .loc[:, ordering]
+        .sort_values(by=["Dataset", "Feature", "comparison", sorter], ascending=False)  # type: ignore
     )
-    print(processed)
+    print(processed.columns)
+    print(processed.loc[:, :, :3])
     return processed
 
 
@@ -127,71 +129,61 @@ def naive_describe(df: DataFrame) -> None:
     pd.options.display.max_rows = None
     pd.options.display.expand_frame_repr = True
 
-    df = df.loc[df.classifier != "SVC"].copy()
-    df.loc[:, "feature"] = df.feature.str.replace("plus", " + ").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("eig ", "eigs ").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("eigenvalues", "eigs").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("eigssmoothed", "eigs_smoothed").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("eigssavgol", "eigs_savgol").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("smoothed", "smooth").copy()
-    df.loc[:, "feature"] = df.feature.str.replace(
-        "allfeatures", "eigs + rigidity + levelvar"
-    ).copy()
-    df.loc[:, "feature"] = df.feature.str.replace("rigidities", "rigidity").copy()
-    df.loc[:, "feature"] = df.feature.str.replace("levelvars", "levelvar").copy()
+    # df = df.loc[df.classifier != "SVC"].copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("eigssmoothed", "eigs_smoothed").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("eigssavgol", "eigs_savgol").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("smoothed", "smooth").copy()
+    df.loc[:, "feature"] = (
+        df["feature"].str.replace("allfeatures", "eigs + rigidity + levelvar").copy()
+    )
+    df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
+    df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
 
-    auroc_correlations(df, subset="all", predictive_only=False)
-    auroc_correlations(df, subset="features", predictive_only=False)
-    auroc_correlations(df, subset="all", predictive_only=True)
-    auroc_correlations(df, subset="features", predictive_only=True)
+    # auroc_correlations(df, subset="all", predictive_only=False)
+    # auroc_correlations(df, subset="features", predictive_only=False)
+    # auroc_correlations(df, subset="all", predictive_only=True)
+    # auroc_correlations(df, subset="features", predictive_only=True)
 
-    feature_aurocs(df, sorter="best")
-    feature_aurocs(df, sorter="median")
+    # feature_aurocs(df, sorter="best")
+    # feature_aurocs(df, sorter="median")
 
     feature_dataset_aurocs(df, sorter="best")
     feature_dataset_aurocs(df, sorter="median")
 
-    osteo = (
-        df.loc[df.data == "Osteo"]
-        .loc[df.comparison == "nopain v duloxetine"]
-        .drop(columns=["data", "comparison"])
-    )
-    print(
-        f"{HEADER}Summary stats of AUROCs for 'nopain v duloxetine' comparison (max-sorted):{FOOTER}"
-    )
-    print(
-        osteo.groupby(["feature"])
-        .describe()
-        .loc[:, "auroc"]
-        .round(3)
-        .rename(columns={"50%": "median"})  # type: ignore
-        .loc[:, ["mean", "median", "min", "max", "std"]]
-        .sort_values(by=["max", "median"], ascending=False)
-        # .reset_index()
-        # .sort_values(by=["max"], ascending=False)
-        # .rename(columns={"max": "best_AUROC", "feature": "Feature"})
-        # .loc[:, ["Feature", "best_AUROC"]]
-        # .groupby(["Feature"])
-        # .describe()
-        # .max()
-    )
+    # osteo = (
+    #     df.loc[df.data == "Osteo"]
+    #     .loc[df.comparison == "nopain v duloxetine"]
+    #     .drop(columns=["data", "comparison"])
+    # )
     # print(
-    #     df.groupby(["feature", "data"])
+    #     f"{HEADER}Summary stats of AUROCs for 'nopain v duloxetine' comparison (max-sorted):{FOOTER}"
+    # )
+    # print(
+    #     osteo.groupby(["feature"])
     #     .describe()
-    #     .loc[:, "max_auroc"]
-    #     # .loc[["mean", "max", "std"]]
-    #     .corr(method="spearman", numeric_only=False)
+    #     .loc[:, "auroc"]
+    #     .round(3)
+    #     .rename(columns={"50%": "median"})  # type: ignore
+    #     .loc[:, ["mean", "median", "min", "max", "std"]]
+    #     .sort_values(by=["max", "median"], ascending=False)
     # )
 
 
 if __name__ == "__main__":
+    print("\n" * 50)
     df = pd.concat(
         [pd.read_json(path) for path in PATHS.values()], axis=0, ignore_index=True
     )
-    df = df.loc[df.preproc != "minimal"]
-    naive_describe(df)
+    # df = df.loc[df.preproc != "minimal"]
+    df = df.loc[df.preproc == "minimal"]
+    # naive_describe(df)
 
+    print("\n\nRemoving meaningless 'REFLECT' data:\n")
     non_reflects = df.data.apply(lambda s: "Reflect" not in s)
     df = df.loc[non_reflects]
-    print("\n\nRemoving meaningless 'REFLECT' data:\n")
     naive_describe(df)
