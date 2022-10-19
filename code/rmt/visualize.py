@@ -53,6 +53,7 @@ from rmt.predict import log_normalize
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
 PLOT_OUTDIR = RESULTS / "plots"
+BLUE = tuple(np.array((1, 70, 198)) / 255)
 
 TITLE_ARGS = dict(fontsize=10)
 
@@ -544,7 +545,7 @@ def plot_feature_multi(
     N = len(combs)
     sbn.set_style("darkgrid")
     palette = [(0.0, 0.0, 0.0)] + sbn.color_palette("dark")  # type: ignore
-    palette[1] = tuple(np.array((1, 70, 198)) / 255)
+    palette[1] = BLUE
     sbn.set_palette(palette)
     # nrows, ncols = best_rect(N)
     pbar = tqdm(total=N * (4 + 2 * 4 * 4))  # 4 eigs, 2 obs, 4 plots per obs, 4 degrees

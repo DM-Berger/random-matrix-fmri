@@ -12,10 +12,12 @@ import pandas as pd
 import seaborn as sbn
 from joblib import Memory
 from matplotlib.axes import Axes
+from matplotlib.patches import Patch
 from pandas import DataFrame
 from tqdm import tqdm
 
 from rmt.features import FEATURE_OUTFILES as PATHS
+from rmt.visualize import BLUE, best_rect
 
 PROJECT = ROOT.parent
 MEMORY = Memory(ROOT / "__JOBLIB_CACHE__")
@@ -95,18 +97,68 @@ def print_correlations(df: DataFrame, sorter: str) -> None:
     )
 
 
+def is_rmt(s: str) -> bool:
+    return ("rig" in s) or ("level" in s) or ("unf" in s)
+
+
 def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
-    best3_counts = bests3.reset_index().loc[:, "feature"]
+    df = bests3.reset_index().loc[:, "feature"]
+
+    order = df.unique()
+    rmt_special = sorted(filter(is_rmt, order))
+    eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
+    order = eigs_only + rmt_special
+    palette = {feat: BLUE if feat in rmt_special else (0.0, 0.0, 0.0) for feat in order}
+
     sbn.set_style("darkgrid")
     fig, ax = plt.subplots()
     sbn.countplot(
-        y=best3_counts, order=best3_counts.value_counts().index, color="black", ax=ax
+        y=df, order=df.value_counts().index, color="black", palette=palette, ax=ax
     )
     ax.set_title(
         f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
     )
     fig.set_size_inches(w=12, h=6)
     fig.tight_layout()
+    plt.show(block=False)
+
+
+def plot_feature_counts_grouped(
+    bests3: DataFrame, sorter: str, by: Literal["data", "classifier"]
+) -> None:
+
+    df = bests3.reset_index()
+    order = df["feature"].unique()
+    rmt_special = sorted(filter(is_rmt, order))
+    eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
+    order = eigs_only + rmt_special
+    palette = {feat: BLUE if feat in rmt_special else (0.0, 0.0, 0.0) for feat in order}
+    drop = "classifier" if by == "data" else "data"
+    df = df.drop(columns=drop)
+    groups = df[by].unique().tolist()
+    nrows, ncols = best_rect(len(groups))
+    sbn.set_style("darkgrid")
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True, sharey=True)
+    ax: Axes
+    for group, ax in zip(groups, axes.flat):
+        bests = df.loc[df[by] == group, "feature"]
+        sbn.countplot(y=bests, order=order, palette=palette, color="black", ax=ax)
+        ax.set_title(str(group))
+    white = (1.0, 1.0, 1.0)
+    black = (0.0, 0.0, 0.0)
+    patches = [
+        Patch(facecolor=BLUE, edgecolor="white", label="RMT feature"),
+        Patch(facecolor="black", edgecolor="white", label="Eigenvalue-only feature"),
+    ]
+    fig.legend(handles=patches, loc="upper right")
+    fig.suptitle(
+        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs: by {by.capitalize()}"
+    )
+    fig.set_size_inches(w=16, h=16)
+    fig.tight_layout()
+    fig.subplots_adjust(
+        top=0.92, bottom=0.05, left=0.119, right=0.991, hspace=0.175, wspace=0.107
+    )
     plt.show(block=False)
 
 
@@ -239,7 +291,8 @@ def feature_dataset_classifier_aurocs(sorter: str = "best") -> DataFrame:
         .loc[:, ["feature", "slice", sorter]]
     )
     print(bests3)
-    plot_feature_counts(bests3, sorter)
+    plot_feature_counts_grouped(bests3, sorter, by="data")
+    plot_feature_counts_grouped(bests3, sorter, by="classifier")
 
     # CORRELATIONS
     print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
@@ -266,7 +319,7 @@ def naive_describe(df: DataFrame) -> None:
     # FOR FAST TESTING
     # df = df.loc[df.data == "Osteo"]
 
-    feature_dataset_aurocs(sorter="best")
+    # feature_dataset_aurocs(sorter="best")
     feature_dataset_classifier_aurocs(sorter="best")
     feature_dataset_aurocs(sorter="median")
     feature_dataset_classifier_aurocs(sorter="median")
