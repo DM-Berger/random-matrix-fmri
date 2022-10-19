@@ -8,6 +8,7 @@ sys.path.append(str(ROOT))
 from typing import Literal
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sbn
 from joblib import Memory
@@ -36,6 +37,10 @@ GREY = "#5c5c5c"
 BLCK = "#000000"
 PURP = "#8e02c5"
 
+def topk_outdir(k: int) -> Path:
+    outdir = PLOT_OUTDIR / f"top-{k}_plots"
+    outdir.mkdir(exist_ok=True, parents=True)
+    return outdir
 
 def corr_renamer(s: str) -> str:
     if "feature_" in s:
@@ -142,10 +147,83 @@ def make_legend(fig: Figure) -> None:
     fig.legend(handles=patches, loc="upper right")
 
 
-def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
-    df = bests3.reset_index().loc[:, "feature"]
+# def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
+def plot_feature_counts(sorter: str, k: int = 5) -> None:
+    df = load_all_renamed()
+    # df = bests3.reset_index().loc[:, "feature"]
+    # feats = df.drop(columns=["preproc", "deg", "norm", "slice"])
+    # The more levels we include, the less we "generalize" our claims
+    groupers = [
+        ["data"],
+        ["data", "comparison"],
+        ["data", "comparison", "classifier"],
+        ["data", "comparison", "classifier", "preproc"],
+        ["data", "comparison", "classifier", "preproc", "deg"],
+        ["data", "comparison", "classifier", "preproc", "deg", "norm"],
+    ]
+    ignores: list[list[str]] = [
+        ["comparison", "classifier", "preproc", "deg", "norm"],
+        ["classifier", "preproc", "deg", "norm"],
+        ["preproc", "deg", "norm"],
+        ["deg", "norm"],
+        ["norm"],
+        [],
+    ]
 
-    order = df.unique()
+    for grouper, ignore in zip(groupers, ignores):
+        min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
+            0
+        ]
+        if sorter == "median":
+            summary = df.groupby(grouper + ["feature"]).median(numeric_only=True)
+
+        else:
+            summary = df.groupby(grouper + ["feature"]).max(numeric_only=True)
+        bests = (
+            summary.reset_index()
+            .groupby(grouper)
+            .apply(lambda g: g.nlargest(k, columns="auroc"))
+        )
+        best_feats = bests["feature"]
+        counts = best_feats.value_counts()
+        sbn.set_style("darkgrid")
+        fig, ax = plt.subplots()
+        sbn.countplot(
+            y=best_feats,
+            order=counts.index,
+            color="black",
+            palette=make_palette(counts.index),
+            ax=ax,
+        )
+        Sorter = sorter.capitalize() if sorter == "median" else "Max"
+        suptitle = f"Total Number of Instances where Feature Yields One of the Top-{k} {Sorter} AUROCs"
+        title = f"Summarizing / Grouping at level of: {grouper}"
+        if len(ignore) > 0:
+            title += f"\n(i.e. ignoring choice of {ignore})"
+        title += (
+            f"\n[Number of 5-fold runs summarized by {Sorter} "
+            f"per feature grouping: {min_summarized_per_feature}+]"
+        )
+        ax.set_title(title, fontsize=10)
+        make_legend(fig)
+        fig.suptitle(suptitle, fontsize=12)
+        fig.set_size_inches(w=16, h=6)
+        fig.tight_layout()
+        outdir = topk_outdir(k)
+        fname = f"{sorter}_" + "_".join([g[:4] for g in grouper]) + f"_top{k}.png"
+        outfile = outdir / fname
+        fig.savefig(outfile, dpi=300)  # type: ignore
+        print(f"Saved top-{k} plot to {outfile}")
+        plt.close()
+
+    return
+    bests3 = (
+        feats.groupby(["data", "comparison"])
+        .apply(lambda grp: grp.nlargest(5, columns=sorter))
+        .loc[:, "feature"]
+    )
+
+    order = bests3.unique()
     rmt_special = sorted(filter(is_rmt, order))
     eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
     order = eigs_only + rmt_special
@@ -392,6 +470,9 @@ def naive_describe(df: DataFrame) -> None:
 
 if __name__ == "__main__":
     print("\n" * 50)
+    plot_feature_counts(sorter="median")
+    plot_feature_counts(sorter="best")
+
     df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
     # df = df.loc[df.preproc == "minimal"]
