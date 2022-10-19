@@ -10,6 +10,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import Enum
 from itertools import combinations
+from math import ceil
 from pathlib import Path
 from pprint import pprint
 from typing import (
@@ -95,7 +96,10 @@ class FeatureSlice(Enum):
             idx = int(round(base))
             return slice(None, idx)
         elif region == "mid":
-            idx = int(base // 2)
+            # we have to be careful heere, the smallest feature is ndim=20
+            # at 5%, base = 0.05 * 20 = 1, so base // 2 = 0 (!)
+            # we do ceil(base / 2) instead.
+            idx = ceil(base / 2)
             half = int(feature_length // 2)
             return slice(half - idx, half + idx)
         elif region == "max":
