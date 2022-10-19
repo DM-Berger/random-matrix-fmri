@@ -111,14 +111,39 @@ def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     else:
         raise NotImplementedError()
     desc = get_described(df, metric="auroc").loc[:, "max"].reset_index()
-    print(desc)
+    # print(desc)
     processed = (
         desc.sort_values(by=["data", "feature", "comparison", "max"], ascending=False)
         .groupby(["data", "feature", "comparison"])
         .apply(lambda grp: grp.nlargest(3, columns="max"))
+    ).loc[:, ["slice", "max"]]
+
+    bests = (
+        (
+            desc.sort_values(by=["data", "comparison", "feature", "max"], ascending=False)
+            .groupby(["data", "comparison", "feature"])
+            .apply(lambda grp: grp.nlargest(1, columns="max"))
+        )
+        .loc[:, ["slice", "max"]]
+        .reset_index()
+        .drop(columns="level_3")
+        .sort_values(by=["data", "comparison", "max"])
+        .groupby(["data", "comparison", "feature"], group_keys=True)
+        .max()
+        .sort_values(by=["data", "comparison", "max"], ascending=False)
+        # .apply(lambda grp: grp.nlargest(1, columns=["max"]))
     )
+    print(bests)
+    sys.exit()
 
     print(processed)
+    print(
+        pd.get_dummies(processed.reset_index())
+        .corr("spearman")
+        .round(3)
+        .loc["max"]
+        .sort_values(ascending=False)
+    )
     # print(processed.columns)
     # print(processed.loc[:, :, :3])
     return processed
