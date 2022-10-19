@@ -224,6 +224,7 @@ def predict_feature(
     feature: Feature,
     feature_slice: FeatureSlice,
     logarithm: bool = True,
+    debug: bool = False,
 ) -> DataFrame:
     data = feature.data
     norm = feature.norm
@@ -252,6 +253,8 @@ def predict_feature(
                 raise IndexError(f"Some bullshit.\n{info}")
             if is_dud_comparison(labels, i, j):
                 continue
+            if debug:
+                continue  # just make sure no shape errors
             title = f"{labels[i]} v {labels[j]}"
             idx = (df.y == labels[i]) | (df.y == labels[j])
             df = df.loc[idx]
@@ -267,8 +270,10 @@ def predict_feature(
                 kfold_eval(X, y, KNN9, norm=norm, title=title),
             ]
             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
-    result = pd.concat(results, axis=0, ignore_index=True)
+    if debug:
+        return None
 
+    result = pd.concat(results, axis=0, ignore_index=True)
     result["data"] = feature.source.name
     result["feature"] = feature.name
     result["preproc"] = "full" if feature.full_pre else "minimal"
@@ -302,6 +307,7 @@ def predict_all(args: Namespace) -> DataFrame | None:
             feature=feature,
             feature_slice=args.feature_idx,
             logarithm=True,
+            debug=args.debug,
         )
     except Exception as e:
         traceback.print_exc()
@@ -317,7 +323,7 @@ def summarize_all_predictions(
     feature_slices: List[FeatureSlice] = [*FeatureSlice],
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
-    print_rows: int = 200,
+    debug: bool = False,
 ) -> DataFrame:
     sources = sources or [*Dataset]
     degrees = degrees or [3, 5, 7, 9]
@@ -334,23 +340,11 @@ def summarize_all_predictions(
                 feature_idx=feature_slices,
                 full_pre=full_pres,
                 norm=norms,
+                debug=[debug],
             )
         )
     ]
-    # grid = grid[:100]
     dfs = process_map(predict_all, grid, desc="Predicting", chunksize=1)
     dfs = [df_ for df_ in dfs if df_ is not None]
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
-    print(df.iloc[:print_rows, :].to_markdown(index=False, tablefmt="simple"))
-
-    corrs = pd.get_dummies(df.drop(columns=["data", "comparison"]))
-    print("-" * 80)
-    print("Spearman correlations")
-    print("-" * 80)
-    print(corrs.corr(method="spearman").loc["acc+"])
-    corrs_pred = corrs.loc[corrs["acc+"] > 0.0]
-    print("-" * 80)
-    print("Spearman correlations of predictive pairs")
-    print("-" * 80)
-    print(corrs_pred.corr(method="spearman").loc["acc+"])
     return df

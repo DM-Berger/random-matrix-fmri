@@ -17,6 +17,7 @@ if __name__ == "__main__":
             feature_cls=feature,
             degrees=DEGREES,
             feature_slices=[*FeatureSlice],
+            debug=False,
         )
         outfile = ROOT.parent / fname
         df.to_json(outfile)
