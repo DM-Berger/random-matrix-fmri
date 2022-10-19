@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import combinations
 from pathlib import Path
+from pprint import pprint
 from typing import (
     Any,
     Callable,
@@ -234,6 +235,21 @@ def predict_feature(
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
             df = select_features(feature, data, feature_slice)
+            if len(df.columns) - 1 == 0:
+                info = "\n".join(
+                    [
+                        f"Feature: {feature}",
+                        f"Dataset: {feature.source}",
+                        f"norm: {feature.norm}",
+                        f"fullpre: {feature.full_pre}",
+                        f"feature_slice: {feature_slice.name}",
+                        f"data shape before selection: {data.shape}",
+                        f"data before selection:\n{data}",
+                        f"data shape after selection: {df.shape}",
+                        f"data after selection:\n{df}",
+                    ]
+                )
+                raise IndexError(f"Some bullshit.\n{info}")
             if is_dud_comparison(labels, i, j):
                 continue
             title = f"{labels[i]} v {labels[j]}"
@@ -272,20 +288,26 @@ def predict_feature(
             "acc+",
             "auroc",
             "acc",
-            "f1"
+            "f1",
         ],
     ]
 
 
-def predict_all(args: Namespace) -> DataFrame:
-    feature = args.cls(
-        source=args.source, full_pre=args.full_pre, norm=args.norm, degree=args.degree
-    )
-    return predict_feature(
-        feature=feature,
-        feature_slice=args.feature_idx,
-        logarithm=True,
-    )
+def predict_all(args: Namespace) -> DataFrame | None:
+    try:
+        feature = args.cls(
+            source=args.source, full_pre=args.full_pre, norm=args.norm, degree=args.degree
+        )
+        return predict_feature(
+            feature=feature,
+            feature_slice=args.feature_idx,
+            logarithm=True,
+        )
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Got error {e} for following combinations of parameters:")
+        pprint(args.__dict__, indent=2, depth=2)
+        return None
 
 
 def summarize_all_predictions(
@@ -317,6 +339,7 @@ def summarize_all_predictions(
     ]
     # grid = grid[:100]
     dfs = process_map(predict_all, grid, desc="Predicting", chunksize=1)
+    dfs = [df_ for df_ in dfs if df_ is not None]
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
     print(df.iloc[:print_rows, :].to_markdown(index=False, tablefmt="simple"))
 
