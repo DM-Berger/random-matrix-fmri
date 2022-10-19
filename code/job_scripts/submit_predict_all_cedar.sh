@@ -8,7 +8,7 @@
 #SBATCH --profile=all
 #SBATCH --job-name=predict_all
 #SBATCH --array=0-23
-#SBATCH --output=all_levelvars_%j_%a.out
+#SBATCH --output=predict_all_%j_%a.out
 #SBATCH --time=00-05:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=48
