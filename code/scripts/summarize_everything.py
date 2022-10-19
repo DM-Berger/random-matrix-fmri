@@ -79,7 +79,9 @@ def feature_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
 
 
 # Pandas multi-indexes are hot garbage, nothing works in any sensible kind of way.
-# Better to just write your own looping code (as usual).
+# Better to just write your own looping code (as usual), OR, give each grouped DF
+# row an index, use group operations (e.g. .loc[...].max()) to get ids, and then
+# subset by ids, and group again (lol)
 def feature_dataset_aurocs(df: DataFrame, sorter: str = "best") -> DataFrame:
     if sorter == "best":
         print(f"{HEADER}Best AUROCs by feature and dataset:{FOOTER}")
