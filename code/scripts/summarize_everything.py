@@ -171,7 +171,7 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
     fig.legend(handles=patches, loc=position)
 
 
-def plot_topk_features(sorter: str, k: int = 5) -> None:
+def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
     df = load_all_renamed()
     # The more levels we include, the less we "generalize" our claims
     groupers = [
@@ -287,8 +287,6 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
 
         best_feats_pre = bests_pre["feature"]
         best_feats_nopre = bests_nopre["feature"]
-        counts_pre = best_feats_pre.value_counts()
-        counts_nopre = best_feats_nopre.value_counts()
 
         sbn.set_style("darkgrid")
         fig, axes = plt.subplots(nrows=2, sharex=True, sharey=True)
@@ -333,7 +331,8 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
         fig.subplots_adjust(
             top=0.9, bottom=0.049, left=0.139, right=0.991, hspace=0.18, wspace=0.2
         )
-        outdir = topk_outdir(k)
+        outdir = topk_outdir(k) / "preproc_compare"
+        outdir.mkdir(exist_ok=True, parents=True)
         fname = (
             f"{sorter}_"
             + "_".join([g[:4] for g in grouper])
@@ -525,7 +524,7 @@ def feature_dataset_aurocs(sorter: str = "best") -> DataFrame:
         .loc[:, ["feature", "slice", sorter]]
     )
     print(bests3)
-    plot_topk_features(bests3, sorter)
+    plot_topk_features_by_aggregation(bests3, sorter)
 
     # CORRELATIONS
     print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
@@ -620,8 +619,8 @@ def naive_describe(df: DataFrame) -> None:
 
 def generate_all_topk_plots() -> None:
     K = 3
-    plot_topk_features(sorter="median", k=K)
-    plot_topk_features(sorter="best", k=K)
+    plot_topk_features_by_aggregation(sorter="median", k=K)
+    plot_topk_features_by_aggregation(sorter="best", k=K)
     plot_topk_features_by_grouping(
         sorter="median",
         k=K,
@@ -648,8 +647,8 @@ def generate_all_topk_plots() -> None:
     )
 
     K = 5
-    plot_topk_features(sorter="median", k=K)
-    plot_topk_features(sorter="best", k=K)
+    plot_topk_features_by_aggregation(sorter="median", k=K)
+    plot_topk_features_by_aggregation(sorter="best", k=K)
     plot_topk_features_by_grouping(
         sorter="median",
         k=K,
@@ -678,9 +677,13 @@ def generate_all_topk_plots() -> None:
 
 if __name__ == "__main__":
     print("\n" * 50)
+    plot_topk_features_by_aggregation(sorter="median", k=3)
+    plot_topk_features_by_aggregation(sorter="median", k=5)
+    plot_topk_features_by_aggregation(sorter="best", k=3)
+    plot_topk_features_by_aggregation(sorter="best", k=5)
     plot_topk_features_by_preproc(sorter="median", k=3)
-    plot_topk_features_by_preproc(sorter="best", k=3)
     plot_topk_features_by_preproc(sorter="median", k=5)
+    plot_topk_features_by_preproc(sorter="best", k=3)
     plot_topk_features_by_preproc(sorter="best", k=5)
     # generate_all_topk_plots()
 
