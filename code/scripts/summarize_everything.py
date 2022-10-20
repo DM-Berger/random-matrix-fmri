@@ -114,22 +114,34 @@ def is_rmt(s: str) -> bool:
     return ("rig" in s) or ("level" in s) or ("unf" in s)
 
 
+def is_rmt_plus(s: str) -> bool:
+    return is_rmt(s) and ("eig" in s)
+
+
 def is_rmt_only(s: str) -> bool:
     return is_rmt(s) and ("eigs" not in s)
+
+
+def is_max(s: str) -> bool:
+    return "max" in s
 
 
 def is_smoothed(s: str) -> bool:
     return ("savgol" in s) or ("smooth" in s)
 
 
+def is_eigs_only(s: str) -> bool:
+    return s == "eigs" or ("middle" in s)
+
+
 def make_palette(features: list[str]) -> dict[str, str]:
     palette = {}
-    for feature in features:
-        if is_rmt_only(feature):
+    for feature in np.unique(features):
+        if is_rmt_plus(feature):
             palette[feature] = PURP
-        elif is_rmt(feature):
+        elif is_rmt_only(feature):
             palette[feature] = BLUE
-        elif "max" in feature:
+        elif is_max(feature):
             palette[feature] = ORNG
         elif is_smoothed(feature):
             palette[feature] = GREY
@@ -138,15 +150,25 @@ def make_palette(features: list[str]) -> dict[str, str]:
     return palette
 
 
-def make_legend(fig: Figure) -> None:
+def get_feature_ordering(features: list[str]) -> list[str]:
+    rmt_only = sorted(filter(is_rmt_only, features))
+    rmt_plus = sorted(filter(is_rmt_plus, features))
+    eigs_smooth = sorted(filter(lambda s: is_smoothed(s), features))
+    eigs_max = sorted(filter(lambda s: "max" in s, features))
+    eigs_only = sorted(filter(lambda s: is_eigs_only(s), features))
+    ordering = eigs_smooth + eigs_max + eigs_only + rmt_only + rmt_plus
+    return ordering
+
+
+def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right") -> None:
     patches = [
-        Patch(facecolor=BLUE, edgecolor="white", label="RMT-only feature"),
-        Patch(facecolor=BLCK, edgecolor="white", label="eigenvalues only feature"),
         Patch(facecolor=GREY, edgecolor="white", label="smoothed eigenvalues feature"),
         Patch(facecolor=ORNG, edgecolor="white", label="max eigenvalues feature"),
+        Patch(facecolor=BLCK, edgecolor="white", label="eigenvalues only feature"),
+        Patch(facecolor=BLUE, edgecolor="white", label="RMT-only feature"),
         Patch(facecolor=PURP, edgecolor="white", label="RMT + eigenvalues feature"),
     ]
-    fig.legend(handles=patches, loc="upper right")
+    fig.legend(handles=patches, loc=position)
 
 
 # def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
@@ -205,7 +227,7 @@ def plot_topk_features(sorter: str, k: int = 5) -> None:
             f"per feature grouping: {min_summarized_per_feature}+]"
         )
         ax.set_title(title, fontsize=10)
-        make_legend(fig)
+        make_legend(fig, position=(0.825, 0.15))
         fig.suptitle(suptitle, fontsize=12)
         fig.set_size_inches(w=16, h=6)
         fig.tight_layout()
@@ -218,7 +240,10 @@ def plot_topk_features(sorter: str, k: int = 5) -> None:
 
 
 def plot_topk_features_by_grouping(
-    sorter: str, k: int, by: Literal["data", "classifier"]
+    sorter: str,
+    k: int,
+    by: Literal["data", "classifier"],
+    position: str | tuple[float, float],
 ) -> None:
     df = load_all_renamed()
     fine_grouper = ["data", "comparison", "classifier", "preproc", "deg", "norm"]
@@ -235,34 +260,35 @@ def plot_topk_features_by_grouping(
     if by == "classifier":
         bestk = bestk.droplevel(["data", "comparison"])
 
-    features = bestk.loc[:, "feature"].unique()
-    rmt_special = sorted(filter(is_rmt, features))
-    eigs_only = sorted(filter(lambda s: not is_rmt(s), features))
-    order = eigs_only + rmt_special
-    palette = make_palette(order)
+    features = bestk.loc[:, "feature"].unique().tolist()
+    order = get_feature_ordering(features)
+    palette = make_palette(features)
 
+    sbn.set_style("darkgrid")
     instances = df[by].unique()
     nrows, ncols = best_rect(len(instances))
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharey=True)
 
     for i, instance in enumerate(instances):
         ax: Axes = axes.flat[i]  # type: ignore
-        counts = bestk.loc[instance, "feature"].value_counts()
-
-        sbn.set_style("darkgrid")
+        counts = bestk.loc[instance, "feature"]
         sbn.countplot(y=counts, order=order, color="black", palette=palette, ax=ax)
-        ax.set_title(
-            f"Overall Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
-        )
-        make_legend(fig)
-        fig.set_size_inches(w=12, h=6)
-        fig.tight_layout()
-        outdir = topk_outdir(k)
-        outdir.mkdir(exist_ok=True, parents=True)
-        outfile = outdir / f"{sorter}_AUROC_overall.png"
-        fig.savefig(outfile, dpi=300)
-        print(f"Saved plot to {outfile}")
-        plt.show(block=False)
+        ax.set_title(f"{str(instance)}")
+    fig.suptitle(
+        f"Overall Frequency of Feature Producing one of Top {k} {sorter.capitalize()} AUROCs"
+    )
+    make_legend(fig, position)
+    fig.set_size_inches(w=16, h=16)
+    fig.tight_layout()
+    fig.subplots_adjust(
+        top=0.93, bottom=0.056, left=0.126, right=0.988, hspace=0.25, wspace=0.123
+    )
+    outdir = topk_outdir(k)
+    outdir.mkdir(exist_ok=True, parents=True)
+    outfile = outdir / f"{sorter}_AUROC_by_{by}.png"
+    fig.savefig(outfile, dpi=300)  # type: ignore
+    print(f"Saved plot to {outfile}")
+    plt.close()
 
 
 def plot_feature_counts_grouped(
@@ -301,7 +327,7 @@ def plot_feature_counts_grouped(
     outfile = outdir / f"{sorter}_AUROC_by_{by}.png"
     fig.savefig(outfile, dpi=300)
     print(f"Saved plot to {outfile}")
-    plt.show(block=False)
+    plt.close()
 
 
 def auroc_correlations(
@@ -465,7 +491,6 @@ def naive_describe(df: DataFrame) -> None:
     feature_dataset_classifier_aurocs(sorter="best")
     feature_dataset_aurocs(sorter="median")
     feature_dataset_classifier_aurocs(sorter="median")
-    plt.show()
 
     # osteo = (
     #     df.loc[df.data == "Osteo"]
@@ -485,13 +510,67 @@ def naive_describe(df: DataFrame) -> None:
     #     .sort_values(by=["max", "median"], ascending=False)
     # )
 
+def generate_all_topk_plots() -> None:
+    K = 3
+    plot_topk_features(sorter="median", k=K)
+    plot_topk_features(sorter="best", k=K)
+    plot_topk_features_by_grouping(
+        sorter="median",
+        k=K,
+        by="data",
+        position=(0.86, 0.15),
+    )
+    plot_topk_features_by_grouping(
+        sorter="median",
+        k=K,
+        by="classifier",
+        position=(0.85, 0.28),
+    )
+    plot_topk_features_by_grouping(
+        sorter="best",
+        k=K,
+        by="data",
+        position=(0.64, 0.45),
+    )
+    plot_topk_features_by_grouping(
+        sorter="best",
+        k=K,
+        by="classifier",
+        position=(0.87, 0.26),
+    )
+
+    K = 5
+    plot_topk_features(sorter="median", k=K)
+    plot_topk_features(sorter="best", k=K)
+    plot_topk_features_by_grouping(
+        sorter="median",
+        k=K,
+        by="data",
+        position=(0.86, 0.15),
+    )
+    plot_topk_features_by_grouping(
+        sorter="median",
+        k=K,
+        by="classifier",
+        position=(0.85, 0.28),
+    )
+    plot_topk_features_by_grouping(
+        sorter="best",
+        k=K,
+        by="data",
+        position=(0.64, 0.45),
+    )
+    plot_topk_features_by_grouping(
+        sorter="best",
+        k=K,
+        by="classifier",
+        position=(0.56, 0.55),
+    )
+
 
 if __name__ == "__main__":
     print("\n" * 50)
-    # plot_topk_features(sorter="median", k=5)
-    # plot_topk_features(sorter="best", k=5)
-    plot_topk_features_by_grouping(sorter="median", k=5, by="data")
-    plot_topk_features_by_grouping(sorter="median", k=5, by="classifier")
+    # generate_all_topk_plots()
 
     # df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
