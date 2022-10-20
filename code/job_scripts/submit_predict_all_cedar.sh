@@ -6,10 +6,10 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=TIME_LIMIT_90
 #SBATCH --profile=all
-#SBATCH --job-name=predict_all
-#SBATCH --array=0-23
-#SBATCH --output=predict_all_%A_%a_%j.out
-#SBATCH --time=00-05:00:00
+#SBATCH --job-name=all_obs
+#SBATCH --output=all_observables_%A_%a_%j.out
+#SBATCH --array=0-27
+#SBATCH --time=00-24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=48
 #SBATCH --mem=0

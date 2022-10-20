@@ -51,7 +51,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.enumerables import Dataset
+from rmt.enumerables import Dataset, TrimMethod
 from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
 
 PROJECT = ROOT.parent
@@ -232,7 +232,7 @@ def predict_feature(
     feature_slice: FeatureSlice,
     logarithm: bool = True,
     debug: bool = False,
-) -> DataFrame:
+) -> DataFrame | None:
     data = feature.data
     norm = feature.norm
     if logarithm:
@@ -286,6 +286,7 @@ def predict_feature(
     result["preproc"] = "full" if feature.full_pre else "minimal"
     result["slice"] = feature_slice.value
     result["deg"] = str(feature.degree)
+    result["trim"] = feature.trim.value if feature.trim else "none"
     return result.loc[
         :,
         [
@@ -293,6 +294,7 @@ def predict_feature(
             "feature",
             "preproc",
             "deg",
+            "trim",
             "norm",
             "slice",
             "comparison",
@@ -306,9 +308,14 @@ def predict_feature(
 
 
 def predict_all(args: Namespace) -> DataFrame | None:
+    cls: Type[Feature] = args.cls
     try:
-        feature = args.cls(
-            source=args.source, full_pre=args.full_pre, norm=args.norm, degree=args.degree
+        feature = cls(
+            source=args.source,
+            full_pre=args.full_pre,
+            norm=args.norm,
+            degree=args.degree,
+            trim=args.trim_method,
         )
         return predict_feature(
             feature=feature,
@@ -327,12 +334,14 @@ def summarize_all_predictions(
     feature_cls: Type[Feature],
     sources: Optional[list[Dataset]] = None,
     degrees: Optional[list[int]] = None,
+    trims: Optional[list[TrimMethod | None]] = None,
     feature_slices: List[FeatureSlice] = [*FeatureSlice],
     full_pres: Optional[list[bool]] = None,
     norms: Optional[list[bool]] = None,
     debug: bool = False,
 ) -> DataFrame:
     sources = sources or [*Dataset]
+    trims = trims or [None, *TrimMethod]
     degrees = degrees or [3, 5, 7, 9]
     full_pres = full_pres or [True, False]
     norms = norms or [True, False]
@@ -344,6 +353,7 @@ def summarize_all_predictions(
                 cls=[feature_cls],
                 source=sources,
                 degree=degrees,
+                trim_method=trims,
                 feature_idx=feature_slices,
                 full_pre=full_pres,
                 norm=norms,
