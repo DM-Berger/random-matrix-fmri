@@ -37,10 +37,12 @@ GREY = "#5c5c5c"
 BLCK = "#000000"
 PURP = "#8e02c5"
 
+
 def topk_outdir(k: int) -> Path:
     outdir = PLOT_OUTDIR / f"top-{k}_plots"
     outdir.mkdir(exist_ok=True, parents=True)
     return outdir
+
 
 def corr_renamer(s: str) -> str:
     if "feature_" in s:
@@ -148,10 +150,8 @@ def make_legend(fig: Figure) -> None:
 
 
 # def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
-def plot_feature_counts(sorter: str, k: int = 5) -> None:
+def plot_topk_features(sorter: str, k: int = 5) -> None:
     df = load_all_renamed()
-    # df = bests3.reset_index().loc[:, "feature"]
-    # feats = df.drop(columns=["preproc", "deg", "norm", "slice"])
     # The more levels we include, the less we "generalize" our claims
     groupers = [
         ["data"],
@@ -216,41 +216,59 @@ def plot_feature_counts(sorter: str, k: int = 5) -> None:
         print(f"Saved top-{k} plot to {outfile}")
         plt.close()
 
-    return
-    bests3 = (
-        feats.groupby(["data", "comparison"])
-        .apply(lambda grp: grp.nlargest(5, columns=sorter))
-        .loc[:, "feature"]
-    )
 
-    order = bests3.unique()
-    rmt_special = sorted(filter(is_rmt, order))
-    eigs_only = sorted(filter(lambda s: not is_rmt(s), order))
+def plot_topk_features_by_grouping(
+    sorter: str, k: int, by: Literal["data", "classifier"]
+) -> None:
+    df = load_all_renamed()
+    fine_grouper = ["data", "comparison", "classifier", "preproc", "deg", "norm"]
+    if sorter == "best":
+        bestk = df.groupby(fine_grouper).apply(lambda g: g.nlargest(k, columns="auroc"))
+    else:
+        bestk = (
+            df.groupby(fine_grouper + ["feature"])
+            .median(numeric_only=True)
+            .reset_index()
+            .groupby(fine_grouper)
+            .apply(lambda g: g.nlargest(5, columns="auroc"))
+        )
+    if by == "classifier":
+        bestk = bestk.droplevel(["data", "comparison"])
+
+    features = bestk.loc[:, "feature"].unique()
+    rmt_special = sorted(filter(is_rmt, features))
+    eigs_only = sorted(filter(lambda s: not is_rmt(s), features))
     order = eigs_only + rmt_special
     palette = make_palette(order)
 
-    sbn.set_style("darkgrid")
-    fig, ax = plt.subplots()
-    sbn.countplot(
-        y=df, order=df.value_counts().index, color="black", palette=palette, ax=ax
-    )
-    ax.set_title(
-        f"Overall Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
-    )
-    make_legend(fig)
-    fig.set_size_inches(w=12, h=6)
-    fig.tight_layout()
-    outdir = PLOT_OUTDIR / "top3_counts"
-    outdir.mkdir(exist_ok=True, parents=True)
-    outfile = outdir / f"{sorter}_AUROC_overall.png"
-    fig.savefig(outfile, dpi=300)
-    print(f"Saved plot to {outfile}")
-    plt.show(block=False)
+    instances = df[by].unique()
+    nrows, ncols = best_rect(len(instances))
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharey=True)
+
+    for i, instance in enumerate(instances):
+        ax: Axes = axes.flat[i]  # type: ignore
+        counts = bestk.loc[instance, "feature"].value_counts()
+
+        sbn.set_style("darkgrid")
+        sbn.countplot(y=counts, order=order, color="black", palette=palette, ax=ax)
+        ax.set_title(
+            f"Overall Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs"
+        )
+        make_legend(fig)
+        fig.set_size_inches(w=12, h=6)
+        fig.tight_layout()
+        outdir = topk_outdir(k)
+        outdir.mkdir(exist_ok=True, parents=True)
+        outfile = outdir / f"{sorter}_AUROC_overall.png"
+        fig.savefig(outfile, dpi=300)
+        print(f"Saved plot to {outfile}")
+        plt.show(block=False)
 
 
 def plot_feature_counts_grouped(
     bests3: DataFrame, sorter: str, by: Literal["data", "classifier"]
 ) -> None:
+    df = load_all_renamed()
 
     df = bests3.reset_index()
     order = df["feature"].unique()
@@ -374,7 +392,7 @@ def feature_dataset_aurocs(sorter: str = "best") -> DataFrame:
         .loc[:, ["feature", "slice", sorter]]
     )
     print(bests3)
-    plot_feature_counts(bests3, sorter)
+    plot_topk_features(bests3, sorter)
 
     # CORRELATIONS
     print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
@@ -470,13 +488,15 @@ def naive_describe(df: DataFrame) -> None:
 
 if __name__ == "__main__":
     print("\n" * 50)
-    plot_feature_counts(sorter="median")
-    plot_feature_counts(sorter="best")
+    # plot_topk_features(sorter="median", k=5)
+    # plot_topk_features(sorter="best", k=5)
+    plot_topk_features_by_grouping(sorter="median", k=5, by="data")
+    plot_topk_features_by_grouping(sorter="median", k=5, by="classifier")
 
-    df = load_all_renamed()
+    # df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
     # df = df.loc[df.preproc == "minimal"]
     # naive_describe(df)
 
-    naive_describe(df)
-    print(f"Summarized {len(df)} 5-fold runs")
+    # naive_describe(df)
+    # print(f"Summarized {len(df)} 5-fold runs")
