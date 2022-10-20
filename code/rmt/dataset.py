@@ -10,9 +10,8 @@ import traceback
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Tuple, Union, cast, no_type_check
+from typing import Any, List, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from empyricalRMT.eigenvalues import Eigenvalues, Unfolded
@@ -21,14 +20,15 @@ from empyricalRMT.observables.rigidity import spectral_rigidity
 from empyricalRMT.smoother import SmoothMethod
 from joblib import Memory
 from numpy import ndarray
-from pandas import DataFrame, Series
+from pandas import DataFrame
+from scipy.stats import mode
+from sklearn.cluster import KMeans
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt._types import Subgroups
-from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
-from rmt.enumerables import Dataset
+from rmt.constants import DATASETS, DATASETS_FULLPRE
+from rmt.enumerables import Dataset, TrimMethod
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
 CACHE_DIR.mkdir(exist_ok=True, parents=True)
@@ -169,14 +169,20 @@ class ProcessedDataset:
         eigs["y"] = self.labels()
         return eigs
 
-    def unfolded(self, smoother: SmoothMethod, degree: int) -> list[Unfolded]:
+    def unfolded(
+        self, smoother: SmoothMethod, degree: int, trim_method: TrimMethod | None
+    ) -> list[Unfolded]:
         eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
+        if trim_method is not None:
+            eigs = [trim(e, trim_method) for e in eigs]
         return [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
 
-    def unfolded_df(self, degree: int) -> DataFrame:
-        unfoldeds = self.unfolded(smoother=SmoothMethod.Polynomial, degree=degree)
+    def unfolded_df(self, degree: int, trim_method: TrimMethod | None) -> DataFrame:
+        unfoldeds = self.unfolded(
+            smoother=SmoothMethod.Polynomial, degree=degree, trim_method=trim_method
+        )
         unfs = [u.vals for u in unfoldeds]
-        lengths = np.array([len(u) for u in unfs])
+        lengths = np.array([len(u) for u in unfs])  # type: ignore
         # front zero-pad
         length = np.max(lengths)
         resized = []
@@ -191,7 +197,10 @@ class ProcessedDataset:
         return df
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(source={self.source.name}, full_pre={self.full_pre})"
+        return (
+            f"{self.__class__.__name__}"
+            f"(source={self.source.name}, full_pre={self.full_pre})"
+        )
 
 
 @dataclass
@@ -203,7 +212,7 @@ class ObservableArgs:
 def _compute_rigidity(args: ObservableArgs) -> ndarray | None:
     """helper for `process_map`"""
     try:
-        return spectral_rigidity(unfolded=args.unfolded, L=args.L, show_progress=False)[1]
+        return spectral_rigidity(unfolded=args.unfolded, L=args.L, show_progress=False)[1]  # type: ignore # noqa
     except Exception as e:
         traceback.print_exc()
         print(f"Got error: {e}")
@@ -214,11 +223,51 @@ def _compute_levelvar(args: ObservableArgs) -> ndarray | None:
     """helper for `process_map`"""
     try:
         unfolded = args.unfolded
-        return level_number_variance(unfolded=unfolded, L=args.L, show_progress=False)[1]
+        return level_number_variance(unfolded=unfolded, L=args.L, show_progress=False)[1]  # type: ignore # noqa
     except Exception as e:
         traceback.print_exc()
         print(f"Got error: {e}")
         return None
+
+
+def precision_trim(eigs: ndarray) -> ndarray:
+    # see https://numpy.org/doc/stable/reference/generated/numpy.linalg.matrix_rank.html  # noqa
+    # see https://netlib.org/lapack/lug/node89.html
+    # see https://netlib.org/lapack/lug/node90.html
+    eigs = np.copy(eigs)
+    eps = np.finfo(np.float64).eps
+    emax = eigs.max()
+    cut = max(np.sqrt(emax) * eps * len(eigs), emax * eps)
+    idx = eigs > cut
+    eigs = eigs[idx]
+    return eigs  # type: ignore
+
+
+def kmeans_trim(eigs: ndarray, k: int = 3, log: bool = False) -> ndarray:
+    e = eigs.reshape(-1, 1)
+    e = np.log(e) if log else e
+    labels = KMeans(k).fit(e).labels_
+    most = mode(labels, keepdims=False).mode
+    idx = labels == most
+    eigs = np.copy(eigs)
+    eigs[~idx] = np.nan
+    return eigs
+
+
+def trim(eigenvalues: Eigenvalues, method: TrimMethod) -> Eigenvalues:
+    eigs = precision_trim(eigenvalues.values)
+    if method is TrimMethod.Largest:
+        # inspection of these for all data shows this to be most consistent at
+        # removing only some large eigenvalues
+        trimmed = kmeans_trim(eigs, k=2, log=True)
+    elif method is TrimMethod.Middle:
+        trimmed = kmeans_trim(eigs, k=2, log=True)
+        n_upper_trimmed = int(np.sum(np.isnan(eigs[len(eigs) // 2 :])))
+        trimmed[:n_upper_trimmed] = np.nan
+    elif method is TrimMethod.Precision:
+        trimmed = eigs
+    trimmed = trimmed[~np.isnan(trimmed)]
+    return Eigenvalues(trimmed)
 
 
 # @MEMOIZER.cache
@@ -226,12 +275,29 @@ def rigidities(
     dataset: ProcessedDataset,
     degree: int,
     smoother: SmoothMethod = SmoothMethod.Polynomial,
+    trim_method: TrimMethod | None = None,
     L: ndarray = L_VALUES,
     parallel: bool = True,
     silent: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = ("rigidity", dataset.id, str(degree), smoother.name, L_hash)
+    if trim_method is None:
+        to_hash: tuple[Any, ...] = (
+            "rigidity",
+            dataset.id,
+            str(degree),
+            smoother.name,
+            L_hash,
+        )
+    else:
+        to_hash = (
+            "rigidity",
+            dataset.id,
+            str(degree),
+            smoother.name,
+            trim_method.name,
+            L_hash,
+        )
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
@@ -240,7 +306,9 @@ def rigidities(
             print(f"Loading pre-computed rigidities from {outfile}")
         return pd.read_json(outfile)
 
-    unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
+    unfoldeds = dataset.unfolded(
+        smoother=smoother, degree=degree, trim_method=trim_method
+    )
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
     if parallel:
         rigidities = process_map(
@@ -268,12 +336,29 @@ def levelvars(
     dataset: ProcessedDataset,
     degree: int,
     smoother: SmoothMethod = SmoothMethod.Polynomial,
+    trim_method: TrimMethod | None = None,
     L: ndarray = L_VALUES,
     parallel: bool = True,
     silent: bool = True,
 ) -> DataFrame:
     L_hash = sha256(L.data.tobytes()).hexdigest()
-    to_hash = ("levelvar", dataset.id, str(degree), smoother.name, L_hash)
+    if trim_method is None:
+        to_hash: tuple[Any, ...] = (
+            "rigidity",
+            dataset.id,
+            str(degree),
+            smoother.name,
+            L_hash,
+        )
+    else:
+        to_hash = (
+            "rigidity",
+            dataset.id,
+            str(degree),
+            smoother.name,
+            trim_method.name,
+            L_hash,
+        )
     # quick and dirty hashing for caching  https://stackoverflow.com/a/1151705
     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
     outfile = CACHE_DIR / f"{hsh}.json"
@@ -282,8 +367,10 @@ def levelvars(
             print(f"Loading pre-computed levelvars from {outfile}")
         return pd.read_json(outfile)
 
-    unfoldeds = dataset.unfolded(smoother=smoother, degree=degree)
-    args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
+    unfoldeds = dataset.unfolded(
+        smoother=smoother, degree=degree, trim_method=trim_method
+    )
+    args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
     if parallel:
         rigidities = process_map(
             _compute_levelvar, args, desc=f"Computing level variances for {dataset}"

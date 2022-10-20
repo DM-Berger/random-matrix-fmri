@@ -7,8 +7,9 @@
 #SBATCH --mail-type=TIME_LIMIT_90
 #SBATCH --profile=all
 #SBATCH --job-name=all_obs
-#SBATCH --output=all_observables_%j.out
-#SBATCH --time=00-24:00:00
+#SBATCH --output=all_observables_%j_%a.out
+#SBATCH --array=0-27
+#SBATCH --time=00-08:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=80
 

@@ -52,5 +52,12 @@ class Dataset(Enum):
             Dataset.WeeklyAttention: ["high", "low"],
         }[self]
 
+
+class TrimMethod(Enum):
+    Largest = "largest"
+    Middle = "middle"
+    Precision = "precision"
+
+
 class NormMethod(Enum):
     pass
