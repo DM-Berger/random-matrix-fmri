@@ -169,13 +169,33 @@ class ProcessedDataset:
         eigs["y"] = self.labels()
         return eigs
 
+    def trimmed(self, trim_method: TrimMethod | None) -> list[Eigenvalues]:
+        if trim_method is None:
+            eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
+            return eigs
+
+        to_hash = (
+            self.id,
+            trim_method.name if trim_method is not None else "none",
+        )
+        hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
+        outfile = CACHE_DIR / f"{hsh}.json"
+        if outfile.exists():
+            vals: list[ndarray] = [*np.load(outfile).values()]
+            return [Eigenvalues(val) for val in vals]
+
+        eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
+        eigs = [trim(e, trim_method) for e in tqdm(eigs)]
+        vals = [e.vals for e in eigs]
+        np.savez_compressed(outfile, *vals)
+        return eigs
+
     def unfolded(
         self, smoother: SmoothMethod, degree: int, trim_method: TrimMethod | None
     ) -> list[Unfolded]:
-        eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
-        if trim_method is not None:
-            eigs = [trim(e, trim_method) for e in eigs]
-        return [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
+        eigs = self.trimmed(trim_method=trim_method)
+        unfs = [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
+        return unfs
 
     def unfolded_df(self, degree: int, trim_method: TrimMethod | None) -> DataFrame:
         unfoldeds = self.unfolded(

@@ -8,22 +8,30 @@ sys.path.append(str(ROOT))
 import os
 from argparse import Namespace
 
+from empyricalRMT.smoother import SmoothMethod
 from sklearn.model_selection import ParameterGrid
 
 from rmt.dataset import ProcessedDataset, levelvars, rigidities
 from rmt.enumerables import Dataset, TrimMethod
 
-TASK = int(os.environ.get("SLURM_ARRAY_TASK_ID"))  # type: ignore
+# TASK = int(os.environ.get("SLURM_ARRAY_TASK_ID"))  # type: ignore
+TASK = 0
 
 if __name__ == "__main__":
-    grid = [Namespace(**p) for p in ParameterGrid({
-        "source": [*Dataset],
-        "preproc": [True, False],
-    })]  # length is 28
+    grid = [
+        Namespace(**p)
+        for p in ParameterGrid(
+            {
+                "source": [*Dataset],
+                "preproc": [True, False],
+            }
+        )
+    ]  # length is 28
     source = grid[TASK].source
     preproc = grid[TASK].preproc
     for degree in [3, 5, 7, 9]:
-        for trim_method in [None, *TrimMethod]:
+        # for trim_method in [None, *TrimMethod]:
+        for trim_method in [*TrimMethod]:
             data = ProcessedDataset(source=source, full_pre=preproc)
             rigs = rigidities(
                 dataset=data,
