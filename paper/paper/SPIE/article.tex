@@ -8,7 +8,7 @@
 \title{Random Matrix Theory Tools for the Analysis of Functional Magnetic Resonance Imaging Examinations}
 
 \author[a]{Derek Berger}
-\author[a]{Jacob Levman}
+\author[a,*]{Jacob Levman}
 \author[b]{Gurpreet M. Matharoo}
 \affil[a]{St. Francis Xavier University, Department of Computer Science, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
 \affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
@@ -78,17 +78,18 @@
 % characteristic (AUC): AUC=0.72 (CI95=0.59 to 0.83) at 3 months and AUC=0.69 (CI95=0.55
 % to 0.82) at 12 months.
 
-% Conclusions
-% Predictive modeling of lumbar spine surgery outcomes was improved by incorporation of
+% Conclusions Predictive modeling of lumbar spine surgery outcomes was improved by incorporation of
 % image-based features compared to analysis based on conventional demographic data. The SpineCloud
 % framework could improve understanding of factors underlying outcome variability and warrants
 % further investigation and validation in a larger patient cohort.
 \begin{abstract}
+
 \section*{Purpose}
-Random matrix theory (RMT) is increasingly becoming a useful tool for understanding complex systems.
+Random matrix theory (RMT) is an increasingly useful tool for understanding large, complex systems.
 Prior studies have examined functional Magnetic Resonance Imaging (fMRI) images using tools from
 RMT, with some success. However, RMT computations are complex, and sensitive to numerous analytic
-choices. We systematically investigate the usefulness of RMT in a variety of fMRI datasets.
+choices, and previous investigations have been mostly explanatory / descriptive. We systematically
+investigate the usefulness of RMT in a variety of fMRI datasets in a predictive framework.
 
 \section*{Approach}
 We develop open-source software to efficiently compute RMT features from fMRI images, and examine
@@ -98,27 +99,31 @@ normalization procedure, RMT unfolding procedure, and classifiers to examine the
 eigenfeatures across various datasets.
 
 \section*{Results}
-We find
+We find eiegenfeatures to be broadly predictive in a wide variety of contexts, and that RMT-specific
+features like the spectral rigidity and level number variance have considerable potential in
+feature-engineering for fMRI. On median, we find ...
 
 \section*{Conclusions}
-This document shows the required format and appearance of a manuscript prepared for SPIE journals.
-It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the
-following journals require the use of structured abstracts in manuscript submissions:
-\textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the \textit{Journal of
-Medical Imaging}. Structured abstracts are encouraged for the \textit{Journal of
-Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the journal website. Whether
-structured or single-paragraph, the abstract should be a summary of the paper and not an
-introduction. Because the abstract may be used in abstracting and indexing databases, it should be
-self-contained (i.e., no numerical references) and substantive in nature, presenting concisely the
-objectives, methodology used, results obtained, and their significance. A list of up to six keywords
-should immediately follow.
+Use RMT yo.
+
+% This document shows the required format and appearance of a manuscript prepared for SPIE journals.
+% It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the
+% following journals require the use of structured abstracts in manuscript submissions:
+% \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the \textit{Journal of
+% Medical Imaging}. Structured abstracts are encouraged for the \textit{Journal of
+% Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the journal website. Whether
+% structured or single-paragraph, the abstract should be a summary of the paper and not an
+% introduction. Because the abstract may be used in abstracting and indexing databases, it should be
+% self-contained (i.e., no numerical references) and substantive in nature, presenting concisely the
+% objectives, methodology used, results obtained, and their significance. A list of up to six keywords
+% should immediately follow.
 \end{abstract}
 
 % Include a list of up to six keywords after the abstract
-\keywords{optics, photonics, light, lasers, journal manuscripts, LaTeX template}
+\keywords{random matrix, spectral rigidity, level number variance, fMRI, classification, machine-learning}
 
 % Include email contact information for corresponding author
-{\noindent \footnotesize\textbf{*}Fourth author name,  \linkable{myemail@university.edu} }
+{\noindent \footnotesize\textbf{*}Jacob Levman,  \linkable{jlevman@stfx.ca} }
 
 \begin{spacing}{2}   % use double spacing for rest of manuscript
 
