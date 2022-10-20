@@ -171,7 +171,6 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
     fig.legend(handles=patches, loc=position)
 
 
-# def plot_feature_counts(bests3: DataFrame, sorter: str) -> None:
 def plot_topk_features(sorter: str, k: int = 5) -> None:
     df = load_all_renamed()
     # The more levels we include, the less we "generalize" our claims
@@ -239,6 +238,110 @@ def plot_topk_features(sorter: str, k: int = 5) -> None:
         plt.close()
 
 
+def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
+    df = load_all_renamed()
+    # The more levels we include, the less we "generalize" our claims
+    groupers = [
+        ["data"],
+        ["data", "comparison"],
+        ["data", "comparison", "classifier"],
+        ["data", "comparison", "classifier", "deg"],
+        ["data", "comparison", "classifier", "deg", "norm"],
+    ]
+    ignores: list[list[str]] = [
+        ["comparison", "classifier", "deg", "norm"],
+        ["classifier", "deg", "norm"],
+        ["deg", "norm"],
+        ["norm"],
+        [],
+    ]
+    df_nopre = df.loc[df.preproc == "minimal"]
+    df_pre = df.loc[df.preproc != "minimal"]
+
+    for grouper, ignore in zip(groupers, ignores):
+        min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
+            0
+        ]
+        if sorter == "median":
+            summary_pre = df_pre.groupby(grouper + ["feature"]).median(numeric_only=True)
+            summary_nopre = df_nopre.groupby(grouper + ["feature"]).median(
+                numeric_only=True
+            )
+
+        else:
+            summary_pre = df_pre.groupby(grouper + ["feature"]).max(numeric_only=True)
+            summary_nopre = df_nopre.groupby(grouper + ["feature"]).max(numeric_only=True)
+        bests_pre = (
+            summary_pre.reset_index()
+            .groupby(grouper)
+            .apply(lambda g: g.nlargest(k, columns="auroc"))
+        )
+        bests_nopre = (
+            summary_nopre.reset_index()
+            .groupby(grouper)
+            .apply(lambda g: g.nlargest(k, columns="auroc"))
+        )
+
+        best_feats_pre = bests_pre["feature"]
+        best_feats_nopre = bests_nopre["feature"]
+        counts_pre = best_feats_pre.value_counts()
+        counts_nopre = best_feats_nopre.value_counts()
+
+        sbn.set_style("darkgrid")
+        fig, axes = plt.subplots(nrows=2, sharex=True, sharey=True)
+        ax_nopre: Axes = axes.flat[0]  # type: ignore
+        ax_pre: Axes = axes.flat[1]  # type: ignore
+        sbn.countplot(
+            y=best_feats_pre,
+            order=counts_pre.index,
+            color="black",
+            palette=make_palette(counts_pre.index),
+            ax=ax_pre,
+        )
+        sbn.countplot(
+            y=best_feats_nopre,
+            order=counts_nopre.index,
+            color="black",
+            palette=make_palette(counts_nopre.index),
+            ax=ax_nopre,
+        )
+        Sorter = sorter.capitalize() if sorter == "median" else "Max"
+        suptitle = f"Total Number of Instances where Feature Yields One of the Top-{k} {Sorter} AUROCs"
+        ylabel_pre = "More Preprocessing"
+        ylabel_nopre = "Brain-extraction only"
+        title = f"Summarizing / Grouping at level of: {grouper}"
+
+        if len(ignore) > 0:
+            title += f"\n(i.e. ignoring choice of {ignore})"
+
+        title += (
+            f"\n[Number of 5-fold runs summarized by {Sorter} "
+            f"per feature grouping: {min_summarized_per_feature}+]"
+        )
+
+        ax_pre.set_title(title, fontsize=10)
+        ax_nopre.set_title(title, fontsize=10)
+        ax_pre.set_ylabel(ylabel_pre, fontsize=14)
+        ax_nopre.set_ylabel(ylabel_nopre, fontsize=14)
+        make_legend(fig, position=(0.87, 0.05))
+        fig.suptitle(suptitle, fontsize=12)
+        fig.set_size_inches(w=16, h=12)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.9, bottom=0.049, left=0.139, right=0.991, hspace=0.18, wspace=0.2
+        )
+        outdir = topk_outdir(k)
+        fname = (
+            f"{sorter}_"
+            + "_".join([g[:4] for g in grouper])
+            + f"_top{k}_preproc-compare.png"
+        )
+        outfile = outdir / fname
+        fig.savefig(outfile, dpi=300)  # type: ignore
+        print(f"Saved top-{k} plot to {outfile}")
+        plt.close()
+
+
 def plot_topk_features_by_grouping(
     sorter: str,
     k: int,
@@ -246,6 +349,7 @@ def plot_topk_features_by_grouping(
     position: str | tuple[float, float],
 ) -> None:
     df = load_all_renamed()
+
     fine_grouper = ["data", "comparison", "classifier", "preproc", "deg", "norm"]
     if sorter == "best":
         bestk = df.groupby(fine_grouper).apply(lambda g: g.nlargest(k, columns="auroc"))
@@ -274,9 +378,11 @@ def plot_topk_features_by_grouping(
         counts = bestk.loc[instance, "feature"]
         sbn.countplot(y=counts, order=order, color="black", palette=palette, ax=ax)
         ax.set_title(f"{str(instance)}")
-    fig.suptitle(
-        f"Overall Frequency of Feature Producing one of Top {k} {sorter.capitalize()} AUROCs"
-    )
+    suptitle = f"Overall Frequency of Feature Producing one of Top {k} {sorter.capitalize()} AUROCs"
+    if suptitle_modifier != "":
+        suptitle += f" - ({suptitle_modifier})"
+
+    fig.suptitle(suptitle)
     make_legend(fig, position)
     fig.set_size_inches(w=16, h=16)
     fig.tight_layout()
@@ -510,6 +616,7 @@ def naive_describe(df: DataFrame) -> None:
     #     .sort_values(by=["max", "median"], ascending=False)
     # )
 
+
 def generate_all_topk_plots() -> None:
     K = 3
     plot_topk_features(sorter="median", k=K)
@@ -570,6 +677,10 @@ def generate_all_topk_plots() -> None:
 
 if __name__ == "__main__":
     print("\n" * 50)
+    plot_topk_features_by_preproc(sorter="median", k=3)
+    plot_topk_features_by_preproc(sorter="best", k=3)
+    plot_topk_features_by_preproc(sorter="median", k=5)
+    plot_topk_features_by_preproc(sorter="best", k=5)
     # generate_all_topk_plots()
 
     # df = load_all_renamed()
