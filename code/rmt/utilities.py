@@ -31,7 +31,7 @@ def _percentile_boot(df: pd.DataFrame, B: int = 2000) -> pd.DataFrame:
         boot_means = np.sort(boot_resamples.mean(axis=1))
         mean = np.mean(boot_means)
         low, high = np.percentile(boot_means, [0.5, 99.5])
-        out.iloc[i, :] = [mean, low, high]
+        out.iloc[i, :] = [mean, low, high]  # type: ignore
     return out
 
 
@@ -44,7 +44,7 @@ def _configure_sbn_style(prepend_black: bool = True) -> None:
     """
     palette = sbn.color_palette("dark").copy()
     if prepend_black:
-        palette.insert(0, (0.0, 0.0, 0.0))
+        palette.insert(0, (0.0, 0.0, 0.0))  # type: ignore
     sbn.set()
     sbn.set_palette(palette)
 
@@ -81,7 +81,7 @@ def _kde(values: ndarray, grid: ndarray, bw: Union[float, str] = "scott") -> nda
     values = values[values > 0]  # prevent floating-point bad behaviour
     kde = KDE(values)
     # kde.fit(kernel="gau", bw="scott", cut=0)
-    kde.fit(kernel="gau", bw=bw, cut=0)
+    kde.fit(kernel="gau", bw=bw, cut=0)  # type: ignore
     evaluated = np.empty_like(grid)
     for i, _ in enumerate(evaluated):
         evaluated[i] = kde.evaluate(grid[i])
@@ -95,10 +95,10 @@ def _cohen_d(g1: Any, g2: Any) -> float:
     v0, v1 = np.var(g1, ddof=1), np.var(g2, ddof=1)
     pooled_sd = np.sqrt((n0 * v0 + n1 * v1) / (n0 + n1))
     d = 0 if pooled_sd == 0 else diff / pooled_sd
-    return d
+    return float(d)
 
 
-def merge(a, b, path=None):
+def merge(a: dict, b: dict, path: Any = None) -> dict:
     """Recursively merge b into a"""
     import copy
 

@@ -1,25 +1,25 @@
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
 import seaborn as sbn
-
 from empyricalRMT.eigenvalues import Eigenvalues
 from empyricalRMT.ensemble import GOE, Poisson
 from numpy import ndarray
-from pathlib import Path
 from pandas import DataFrame
 from scipy.stats import mannwhitneyu, ttest_ind, ttest_rel, wilcoxon
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score, LeaveOneOut
+from sklearn.model_selection import LeaveOneOut, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVC
 from tqdm import tqdm
 
-from typing import Any, Dict, List, Optional, Tuple
-
+from rmt._types import Observable
 from rmt.constants import (
     DATASETS,
     DATASETS_FULLPRE,
@@ -28,14 +28,13 @@ from rmt.constants import (
     STAT_OUTDIRS,
     STAT_OUTDIRS_FULLPRE,
 )
-from rmt._types import Observable
 from rmt.filenames import (
     _prefix,
     precomputed_subgroup_paths_from_args,
     relpath,
     stats_fnames,
 )
-from rmt.utilities import _percentile_boot, _configure_sbn_style, _cohen_d
+from rmt.utilities import _cohen_d, _configure_sbn_style, _percentile_boot
 
 
 def _trimmed_from_args(vals: ndarray, trim_args: str) -> ndarray:
@@ -172,11 +171,13 @@ class Pair:
     ):
         if len(eigs1) == 0:
             raise ValueError(
-                f"eigs1 argument for dataset {dataset_name} and pairing {label} has no eigenvalues."
+                f"eigs1 argument for dataset {dataset_name} and pairing "
+                f"{label} has no eigenvalues."
             )
         if len(eigs2) == 0:
             raise ValueError(
-                f"eigs2 argument for dataset {dataset_name} and pairing {label} has no eigenvalues."
+                f"eigs2 argument for dataset {dataset_name} and pairing "
+                f"{label} has no eigenvalues."
             )
         self.args = args
         self.dataset_name = dataset_name

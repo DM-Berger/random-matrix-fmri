@@ -74,7 +74,7 @@ def extract_psych_groups(path: Path, fullpre: bool) -> Dict[str, List[Path]]:
         map(lambda idx: "eigs-{:02d}".format(idx), df[~df["high_attender"]].index)
     )
     root = PSYCHOLOGICAL_DATA_FULLPRE if fullpre else PSYCHOLOGICAL_DATA
-    all_eigs = sorted(paths(f"{root}/**/*eigs*.npy"))
+    all_eigs = sorted(paths(f"{root}/**/*eigs*.npy"))  # type: ignore
     high = sorted(list(filter(is_in(high_ids), all_eigs)))
     low = sorted(list(filter(is_in(low_ids), all_eigs)))
     return {"high": high, "low": low}
@@ -267,7 +267,7 @@ for dataset_name, subgroups in DATASETS_FULLPRE.items():
                     print(f"Could not find file {path}")
                     sys.exit(1)
     else:
-        for path in subgroups:
+        for path in subgroups:  # type: ignore
             try:
                 assert path.exists()
             except AssertionError:

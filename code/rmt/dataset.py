@@ -188,7 +188,7 @@ class ProcessedDataset:
         resized = []
         for unf in unfs:
             padded = np.zeros(length)
-            padded[-len(unf) :] = unf
+            padded[-len(unf) :] = unf  # type: ignore
             resized.append(padded)
         vals = np.stack(resized, axis=0)
         vals[vals < 0.0] = 0.0
@@ -309,7 +309,7 @@ def rigidities(
     unfoldeds = dataset.unfolded(
         smoother=smoother, degree=degree, trim_method=trim_method
     )
-    args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]
+    args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
     if parallel:
         rigidities = process_map(
             _compute_rigidity, args, desc=f"Computing rigidities for {dataset}"

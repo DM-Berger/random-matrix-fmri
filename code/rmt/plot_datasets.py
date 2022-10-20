@@ -1,24 +1,23 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import pandas as pd
-import seaborn as sbn
-
-from empyricalRMT.brody import brody_dist, fit_brody_mle
-from empyricalRMT.eigenvalues import Eigenvalues
-from empyricalRMT.ensemble import GOE, GDE
-
 from typing import Any, List
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sbn
+from empyricalRMT.brody import brody_dist, fit_brody_mle
+from empyricalRMT.eigenvalues import Eigenvalues
+from empyricalRMT.ensemble import GDE, GOE
+
+from rmt.args import ARGS  # type: ignore # noqa
+from rmt.comparisons import Pairings
 from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt.filenames import argstrings_from_args, relpath
 from rmt.precompute import precompute_dataset
+from rmt.summarize import compute_all_preds_df, supplement_stat_dfs
 from rmt.utilities import _percentile_boot
-from rmt.args import ARGS
-from rmt.comparisons import Pairings
-from rmt.summarize import supplement_stat_dfs, compute_all_preds_df
 
-# def plot_marchenko(datapaths: DataSummaryPaths, title: str = None, outdir: Path = None) -> None:
+
 def plot_marchenko(args: Any, show: bool = False) -> None:
     """Create violin plots of the distributions of marchenko noise percents
 
@@ -110,7 +109,6 @@ def plot_marchenko(args: Any, show: bool = False) -> None:
                 print(f"Marchenko shifted plot saved to {relpath(out)}")
 
 
-# def plot_brody(datapaths: DataSummaryPaths, title: str = None, outdir: Path = None) -> None:
 def plot_brody(args: Any, show: bool = False) -> None:
     """Create violin plots of the distributions of Brody fit parameters
 
@@ -169,7 +167,6 @@ def plot_brody(args: Any, show: bool = False) -> None:
                 print(f"Brody violin plot saved to {relpath(out)}")
 
 
-# def plot_largest(datapaths: DataSummaryPaths, title: str = None, outdir: Path = None) -> None:
 def plot_largest(args: Any, show: bool = False) -> None:
     """Create violin plots of the distributions of the largest eigenvalues
 
@@ -583,7 +580,9 @@ def make_pred_hists(
     # ARGS.fullpre = True
     dfs = []
 
-    def hist_over_trim(trim: str, unfold=[5, 7, 9, 11, 13], normalize=normalize):
+    def hist_over_trim(
+        trim: str, unfold: List[int] = [5, 7, 9, 11, 13], normalize: bool = normalize
+    ) -> None:
         global ARGS
 
         for trim_idx in [trim]:

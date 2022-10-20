@@ -1,6 +1,14 @@
 {
     // "include": ["src", "test", "scripts", "tests"],
     "exclude": [
+        "./code/ismrm_plots.py",
+        "./code/rmt/plot_datasets.py",
+        "./code/print_extrema.py",
+        "./code/learning.py",
+        "./code/summarize.py",
+        "./code/rmt/comparisons.py",
+        "./code/run.py",
+
         "**/__CACHE__",
         "**/__MAPPINGS_CACHE__",
         "**/*_CACHE__",
@@ -16,6 +24,14 @@
         "**/.env"
     ],
     "ignore": [
+        "./code/ismrm_plots.py",
+        "./code/rmt/plot_datasets.py",
+        "./code/print_extrema.py",
+        "./code/learning.py",
+        "./code/summarize.py",
+        "./code/rmt/comparisons.py",
+        "./code/run.py",
+
         "**/__CACHE__",
         "**/__MAPPINGS_CACHE__",
         "**/*_CACHE__",

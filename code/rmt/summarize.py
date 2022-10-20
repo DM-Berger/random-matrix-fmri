@@ -1,12 +1,12 @@
-import pandas as pd
-
 from pathlib import Path
 from typing import Any, Tuple
 
+import pandas as pd
+
+from rmt.comparisons import Pairings
 from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
 from rmt.filenames import relpath, stats_fnames
 from rmt.precompute import precompute_dataset
-from rmt.comparisons import Pairings
 
 
 def compute_all_diffs_dfs(args: Any, silent: bool = False) -> Path:
@@ -37,14 +37,14 @@ def compute_all_diffs_dfs(args: Any, silent: bool = False) -> Path:
     if not silent:
         print(diffs_df)
     print(f"Saved all differences to {all_diffs_out}")
-    return all_diffs_out
+    return Path(all_diffs_out)
 
 
 def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -> Path:
     preds_out, _ = stats_fnames(args, args.normalize, extension="csv")
     all_preds_out = DATA_ROOT / preds_out
     if not force and all_preds_out.exists():
-        return all_preds_out
+        return Path(all_preds_out)
     DUDS = [
         "control_pre_v_parkinsons",
         "park_pre_v_parkinsons",
@@ -72,11 +72,11 @@ def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -
     if not silent:
         print(preds_df)
     print(f"Saved all predictions to {all_preds_out}")
-    return all_preds_out
+    return Path(all_preds_out)
 
 
 def supplement_stat_dfs(
-    diffs: Path = None, preds: Path = None, force: bool = False
+    diffs: Path | None = None, preds: Path | None = None, force: bool = False
 ) -> Tuple[Path, Path]:
     preds_out = preds.parent / f"[SUMS]{preds.name}" if preds else None
     diffs_out = diffs.parent / f"[SORT]{diffs.name}" if diffs else None
@@ -95,7 +95,7 @@ def supplement_stat_dfs(
             df_pred["Max (obs)"] = df_pred[obs].max(axis=1) - df_pred[g]
             df_pred["Max (spec)"] = df_pred[spec].max(axis=1) - df_pred[g]
             df_pred.to_csv(preds_out)
-            print(f"Saved supplemented predictions to {relpath(preds_out)}")  # type: ignore
+            print(f"Saved supplemented predictions to {relpath(preds_out)}")  # type: ignore  # noqa
 
     if diffs:
         if force or not diffs_out.exists():  # type: ignore

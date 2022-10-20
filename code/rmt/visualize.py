@@ -5,46 +5,20 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
-import traceback
-from abc import ABC, abstractproperty
-from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from enum import Enum
+from argparse import Namespace
 from itertools import combinations
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    cast,
-    no_type_check,
-)
-from warnings import filterwarnings
+from typing import Any, Mapping, Optional, Tuple, Type
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytest
 import seaborn as sbn
 from matplotlib.axes import Axes
 from matplotlib.patches import Patch
-from numpy import ndarray
-from pandas import DataFrame, Series
-from sklearn.ensemble import GradientBoostingClassifier as GBC
-from sklearn.linear_model import LogisticRegression as LR
-from sklearn.model_selection import ParameterGrid, StratifiedKFold, cross_val_score
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, minmax_scale
-from sklearn.svm import SVC
+from pandas import DataFrame
+from sklearn.model_selection import ParameterGrid
 from tqdm import tqdm
-from tqdm.contrib.concurrent import process_map
-from typing_extensions import Literal
 
 from rmt.enumerables import Dataset
 from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
@@ -465,7 +439,7 @@ def plot_feature_separation(
     ax_idx = 0
     for label1, label2 in combs:
         if feature_idx is None:
-            feature_idx = -1
+            feature_idx = -1  # type: ignore
         df = data.iloc[:, [feature_idx - 1, -1]]
         suffix = count_suffix(-feature_idx) if feature_idx < 0 else ""
         idx_label = (
@@ -610,8 +584,8 @@ def plot_feature_multi(
         color2 = colors[label2]
         color2_alpha = (*color2, 0.3)
         patches = [
-            Patch(facecolor=color1_alpha, edgecolor=color1, label=label1),
-            Patch(facecolor=color2_alpha, edgecolor=color2, label=label2),
+            Patch(facecolor=color1_alpha, edgecolor=color1, label=label1),  # type: ignore
+            Patch(facecolor=color2_alpha, edgecolor=color2, label=label2),  # type: ignore
         ]
         fig.legend(handles=patches, loc="upper right")
 
@@ -620,7 +594,10 @@ def plot_feature_multi(
         # plt.close()
         if save:
             normed = "_normed" if norm else ""
-            fname = f"{source.name.lower()}_{label1}_v_{label2}_fullpre={full_pre}{normed}.png"
+            fname = (
+                f"{source.name.lower()}_{label1}_v_{label2}"
+                f"_fullpre={full_pre}{normed}.png"
+            )
             outfile = outdir / fname
             pbar.set_description(f"{pbdesc} - Saving to {outfile}")
             fig.savefig(str(outfile), dpi=300)
@@ -647,7 +624,7 @@ def plot_all_features(
     full_pres = full_pres or [True, False]
     _degrees = degrees or [3, 5, 7, 9]
     if feature_cls is Eigenvalues:
-        _degrees = [None]
+        _degrees = [None]  # type: ignore
     norms = norms or [True, False]
     grid = [
         Namespace(**p)
