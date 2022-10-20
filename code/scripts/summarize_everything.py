@@ -257,6 +257,9 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
     ]
     df_nopre = df.loc[df.preproc == "minimal"]
     df_pre = df.loc[df.preproc != "minimal"]
+    unq = df.feature.unique()
+    ordering = get_feature_ordering(unq)
+    palette = make_palette(unq)
 
     for grouper, ignore in zip(groupers, ignores):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
@@ -293,16 +296,16 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
         ax_pre: Axes = axes.flat[1]  # type: ignore
         sbn.countplot(
             y=best_feats_pre,
-            order=counts_pre.index,
+            order=ordering,
             color="black",
-            palette=make_palette(counts_pre.index),
+            palette=palette,
             ax=ax_pre,
         )
         sbn.countplot(
             y=best_feats_nopre,
-            order=counts_nopre.index,
+            order=ordering,
             color="black",
-            palette=make_palette(counts_nopre.index),
+            palette=palette,
             ax=ax_nopre,
         )
         Sorter = sorter.capitalize() if sorter == "median" else "Max"
@@ -379,8 +382,6 @@ def plot_topk_features_by_grouping(
         sbn.countplot(y=counts, order=order, color="black", palette=palette, ax=ax)
         ax.set_title(f"{str(instance)}")
     suptitle = f"Overall Frequency of Feature Producing one of Top {k} {sorter.capitalize()} AUROCs"
-    if suptitle_modifier != "":
-        suptitle += f" - ({suptitle_modifier})"
 
     fig.suptitle(suptitle)
     make_legend(fig, position)
