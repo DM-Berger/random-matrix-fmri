@@ -1,5 +1,6 @@
 __OBSERVABLES_CACHE__
 !__OBSERVABLES_CACHE__/*.json
+code/__JOBLIB_CACHE__
 # **/*.csv
 **/*~lock*
 **/*.pdf
