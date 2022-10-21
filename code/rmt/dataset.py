@@ -179,13 +179,13 @@ class ProcessedDataset:
             trim_method.name if trim_method is not None else "none",
         )
         hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
-        outfile = CACHE_DIR / f"{hsh}.json"
+        outfile = CACHE_DIR / f"{hsh}.npz"
         if outfile.exists():
             vals: list[ndarray] = [*np.load(outfile).values()]
             return [Eigenvalues(val) for val in vals]
 
         eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
-        eigs = [trim(e, trim_method) for e in tqdm(eigs)]
+        eigs = [trim(e, trim_method) for e in eigs]
         vals = [e.vals for e in eigs]
         np.savez_compressed(outfile, *vals)
         return eigs
