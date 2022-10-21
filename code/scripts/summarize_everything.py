@@ -63,12 +63,14 @@ SUBGROUPERS = [
     ["data", "comparison", "classifier", "preproc", "deg", "trim", "norm"],
 ]
 
+
 def get_aggregates(subgroupers: list[list[str]]) -> list[list[str]]:
     aggregates = [  # just excludes the column used for grouping and keeps ordering
         [colname for colname in ALL_GROUPERS if colname not in subgrouper]
         for subgrouper in subgroupers
     ]
     return aggregates
+
 
 AGGREGATES = get_aggregates(SUBGROUPERS)
 
@@ -205,6 +207,40 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
         Patch(facecolor=PURP, edgecolor="white", label="RMT + eigenvalues feature"),
     ]
     fig.legend(handles=patches, loc=position)
+
+
+def summarize_performance_by_aggregation(
+    metric: Literal["auroc", "f1", "acc+"], summarizer: Literal["median", "best"]
+) -> None:
+    sbn.set_style("darkgrid")
+    df = load_all_renamed()
+    # The more levels we include, the less we "generalize" our claims
+    for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
+        min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
+            0
+        ]
+        grouped = df.groupby(grouper)
+        # if you do:
+        #   grouped.hist()
+        # here, you get a plot for each sub-frame induced by "grouper"
+        # I think if you reset_index, or just leave it as is, seaborn is also
+        # going to be able to do a decent job here
+        if summarizer == "median":
+            summary = df.groupby(grouper + ["feature"]).median(numeric_only=True)
+
+        else:
+            summary = df.groupby(grouper + ["feature"]).max(numeric_only=True)
+
+        summary.hist(color="black")
+        plt.gcf().suptitle(f"Grouping by {grouper}\n(aggregating across: {aggregates})")
+        plt.show()
+
+        print()
+        # bests = (
+        #     summary.reset_index()
+        #     .groupby(grouper)
+        #     .apply(lambda g: g.nlargest(k, columns="auroc"))
+        # )
 
 
 def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
@@ -684,18 +720,19 @@ def generate_all_topk_plots() -> None:
         position=(0.56, 0.55),
     )
 
-
-if __name__ == "__main__":
-    simplefilter(action="ignore", category=PerformanceWarning)
-    print("\n" * 50)
-    df = load_all_renamed()
-
-    # generate_all_topk_plots()
-
     plot_topk_features_by_preproc(sorter="median", k=3)
     plot_topk_features_by_preproc(sorter="median", k=5)
     plot_topk_features_by_preproc(sorter="best", k=3)
     plot_topk_features_by_preproc(sorter="best", k=5)
+
+
+if __name__ == "__main__":
+    simplefilter(action="ignore", category=PerformanceWarning)
+    print("\n" * 50)
+    # df = load_all_renamed()
+    summarize_performance_by_aggregation(metric="auroc", summarizer="median")
+
+    # generate_all_topk_plots()
 
     # df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
