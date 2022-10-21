@@ -172,6 +172,21 @@ def is_eigs_only(s: str) -> bool:
     return s == "eigs" or ("middle" in s)
 
 
+def feature_grouping(s: str) -> str:
+    if is_smoothed(s):
+        return "eigs smooth"
+    if is_max(s):
+        return "eigs max"
+    if "middle" in s:
+        return "eigs middle"
+    if s == "eigs":
+        return "eigs"
+    if is_rmt_only(s):
+        return "rmt only"
+    if is_rmt_plus(s):
+        return "rmt + eigs"
+
+
 def make_palette(features: list[str]) -> dict[str, str]:
     palette = {}
     for feature in np.unique(features):
@@ -212,8 +227,76 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
 def summarize_performance_by_aggregation(
     metric: Literal["auroc", "f1", "acc+"], summarizer: Literal["median", "best"]
 ) -> None:
+    def resize_fig() -> None:
+        fig = plt.gcf()
+        fig.set_size_inches(w=40, h=26)
+        fig.subplots_adjust(left=0.05, right=0.95, wspace=0.1, hspace=0.2)
+
     sbn.set_style("darkgrid")
     df = load_all_renamed()
+    df["subgroup"] = df["data"] + " - " + df["comparison"]
+    df["feature_group"] = df["feature"].apply(feature_grouping)
+
+    df = df.loc[~df.data.str.contains("Reflect")]
+    df = df.loc[~df.data.str.contains("Ses")]
+
+    # not bad view of features overall
+    sbn.displot(
+        data=df,
+        x="auroc",
+        hue="feature_group",
+        col="subgroup",
+        col_wrap=6,
+        element="step",
+        facet_kws=dict(ylim=(0.0, 0.5)),
+        stat="density",
+    )
+    plt.show()
+
+    # cleaner view
+    sbn.displot(
+        data=df,
+        x="auroc",
+        kind="kde",
+        hue="feature_group",
+        col="subgroup",
+        col_wrap=6,
+        facet_kws=dict(ylim=(0.0, 0.5)),
+    )
+    plt.show()
+
+    # violin plot
+    sbn.catplot(data=df, y="auroc", x="subgroup", hue="feature_group", kind="violin")
+    resize_fig()
+    plt.show()
+
+    # Very useful: shows best RMT performance due to outlier performances
+    sbn.catplot(
+        data=df, y="auroc", x="subgroup", hue="feature_group", kind="box", col="preproc"
+    )
+    resize_fig()
+    plt.show()
+
+    # Also useful if you re-order hue and cols to show max_eigs most important
+    sbn.catplot(
+        data=df, y="auroc", x="slice", hue="feature_group", kind="box", col="preproc"
+    )
+    resize_fig()
+    plt.show()
+
+    # This is important: Shows clear interaction between preproc and slice
+    sbn.catplot(
+        data=df,
+        y="auroc",
+        x="slice",
+        hue="feature_group",
+        kind="box",
+        row="preproc",
+        col="subgroup",
+    )
+    resize_fig()
+    plt.show()
+
     # The more levels we include, the less we "generalize" our claims
     for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
