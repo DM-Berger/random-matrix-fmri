@@ -187,6 +187,16 @@ def feature_grouping(s: str) -> str:
         return "rmt + eigs"
 
 
+def slice_grouping(s: str) -> str:
+    if "min" in s:
+        return "min"
+    if "max" in s:
+        return "max"
+    if "mid" in s:
+        return "mid"
+    return s
+
+
 def make_palette(features: list[str]) -> dict[str, str]:
     palette = {}
     for feature in np.unique(features):
@@ -236,6 +246,7 @@ def summarize_performance_by_aggregation(
     df = load_all_renamed()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
     df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["slice_group"] = df["slice"].apply(slice_grouping)
 
     df = df.loc[~df.data.str.contains("Reflect")]
     df = df.loc[~df.data.str.contains("Ses")]
@@ -293,6 +304,32 @@ def summarize_performance_by_aggregation(
         kind="box",
         row="preproc",
         col="subgroup",
+    )
+    resize_fig()
+    plt.show()
+
+    # This shows preproc / slice / feature interaction even more clearly than above
+    sbn.catplot(
+        data=df,
+        x="auroc",
+        col="subgroup",
+        y="feature_group",
+        kind="box",
+        hue="slice",
+        row="preproc",
+    )
+    resize_fig()
+    plt.show()
+
+    # This one very clearly shows effect of preprocessing
+    sbn.catplot(
+        data=df,
+        y="auroc",
+        col="subgroup",
+        col_wrap=4,
+        x="feature_group",
+        kind="box",
+        hue="preproc",
     )
     resize_fig()
     plt.show()
