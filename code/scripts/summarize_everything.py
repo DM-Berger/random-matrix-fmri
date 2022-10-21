@@ -6,6 +6,7 @@ sys.path.append(str(ROOT))
 # fmt: on
 
 from typing import Literal
+from warnings import simplefilter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,13 +17,14 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 from pandas import DataFrame
+from pandas.errors import PerformanceWarning
 from tqdm import tqdm
 
 from rmt.features import FEATURE_OUTFILES as PATHS
 from rmt.visualize import PLOT_OUTDIR, best_rect
 
 PROJECT = ROOT.parent
-MEMORY = Memory(ROOT / "__JOBLIB_CACHE__")
+MEMORY = Memory(PROJECT / "__JOBLIB_CACHE__")
 
 HEADER = "=" * 80 + "\n"
 FOOTER = "\n" + ("=" * 80)
@@ -51,15 +53,16 @@ def corr_renamer(s: str) -> str:
 
 
 @MEMORY.cache
-def load_all_renamed() -> DataFrame:
+def load_all_renamed(remove_reflect: bool = False) -> DataFrame:
     df = pd.concat(
         [pd.read_json(path) for path in tqdm(PATHS.values(), desc="loading")],
         axis=0,
         ignore_index=True,
     )
-    print("\n\nRemoving meaningless 'REFLECT' data:\n")
-    non_reflects = df.data.apply(lambda s: "Reflect" not in s)
-    df = df.loc[non_reflects]
+    if remove_reflect:
+        print("\n\nRemoving meaningless 'REFLECT' data:\n")
+        non_reflects = df.data.apply(lambda s: "Reflect" not in s)
+        df = df.loc[non_reflects]
     df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
@@ -180,15 +183,16 @@ def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
         ["data", "comparison", "classifier"],
         ["data", "comparison", "classifier", "preproc"],
         ["data", "comparison", "classifier", "preproc", "deg"],
-        ["data", "comparison", "classifier", "preproc", "deg", "norm"],
+        ["data", "comparison", "classifier", "preproc", "deg", "trim"],
+        ["data", "comparison", "classifier", "preproc", "deg", "trim", "norm"],
     ]
     ignores: list[list[str]] = [
-        ["comparison", "classifier", "preproc", "deg", "norm"],
-        ["classifier", "preproc", "deg", "norm"],
-        ["preproc", "deg", "norm"],
-        ["deg", "norm"],
+        ["comparison", "classifier", "preproc", "deg", "trim", "norm"],
+        ["classifier", "preproc", "deg", "trim", "norm"],
+        ["preproc", "deg", "trim", "norm"],
+        ["deg", "trim", "norm"],
+        ["trim", "norm"],
         ["norm"],
-        [],
     ]
 
     for grouper, ignore in zip(groupers, ignores):
@@ -246,14 +250,15 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
         ["data", "comparison"],
         ["data", "comparison", "classifier"],
         ["data", "comparison", "classifier", "deg"],
-        ["data", "comparison", "classifier", "deg", "norm"],
+        ["data", "comparison", "classifier", "deg", "trim"],
+        ["data", "comparison", "classifier", "deg", "trim", "norm"],
     ]
     ignores: list[list[str]] = [
-        ["comparison", "classifier", "deg", "norm"],
-        ["classifier", "deg", "norm"],
-        ["deg", "norm"],
+        ["comparison", "classifier", "deg", "trim", "norm"],
+        ["classifier", "deg", "trim", "norm"],
+        ["deg", "trim", "norm"],
+        ["trim","norm"],
         ["norm"],
-        [],
     ]
     df_nopre = df.loc[df.preproc == "minimal"]
     df_pre = df.loc[df.preproc != "minimal"]
@@ -676,16 +681,16 @@ def generate_all_topk_plots() -> None:
 
 
 if __name__ == "__main__":
+    simplefilter(action='ignore', category=PerformanceWarning)
     print("\n" * 50)
-    plot_topk_features_by_aggregation(sorter="median", k=3)
-    plot_topk_features_by_aggregation(sorter="median", k=5)
-    plot_topk_features_by_aggregation(sorter="best", k=3)
-    plot_topk_features_by_aggregation(sorter="best", k=5)
+    df = load_all_renamed()
+
+    # generate_all_topk_plots()
+
     plot_topk_features_by_preproc(sorter="median", k=3)
     plot_topk_features_by_preproc(sorter="median", k=5)
     plot_topk_features_by_preproc(sorter="best", k=3)
     plot_topk_features_by_preproc(sorter="best", k=5)
-    # generate_all_topk_plots()
 
     # df = load_all_renamed()
     # df = df.loc[df.preproc != "minimal"]
