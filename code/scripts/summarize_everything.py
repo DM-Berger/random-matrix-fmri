@@ -39,6 +39,39 @@ GREY = "#5c5c5c"
 BLCK = "#000000"
 PURP = "#8e02c5"
 
+ALL_GROUPERS = [
+    "data",
+    "comparison",
+    "classifier",
+    "preproc",
+    "deg",
+    "trim",
+    "slice",
+    "norm",
+]
+
+SUBGROUPERS = [
+    ["data"],
+    ["data", "comparison"],
+    ["data", "comparison", "classifier"],
+    ["data", "comparison", "classifier", "preproc"],
+    ["data", "comparison", "classifier", "preproc", "deg"],
+    ["data", "comparison", "classifier", "preproc", "trim"],
+    ["data", "comparison", "classifier", "preproc", "slice"],
+    ["data", "comparison", "classifier", "preproc", "deg", "trim"],
+    ["data", "comparison", "classifier", "preproc", "deg", "norm"],
+    ["data", "comparison", "classifier", "preproc", "deg", "trim", "norm"],
+]
+
+def get_aggregates(subgroupers: list[list[str]]) -> list[list[str]]:
+    aggregates = [  # just excludes the column used for grouping and keeps ordering
+        [colname for colname in ALL_GROUPERS if colname not in subgrouper]
+        for subgrouper in subgroupers
+    ]
+    return aggregates
+
+AGGREGATES = get_aggregates(SUBGROUPERS)
+
 
 def topk_outdir(k: int) -> Path:
     outdir = PLOT_OUTDIR / f"top-{k}_plots"
@@ -177,25 +210,7 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
 def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
     df = load_all_renamed()
     # The more levels we include, the less we "generalize" our claims
-    groupers = [
-        ["data"],
-        ["data", "comparison"],
-        ["data", "comparison", "classifier"],
-        ["data", "comparison", "classifier", "preproc"],
-        ["data", "comparison", "classifier", "preproc", "deg"],
-        ["data", "comparison", "classifier", "preproc", "deg", "trim"],
-        ["data", "comparison", "classifier", "preproc", "deg", "trim", "norm"],
-    ]
-    ignores: list[list[str]] = [
-        ["comparison", "classifier", "preproc", "deg", "trim", "norm"],
-        ["classifier", "preproc", "deg", "trim", "norm"],
-        ["preproc", "deg", "trim", "norm"],
-        ["deg", "trim", "norm"],
-        ["trim", "norm"],
-        ["norm"],
-    ]
-
-    for grouper, ignore in zip(groupers, ignores):
+    for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
             0
         ]
@@ -223,8 +238,8 @@ def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
         Sorter = sorter.capitalize() if sorter == "median" else "Max"
         suptitle = f"Total Number of Instances where Feature Yields One of the Top-{k} {Sorter} AUROCs"
         title = f"Summarizing / Grouping at level of: {grouper}"
-        if len(ignore) > 0:
-            title += f"\n(i.e. ignoring choice of {ignore})"
+        if len(aggregates) > 0:
+            title += f"\n(i.e. expected {sorter} performance across all variations of choice of {aggregates})"
         title += (
             f"\n[Number of 5-fold runs summarized by {Sorter} "
             f"per feature grouping: {min_summarized_per_feature}+]"
@@ -245,28 +260,18 @@ def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
 def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
     df = load_all_renamed()
     # The more levels we include, the less we "generalize" our claims
-    groupers = [
-        ["data"],
-        ["data", "comparison"],
-        ["data", "comparison", "classifier"],
-        ["data", "comparison", "classifier", "deg"],
-        ["data", "comparison", "classifier", "deg", "trim"],
-        ["data", "comparison", "classifier", "deg", "trim", "norm"],
-    ]
-    ignores: list[list[str]] = [
-        ["comparison", "classifier", "deg", "trim", "norm"],
-        ["classifier", "deg", "trim", "norm"],
-        ["deg", "trim", "norm"],
-        ["trim","norm"],
-        ["norm"],
-    ]
+    groupers = [grouper for grouper in SUBGROUPERS if "preproc" not in grouper]
+    aggregates = get_aggregates(groupers)
+    for agg in aggregates:  # since we split the visuals to cover this
+        if "preproc" in agg:
+            agg.remove("preproc")
     df_nopre = df.loc[df.preproc == "minimal"]
     df_pre = df.loc[df.preproc != "minimal"]
     unq = df.feature.unique()
     ordering = get_feature_ordering(unq)
     palette = make_palette(unq)
 
-    for grouper, ignore in zip(groupers, ignores):
+    for grouper, aggregate in zip(groupers, aggregates):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
             0
         ]
@@ -317,8 +322,8 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
         ylabel_nopre = "Brain-extraction only"
         title = f"Summarizing / Grouping at level of: {grouper}"
 
-        if len(ignore) > 0:
-            title += f"\n(i.e. ignoring choice of {ignore})"
+        if len(aggregate) > 0:
+            title += f"\n(i.e. expected {sorter} performance across all variations of choices of {aggregate})"
 
         title += (
             f"\n[Number of 5-fold runs summarized by {Sorter} "
@@ -681,7 +686,7 @@ def generate_all_topk_plots() -> None:
 
 
 if __name__ == "__main__":
-    simplefilter(action='ignore', category=PerformanceWarning)
+    simplefilter(action="ignore", category=PerformanceWarning)
     print("\n" * 50)
     df = load_all_renamed()
 
