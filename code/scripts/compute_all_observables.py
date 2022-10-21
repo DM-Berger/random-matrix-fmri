@@ -14,8 +14,7 @@ from sklearn.model_selection import ParameterGrid
 from rmt.dataset import ProcessedDataset, levelvars, rigidities
 from rmt.enumerables import Dataset, TrimMethod
 
-# TASK = int(os.environ.get("SLURM_ARRAY_TASK_ID"))  # type: ignore
-TASK = 0
+TASK = int(os.environ.get("SLURM_ARRAY_TASK_ID"))  # type: ignore
 
 if __name__ == "__main__":
     grid = [
