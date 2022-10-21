@@ -29,8 +29,7 @@ if __name__ == "__main__":
     source = grid[TASK].source
     preproc = grid[TASK].preproc
     for degree in [3, 5, 7, 9]:
-        # for trim_method in [None, *TrimMethod]:
-        for trim_method in [*TrimMethod]:
+        for trim_method in [None, *TrimMethod]:
             data = ProcessedDataset(source=source, full_pre=preproc)
             rigs = rigidities(
                 dataset=data,
