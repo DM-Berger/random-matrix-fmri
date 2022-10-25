@@ -4,14 +4,14 @@ from typing import Any, Tuple
 import pandas as pd
 
 from rmt.comparisons import Pairings
-from rmt.constants import DATA_ROOT, DATASETS, DATASETS_FULLPRE
+from rmt.constants import DATASETS, DATASETS_FULLPRE, LEGACY_DATA_ROOT
 from rmt.filenames import relpath, stats_fnames
 from rmt.precompute import precompute_dataset
 
 
 def compute_all_diffs_dfs(args: Any, silent: bool = False) -> Path:
     _, diffs_out = stats_fnames(args, args.normalize, extension="csv")
-    all_diffs_out = DATA_ROOT / diffs_out
+    all_diffs_out = LEGACY_DATA_ROOT / diffs_out
     DUDS = [
         "control_pre_v_parkinsons",
         "park_pre_v_parkinsons",
@@ -42,7 +42,7 @@ def compute_all_diffs_dfs(args: Any, silent: bool = False) -> Path:
 
 def compute_all_preds_df(args: Any, silent: bool = False, force: bool = False) -> Path:
     preds_out, _ = stats_fnames(args, args.normalize, extension="csv")
-    all_preds_out = DATA_ROOT / preds_out
+    all_preds_out = LEGACY_DATA_ROOT / preds_out
     if not force and all_preds_out.exists():
         return Path(all_preds_out)
     DUDS = [

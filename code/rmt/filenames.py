@@ -6,9 +6,9 @@ import numpy as np
 
 from rmt._types import Observable
 from rmt.constants import (
-    DATA_ROOT,
     DATASETS,
     DATASETS_FULLPRE,
+    LEGACY_DATA_ROOT,
     PRECOMPUTE_OUTDIRS,
     PRECOMPUTE_OUTDIRS_FULLPRE,
 )
@@ -31,7 +31,7 @@ def _prefix(trim_args: str, unfold_args: dict) -> str:
 
 
 def relpath(p: Path) -> str:
-    return str(p.relative_to(DATA_ROOT))
+    return str(p.relative_to(LEGACY_DATA_ROOT))
 
 
 def argstrings_from_args(args: Any) -> Tuple[str, Dict[Observable, str]]:
@@ -187,5 +187,5 @@ def previewprecompute_outpaths(args: Any) -> None:
                 dataset_name, subgroupname, args
             )
             for key, val in outpaths.items():
-                print(f"\t\t{key} data saved at: {val.relative_to(DATA_ROOT)}")
+                print(f"\t\t{key} data saved at: {val.relative_to(LEGACY_DATA_ROOT)}")
                 print(f"\t\tAlready exists: {val.exists()}")

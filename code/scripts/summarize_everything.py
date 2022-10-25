@@ -1094,7 +1094,9 @@ def get_overfit_scores() -> None:
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     # print("\n" * 50)
-    # df = load_all_renamed()
+    df = load_all_renamed()
+    print(df.columns)
+    sys.exit()
     get_overfit_scores()
     # summarize_performance_by_aggregation(metric="auroc", summarizer="median")
 

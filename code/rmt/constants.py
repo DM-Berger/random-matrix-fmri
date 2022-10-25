@@ -16,23 +16,24 @@ from pandas import DataFrame
 from rmt._types import Subgroups
 
 DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "data"
+LEGACY_DATA_ROOT = DATA_ROOT / "legacy"
 FULLPRE_DIRNAME = "rmt_fullpre"
 
 
 # fmt: off
-LEARNING_DATA                  = DATA_ROOT / "Rest_v_LearningRecall" / "rmt"
-OSTEO_DATA                     = DATA_ROOT / "Rest_w_Healthy_v_OsteoPain" / "rmt"
-PSYCHOLOGICAL_DATA             = DATA_ROOT / "Rest_w_VigilanceAttention" / "rmt"
-PARKINSONS_DATA                = DATA_ROOT / "Park_v_Control" / "rmt"
-REFLECTIVE_SUMMED              = DATA_ROOT / "Rest_v_Various_MultiEcho" / "rmt" / "summed"
-REFLECTIVE_INTERLEAVED         = DATA_ROOT / "Rest_v_Various_MultiEcho" / "rmt" / "interleaved"
+LEARNING_DATA                  = LEGACY_DATA_ROOT / "Rest_v_LearningRecall" / "rmt"
+OSTEO_DATA                     = LEGACY_DATA_ROOT / "Rest_w_Healthy_v_OsteoPain" / "rmt"
+PSYCHOLOGICAL_DATA             = LEGACY_DATA_ROOT / "Rest_w_VigilanceAttention" / "rmt"
+PARKINSONS_DATA                = LEGACY_DATA_ROOT / "Park_v_Control" / "rmt"
+REFLECTIVE_SUMMED              = LEGACY_DATA_ROOT / "Rest_v_Various_MultiEcho" / "rmt" / "summed"
+REFLECTIVE_INTERLEAVED         = LEGACY_DATA_ROOT / "Rest_v_Various_MultiEcho" / "rmt" / "interleaved"
 
-LEARNING_DATA_FULLPRE          = DATA_ROOT / "Rest_v_LearningRecall" / FULLPRE_DIRNAME
-OSTEO_DATA_FULLPRE             = DATA_ROOT / "Rest_w_Healthy_v_OsteoPain" / FULLPRE_DIRNAME
-PSYCHOLOGICAL_DATA_FULLPRE     = DATA_ROOT / "Rest_w_VigilanceAttention" / FULLPRE_DIRNAME
-PARKINSONS_DATA_FULLPRE        = DATA_ROOT / "Park_v_Control" / FULLPRE_DIRNAME
-REFLECTIVE_SUMMED_FULLPRE      = DATA_ROOT / "Rest_v_Various_MultiEcho" / FULLPRE_DIRNAME / "summed"
-REFLECTIVE_INTERLEAVED_FULLPRE = DATA_ROOT / "Rest_v_Various_MultiEcho" / FULLPRE_DIRNAME / "interleaved"
+LEARNING_DATA_FULLPRE          = LEGACY_DATA_ROOT / "Rest_v_LearningRecall" / FULLPRE_DIRNAME
+OSTEO_DATA_FULLPRE             = LEGACY_DATA_ROOT / "Rest_w_Healthy_v_OsteoPain" / FULLPRE_DIRNAME
+PSYCHOLOGICAL_DATA_FULLPRE     = LEGACY_DATA_ROOT / "Rest_w_VigilanceAttention" / FULLPRE_DIRNAME
+PARKINSONS_DATA_FULLPRE        = LEGACY_DATA_ROOT / "Park_v_Control" / FULLPRE_DIRNAME
+REFLECTIVE_SUMMED_FULLPRE      = LEGACY_DATA_ROOT / "Rest_v_Various_MultiEcho" / FULLPRE_DIRNAME / "summed"
+REFLECTIVE_INTERLEAVED_FULLPRE = LEGACY_DATA_ROOT / "Rest_v_Various_MultiEcho" / FULLPRE_DIRNAME / "interleaved"
 
 VIGILANCE_SES1                 = PSYCHOLOGICAL_DATA / "selfreported_vigilance_ses-1.csv"
 VIGILANCE_SES2                 = PSYCHOLOGICAL_DATA / "selfreported_vigilance_ses-2.csv"

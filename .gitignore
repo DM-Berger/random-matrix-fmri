@@ -17,6 +17,9 @@ paper/latex/**/__*.tex
 data/*.pdf
 data/*.xlsx
 data/*.ods
+data/legacy/*.pdf
+data/legacy/*.xlsx
+data/legacy/*.ods
 
 # Execution-Related
 run.sh
