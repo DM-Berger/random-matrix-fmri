@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
@@ -24,7 +25,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from ants import ANTsImage, image_read
+from ants import ANTsImage, image_read, motion_correction
+from nipype.interfaces.fsl import SliceTimer
 from numpy import ndarray
 from pandas import DataFrame, Series
 from typing_extensions import Literal
@@ -33,25 +35,67 @@ from typing_extensions import Literal
 def min_mask_from_mask(mask: Path) -> Path:
     return Path(str(mask).replace("_mask.nii.gz", "_mask_min.nii.gz"))
 
+def direction_parse(string: str) -> int:
+    if string in ["i", "x", "1"]:
+        return 1
+    elif string in ["j", "y", "2"]:
+        return 2
+    elif string in ["k", "z", "3"]:
+        return 3
+    else:
+        raise ValueError(
+            "Argument to --direction must be one of ['i', 'j', 'k', '1', '2', '3', 'x', 'y', 'z']."
+        )
 
-class Preprocessed(ABC):
+def slicetime_correct(infile: Path, timings: Path, TR: float, slice_direction: str = "z") -> Path:
+    """
+    Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k" (i.e. k+, slices along
+    third spatial dimension, first entry of file corresponds to smallest index along thid spatial
+    dim)
+    """
+    MCFLIRT_SUFFIX = "mcflirted.nii.gz"
+    SLICETIME_SUFFIX = "stationary.nii.gz"
+    outfile = Path(str(infile).replace(MCFLIRT_SUFFIX, SLICETIME_SUFFIX))
+    cmd = SliceTimer()
+    cmd.inputs.in_file = str(infile)
+    cmd.inputs.custom_timings = str(timings)
+    cmd.inputs.time_repetition = TR
+    cmd.inputs.out_file = str(infile).replace(MCFLIRT_SUFFIX, SLICETIME_SUFFIX)
+    cmd.inputs.output_type = "NIFTI_GZ"
+    cmd.inputs.slice_direction = slice_direction
+    if outfile.exists():
+        return outfile
+    cmd.run()
+    return outfile  # different interface than above
+
+class PreprocessedScan(ABC):
     def __init__(self) -> None:
         super().__init__()
         self.source: Path
+        self.sid: str
 
     @abstractmethod
     def eigenvalues(self) -> ndarray:
         """Extract masked correlation matrix from self.source and compute eigenvalues"""
         pass
 
+    def parse_source(self) -> Tuple[str, Optional[str]]:
+        sid_ = re.search(r"sub-(?:[a-zA-Z]*)?([0-9]+)_.*", self.source.stem)
+        if sid_ is None:
+            raise RuntimeError(f"Didn't find an SID in filename {self.source}")
+        sid = sid_[1]
+        ses = re.search(r"ses-([0-9]+)_.*", self.source.stem)
+        session = ses[1] if ses is not None else None
+        return sid, session
 
-class SliceTimeAligned(Preprocessed):
+
+class SliceTimeAligned(PreprocessedScan):
     CMD = (
         "slicetimer -i {masked} "
         "-o {time_corrected} "
         "--repeat={TR} "
         "--direction={direction} "
-        "--tcustom={slicetime_file}"
+        "--tcustom={slicetime_json}"
     )
 
     def __init__(self, source: Path, per_subject_slicetimes: bool) -> None:
@@ -59,6 +103,38 @@ class SliceTimeAligned(Preprocessed):
         self.per_subject: bool = per_subject_slicetimes
 
     def slicetime_file(self) -> Path:
+        """
+        Notes
+        -----
+        https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#timing-parameters
+
+        # SliceTiming
+
+            The time at which each slice was acquired within each volume (frame) of the acquisition.
+            Slice timing is not slice order -- rather, it is a list of times containing the time (in
+            seconds) of each slice acquisition in relation to the beginning of volume acquisition.
+            The list goes through the slices along the slice axis in the slice encoding dimension
+            (see below). Note that to ensure the proper interpretation of the "SliceTiming" field,
+            it is important to check if the OPTIONAL SliceEncodingDirection exists. In particular,
+            if "SliceEncodingDirection" is negative, the entries in "SliceTiming" are defined in
+            reverse order with respect to the slice axis, such that the final entry in the
+            "SliceTiming" list is the time of acquisition of slice 0. Without this parameter slice
+            time correction will not be possible.
+
+        # SliceEncodingDirection
+
+            The axis of the NIfTI data along which slices were acquired, and the direction in which
+            "SliceTiming" is defined with respect to. i, j, k identifiers correspond to the first,
+            second and third axis of the data in the NIfTI file. A - sign indicates that the
+            contents of "SliceTiming" are defined in reverse order - that is, the first entry
+            corresponds to the slice with the largest index, and the final entry corresponds to
+            slice index zero. When present, the axis defined by "SliceEncodingDirection" needs to be
+            consistent with the slice_dim field in the NIfTI header. When absent, the entries in
+            "SliceTiming" must be in the order of increasing slice index as defined by the NIfTI
+            header.
+
+            Must be one of: "i", "j", "k", "i-", "j-", "k-".
+        """
         if self.per_subject:
             info_file = str(self.source).replace(".nii.gz", ".json")
             info = json.load(info_file)
@@ -72,7 +148,7 @@ class SliceTimeAligned(Preprocessed):
         outfile: Path,
         slicetime_file: Path,
         TR: float,
-        direction: Literal["x", "y", "z", 1, 2, 3],
+        direction: Literal["x", "y", "z", 1, 2, 3, "i", "j", "k"],
         reverse: bool,
         interleaved: bool,
     ) -> str:
@@ -90,7 +166,7 @@ class SliceTimeAligned(Preprocessed):
         return command
 
 
-class BrainExtracted(Preprocessed):
+class BrainExtracted(PreprocessedScan):
     def __init__(self, mask: Path) -> None:
         self.mask = mask
         self.min_mask = min_mask_from_mask(self.mask)
