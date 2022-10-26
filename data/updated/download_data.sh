@@ -29,3 +29,13 @@ cd Rest_w_VigilanceAttention || exit 1
 $AWS s3 sync --no-sign-request s3://openneuro.org/ds001168 ds001168-download/
 cd "$DATA" || exit 1
 
+mkdir -p Rest_w_Older_v_Younger
+cd Rest_w_Older_v_Younger || exit 1
+$AWS s3 sync --no-sign-request s3://openneuro.org/ds003871 ds003871-download/
+cd "$DATA" || exit 1
+
+mkdir -p Rest_w_Bilinguiality
+cd Rest_w_Bilinguiality || exit 1
+aws s3 sync --no-sign-request s3://openneuro.org/ds001747 ds001747-download/
+cd "$DATA" || exit 1
+
