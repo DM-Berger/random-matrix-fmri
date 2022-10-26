@@ -53,6 +53,11 @@ class Dataset(Enum):
         }[self]
 
 
+class PreprocLevel(Enum):
+    BrainExtract = 0
+    SliceTimeAlign = 1
+    FullRegister = 2
+
 class TrimMethod(Enum):
     Largest = "largest"
     Middle = "middle"
