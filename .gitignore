@@ -1,7 +1,11 @@
 __OBSERVABLES_CACHE__
 !__OBSERVABLES_CACHE__/*.json
 code/__JOBLIB_CACHE__
-# **/*.csv
+__JOBLIB_CACHE__
+apptainer
+
+**/*.png
+**/*.csv
 **/*~lock*
 **/*.pdf
 **/*.docx
@@ -20,6 +24,7 @@ data/*.ods
 data/legacy/*.pdf
 data/legacy/*.xlsx
 data/legacy/*.ods
+results/plots/
 
 # Execution-Related
 run.sh
