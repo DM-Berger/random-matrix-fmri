@@ -1,5 +1,6 @@
+import json
 import subprocess
-from abc import ABC
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import Enum
@@ -33,7 +34,18 @@ def min_mask_from_mask(mask: Path) -> Path:
     return Path(str(mask).replace("_mask.nii.gz", "_mask_min.nii.gz"))
 
 
-class SliceTimeAligned:
+class Preprocessed(ABC):
+    def __init__(self) -> None:
+        super().__init__()
+        self.source: Path
+
+    @abstractmethod
+    def eigenvalues(self) -> ndarray:
+        """Extract masked correlation matrix from self.source and compute eigenvalues"""
+        pass
+
+
+class SliceTimeAligned(Preprocessed):
     CMD = (
         "slicetimer -i {masked} "
         "-o {time_corrected} "
@@ -42,8 +54,17 @@ class SliceTimeAligned:
         "--tcustom={slicetime_file}"
     )
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, source: Path, per_subject_slicetimes: bool) -> None:
+        self.source = source
+        self.per_subject: bool = per_subject_slicetimes
+
+    def slicetime_file(self) -> Path:
+        if self.per_subject:
+            info_file = str(self.source).replace(".nii.gz", ".json")
+            info = json.load(info_file)
+            slicetimes: List[float] = info["SliceTiming"]
+            # now write to temp or perm file for FSL to use, and then run `slicetimer`
+            outfile = ...
 
     @staticmethod
     def cmd(
@@ -69,12 +90,12 @@ class SliceTimeAligned:
         return command
 
 
-class BrainExtracted:
+class BrainExtracted(Preprocessed):
     def __init__(self, mask: Path) -> None:
         self.mask = mask
         self.min_mask = min_mask_from_mask(self.mask)
 
-    def slice_time(self) -> None:
+    def slice_time(self, per_subject_slicetimes: bool) -> None:
         """Ultimately, uses FSL to execute:
 
             slicetimer -i self
