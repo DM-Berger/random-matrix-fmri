@@ -1,3 +1,4 @@
+import subprocess
 from abc import ABC
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
@@ -32,18 +33,119 @@ def min_mask_from_mask(mask: Path) -> Path:
     return Path(str(mask).replace("_mask.nii.gz", "_mask_min.nii.gz"))
 
 
+class SliceTimeAligned:
+    CMD = (
+        "slicetimer -i {masked} "
+        "-o {time_corrected} "
+        "--repeat={TR} "
+        "--direction={direction} "
+        "--tcustom={slicetime_file}"
+    )
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def cmd(
+        input: Path,
+        outfile: Path,
+        slicetime_file: Path,
+        TR: float,
+        direction: Literal["x", "y", "z", 1, 2, 3],
+        reverse: bool,
+        interleaved: bool,
+    ) -> str:
+        command = SliceTimeAligned.CMD.format(
+            masked=input,
+            time_corrected=str(outfile),
+            TR=str(TR),
+            direction=str(direction),
+            slicetime_file=str(slicetime_file),
+        )
+        if reverse:
+            command += " --down"
+        if interleaved:
+            command += " --odd"
+        return command
+
+
 class BrainExtracted:
     def __init__(self, mask: Path) -> None:
         self.mask = mask
         self.min_mask = min_mask_from_mask(self.mask)
 
+    def slice_time(self) -> None:
+        """Ultimately, uses FSL to execute:
 
-class SliceTimeAligned(PreprocessedfMRI):
-    def __init__(self) -> None:
+            slicetimer -i self
+
+        Notes
+        -----
+        For documentation, see:
+
+        https://poc.vl-e.nl/distribution/manual/fsl-3.2/slicetimer/index.html
+
+        reproduced below:
+
+        # INTRODUCTION
+
+        slicetimer is a pre-processing tool designed to correct for sampling offsets inherent in
+        slice-wise EPI acquisition sequences.
+
+        Each voxel's timecourse is processed independently and intensities are shifted in time so
+        that they reflect the interpolated value of the signal at a common reference timepoint for
+        all voxels, providing an instantaneous `snapshot' of the data, rather than a staggered
+        sample throughout each volume. Sinc interpolation with a Hanning windowing kernel is applied
+        to each timecourse to calculate the interpolated values.
+
+        It is necessary to know in what order the slices were acquired and set the appropriate
+        option. The default correction is appropriate if slices were acquired from the bottom of the
+        brain.
+
+        If slices were acquired from the top of the brain to the bottom select the --down option.
+
+        If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...) then choose the
+        --odd option.
+
+        If slices were not acquired in regular order you will need to use a slice order file or a
+        slice timings file. If a slice order file is to be used, create a text file with a single
+        number on each line, where the first line states which slice was acquired first, the second
+        line states which slice was acquired second, etc. The first slice is numbered 1 not 0.
+
+        If a slice timings file is to be used, put one value (ie for each slice) on each line of a
+        text file. The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible
+        range of values will be between 0 and 1.
+
+        #  USAGE AND OPTIONS
+
+        ```
+        slicetimer -i  [-o ] [options]
+
+        Compulsory arguments (You MUST set one or more of):
+
+                -i,--in filename of input timeseries
+
+        Optional arguments (You may optionally specify one or more of):
+
+                -o,--out        filename of output timeseries
+                -h,--help       display this message
+                -v,--verbose    switch on diagnostic messages
+                --down          reverse slice indexing
+                -r,--repeat     Specify TR of data - default is 3s
+                -d,--direction  direction of slice acquisition (x=1,y=2,z=3) - default is z
+                --odd           use interleaved acquisition
+                --tcustom       filename of single-column custom interleave timing file
+                --ocustom       filename of single-column custom interleave order file (first
+                                slice is referred to as 1 not 0)
+        ```
+        """
+        pass
+
+    def slice_time_and_align(self) -> SliceTimeAligned:
         pass
 
 
-class FullRegistered(PreprocessedfMRI):
+class FullRegistered:
     def __init__(self) -> None:
         pass
 
