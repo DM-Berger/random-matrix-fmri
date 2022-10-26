@@ -36,6 +36,6 @@ cd "$DATA" || exit 1
 
 mkdir -p Rest_w_Bilinguiality
 cd Rest_w_Bilinguiality || exit 1
-aws s3 sync --no-sign-request s3://openneuro.org/ds001747 ds001747-download/
+$AWS s3 sync --no-sign-request s3://openneuro.org/ds001747 ds001747-download/
 cd "$DATA" || exit 1
 
