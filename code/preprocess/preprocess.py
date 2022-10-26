@@ -35,6 +35,7 @@ from typing_extensions import Literal
 def min_mask_from_mask(mask: Path) -> Path:
     return Path(str(mask).replace("_mask.nii.gz", "_mask_min.nii.gz"))
 
+
 def direction_parse(string: str) -> int:
     if string in ["i", "x", "1"]:
         return 1
@@ -47,7 +48,10 @@ def direction_parse(string: str) -> int:
             "Argument to --direction must be one of ['i', 'j', 'k', '1', '2', '3', 'x', 'y', 'z']."
         )
 
-def slicetime_correct(infile: Path, timings: Path, TR: float, slice_direction: str = "z") -> Path:
+
+def slicetime_correct(
+    infile: Path, timings: Path, TR: float, slice_direction: str = "z"
+) -> Path:
     """
     Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k" (i.e. k+, slices along
     third spatial dimension, first entry of file corresponds to smallest index along thid spatial
@@ -68,25 +72,64 @@ def slicetime_correct(infile: Path, timings: Path, TR: float, slice_direction: s
     cmd.run()
     return outfile  # different interface than above
 
+
 class PreprocessedScan(ABC):
     def __init__(self) -> None:
         super().__init__()
         self.source: Path
         self.sid: str
+        self.ses: Optional[str]
+        self.run: Optional[str]
+        self.json_file: Path
+
+        self.sid, self.ses, self.run = self.parse_source()
+        self.json_file: Path = self.find_json_file()
 
     @abstractmethod
     def eigenvalues(self) -> ndarray:
         """Extract masked correlation matrix from self.source and compute eigenvalues"""
         pass
 
-    def parse_source(self) -> Tuple[str, Optional[str]]:
+    def parse_source(self) -> Tuple[str, Optional[str], Optional[str]]:
         sid_ = re.search(r"sub-(?:[a-zA-Z]*)?([0-9]+)_.*", self.source.stem)
+        ses = re.search(r"ses-([0-9]+)_.*", self.source.stem)
+        run_ = re.search(r"run-([0-9]+)_.*", self.source.stem)
+
         if sid_ is None:
             raise RuntimeError(f"Didn't find an SID in filename {self.source}")
         sid = sid_[1]
-        ses = re.search(r"ses-([0-9]+)_.*", self.source.stem)
         session = ses[1] if ses is not None else None
-        return sid, session
+        run = run_[1] if run_ is not None else None
+        return sid, session, run
+
+    def find_json_file(self) -> Path:
+        local = Path(str(self.source).replace(".nii.gz", ".json"))
+        if local.exists():
+            return local
+
+        # recurse up to BIDS root for remaining json files
+        root = self.source.parent
+        while "download" not in root.name:
+            root = root.parent
+
+        # just hardcode the remaining cases where data is not per scan:
+        source = self.source.name
+        # Rest_w_VigilanceAttention
+        if "prefrontal_bold" in source:
+            return root / "task-rest_acq-prefrontal_bold.json"
+        if "rest_acq-fullbrain" in source:
+            return root / "task-rest_acq-fullbrain_bold.json"
+        # Park_v_Control
+        if ("RC" in source) and ("task-ANT" in source):
+            return root / "task-ANT_bold.json"
+        # Rest_w_Depression_v_Control
+        if "Depression" in root.parent.name:
+            return root / "task-rest_bold.json"
+        # Rest_w_Healthy_v_OsteoPain
+        if "Osteo" in root.parent.name:
+            return root / "task-rest_bold.json"
+
+        raise RuntimeError(f"Can't find .json info from source: {self.source}")
 
 
 class SliceTimeAligned(PreprocessedScan):
