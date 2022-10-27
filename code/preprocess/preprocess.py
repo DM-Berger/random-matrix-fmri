@@ -20,6 +20,10 @@ from tqdm.contrib.concurrent import process_map
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
+if os.environ.get("CC_CLUSTER") == "niagara":
+    ROOT = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri")
+    DATA = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
+
 TEMPLATE = DATA / "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
 TEMPLATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
 if not TEMPLATE.exists():
@@ -100,6 +104,10 @@ class FmriScan(Loadable):
             if not force:
                 return BrainExtracted(self)
             os.remove(outfile)
+
+        infile = self.source
+        if os.environ.get("CC_CLUSTER") == "niagara":
+            DATA = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
 
         cmd = BET()
         cmd.inputs.in_file = str(self.source.resolve())
@@ -562,7 +570,7 @@ class MNI152Registered(Loadable):
 def brain_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        fmri.brain_extract(force=True)
+        fmri.brain_extract(force=False)
     except Exception:
         traceback.print_exc()
 
