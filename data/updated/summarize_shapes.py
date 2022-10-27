@@ -28,7 +28,7 @@ def get_fmri_shapes(fmri: Path) -> DataFrame:
             "TR": TR,
             "orient": orient,
         },
-        index=[str(fmri.relative_to(DATA))],
+        index=[str(fmri)],
     )
 
 
