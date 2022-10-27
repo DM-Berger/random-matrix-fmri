@@ -14,7 +14,7 @@ def get_fmri_shapes(fmri: Path) -> DataFrame:
     img: ANTsImage = image_read(str(fmri))
     x, y, z, t = img.shape
     xx, yy, zz, TR = img.spacing
-    orient = img.orientation
+    orient = img.get_orientation()
     return DataFrame(
         {
             "data": data.name,
@@ -26,7 +26,7 @@ def get_fmri_shapes(fmri: Path) -> DataFrame:
             "z_mm": zz,
             "t": t,
             "TR": TR,
-            "oritent": orient,
+            "orient": orient,
         },
         index=[0],
     )
