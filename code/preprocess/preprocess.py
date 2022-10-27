@@ -224,6 +224,8 @@ class FmriScan(Loadable):
         # Rest_w_Healthy_v_OsteoPain
         elif "Osteo" in root.parent.name:
             global_json = root / "task-rest_bold.json"
+        elif "Older" in str(root):
+            global_json = None
         else:
             raise RuntimeError(f"Can't find .json info from source: {self.source}")
         return local_json, global_json
