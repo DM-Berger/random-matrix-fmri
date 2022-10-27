@@ -36,7 +36,13 @@ from typing_extensions import Literal
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
-TEMPLATE_PATH = DATA / ""
+TEMPLATE = DATA / "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
+TEMPATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
+if not TEMPLATE.exists():
+    raise FileNotFoundError(
+        f"No registration template found at {TEMPLATE}. "
+        f"Run `python {DATA / 'download_template.py'} to download it."
+    )
 
 NII_SUFFIX = ".nii.gz"
 MASK_SUFFIX = "_mask.nii.gz"
@@ -60,7 +66,8 @@ def direction_parse(string: str) -> int:
         return 3
     else:
         raise ValueError(
-            "Argument to --direction must be one of ['i', 'j', 'k', '1', '2', '3', 'x', 'y', 'z']."
+            "Argument to --direction must be one of "
+            "['i', 'j', 'k', '1', '2', '3', 'x', 'y', 'z']."
         )
 
 
@@ -68,9 +75,9 @@ def slicetime_correct(
     infile: Path, timings: Path, TR: float, slice_direction: str = "z"
 ) -> Path:
     """
-    Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k" (i.e. k+, slices along
-    third spatial dimension, first entry of file corresponds to smallest index along thid spatial
-    dim)
+    Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k"
+    (i.e. k+, slices along third spatial dimension, first entry of file
+    corresponds to smallest index along thid spatial dim)
     """
     outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
     cmd = SliceTimer()
@@ -354,14 +361,34 @@ class MotionCorrected:
             return MNI152Registered(self, registered=outfile)
         img = ants.image_read(str(self.source))
         mask = ants.image_read(str(self.extracted.min_mask))
-        template = ants.image_read(str(TEMPLATE_PATH))
+        template = ants.image_read(str(TEMPLATE))
         img = img * mask
+        imgs: List[ANTsImage] = ants.ndimage_to_list(img)
+        avg = imgs[0].new_image_like(img.mean(axis=-1))
+
+        print(f"Registering {self.source} average image to {TEMPLATE}")
         results = ants.registration(
             fixed=template,
-            moving=img,
+            moving=avg,
             type_of_transform="SyNBold",
         )
+        transforms = results["fwdtransforms"]
+        print("Applying transform from average image to full 4D data")
+        registered = ants.apply_transforms(
+            fixed=template,
+            moving=img,
+            transformlist=transforms,
+            imagetype=3,
+        )
 
+        # registereds = []
+        # for img in imgs:
+        #     result = ants.apply_transforms(fixed=template, moving=img, transformlist=transform, )
+        #     registered = result["warpedmovout"]
+        #     registereds.append(registered)
+        # registered = results["warpedmovout"]
+        ants.image_write(registered, str(outfile))
+        print(f"Saved MNI-registered image to {outfile}")
         return MNI152Registered(self, registered=outfile)
 
 
@@ -376,54 +403,6 @@ class MNI152Registered:
         self.source: Path = registered
 
 
-class RawfMRI:
-    def __init__(self, source: Path) -> None:
-        super().__init__()
-        self.source = source
-
-    def brain_extract(self) -> None:
-        """Computes a 4D mask for input fMRI.
-
-
-        Notes
-        -----
-
-        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
-        the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
-        also must define a `min_mask` (or max_mask) for some purposes.
-
-        ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
-        extraction across subjects
-        """
-        img: ANTsImage = image_read(self.source)
-        mask: ANTsImage = ants.get_mask(img)
-        min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
-        min_masked = ants.list_to_ndimage([min_mask_frame for _ in range(img.shape[-1])])
-        # masked = img * mask
-        ants.image_write(mask, str(self.mask_path))
-        print(f"Wrote brain mask for {self.source} to {self.mask_path}")
-        ants.image_write(mask, str(self.min_mask_path))
-        print(f"Wrote min brain mask for {self.source} to {self.min_mask_path}")
-
-    @property
-    def mask_path(self) -> Path:
-        parent = self.source.parent
-        stem = str(self.source.resolve().name).replace(".nii.gz", "")
-        outname = f"{stem}_mask.nii.gz"
-        return Path(parent / outname)
-
-    @property
-    def min_mask_path(self) -> Path:
-        return min_mask_from_mask(self.mask_path)
-
-    @property
-    def extracted_path(self) -> Path:
-        parent = self.source.parent
-        stem = str(self.source.resolve().name).replace(".nii.gz", "")
-        outname = f"{stem}_extracted.nii.gz"
-        return Path(parent / outname)
-
-
 if __name__ == "__main__":
     path = Path(
         "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
@@ -432,3 +411,4 @@ if __name__ == "__main__":
     extracted = fmri.brain_extract()
     slice_corrected = extracted.slicetime_correct()
     motion_corrected = slice_corrected.motion_corrected()
+    registered = motion_corrected.mni_register()
