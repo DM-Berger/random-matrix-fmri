@@ -755,7 +755,8 @@ if __name__ == "__main__":
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
-    process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
+    # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
+    process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
