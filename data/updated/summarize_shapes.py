@@ -45,7 +45,7 @@ if __name__ == "__main__":
             )
         )
 
-    df = pd.concat(dfs, axis=0, ignore_index=True)
+    df = pd.concat(dfs, axis=0)
     out = DATA / "shape_summary.csv"
     df.to_csv(out)
     print(f"Saved shape summary to {out}")
