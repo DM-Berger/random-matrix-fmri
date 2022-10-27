@@ -562,6 +562,7 @@ def brain_extract_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+
 def inspect_extractions(path: Path) -> None:
     try:
         fmri = FmriScan(path)
@@ -587,7 +588,6 @@ if __name__ == "__main__":
     #     DATA
     #     / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
     # )
-
 
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
 
