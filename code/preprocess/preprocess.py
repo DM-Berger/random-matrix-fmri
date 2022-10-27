@@ -575,8 +575,6 @@ def inspect_extractions(path: Path) -> None:
         extracted.ndimage_to_list()[5].plot(filename=extr_file)
     except Exception:
         traceback.print_exc()
-        print("orig_file", orig_file)
-        print("extr_file", extr_file)
 
 
 if __name__ == "__main__":
