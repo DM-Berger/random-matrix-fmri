@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
 if os.environ.get("CC_CLUSTER") == "niagara":
     ROOT = Path("/scratch/j/jlevman/dberger/random-matrix-fmri")
-    DATA = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
+    DATA = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data")
 
 TEMPLATE = DATA / "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
 TEMPLATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
