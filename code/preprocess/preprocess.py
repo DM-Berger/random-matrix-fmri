@@ -325,7 +325,7 @@ class FmriScan(Loadable):
 
 class AnatExtracted(Loadable):
     def __init__(self, raw: FmriScan, mask: Path, extracted: Path) -> None:
-        super().__init__(raw.extracted_path)
+        super().__init__(extracted)
         self.raw = raw
         self.mask = mask
         self.source: Path = extracted
@@ -743,7 +743,7 @@ if __name__ == "__main__":
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(anat_extract_parallel, paths, chunksize=1)
+    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
