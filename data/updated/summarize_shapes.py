@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 from ants import ANTsImage, image_read
 from pandas import DataFrame
-from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
 DATA = Path(__file__).resolve().parent
@@ -32,7 +31,7 @@ def get_fmri_shapes(fmri: Path) -> DataFrame:
     )
 
 
-if __name__ == "__main__":
+def summarize_fmri():
     dfs = []
     for data in DATASETS:
         fmris = sorted(data.rglob("*bold.nii.gz"))
@@ -73,3 +72,53 @@ if __name__ == "__main__":
     Rest_w_VigilanceAttention      200     60     40  150    0.75    0.75    0.75  4000
 
     """
+
+
+def get_mri_shapes(mri: Path) -> DataFrame:
+    img: ANTsImage = image_read(str(mri))
+    x, y, z = img.shape
+    xx, yy, zz, TR = img.spacing
+    orient = img.get_orientation()
+    return DataFrame(
+        {
+            "data": data.name,
+            "x_n": x,
+            "y_n": y,
+            "z_n": z,
+            "x_mm": xx,
+            "y_mm": yy,
+            "z_mm": zz,
+            "orient": orient,
+        },
+        index=[str(mri)],
+    )
+
+
+def summarize_t1w() -> None:
+    dfs = []
+    for data in DATASETS:
+        mris = sorted(data.rglob("*T1w.nii.gz"))
+        dfs.extend(
+            process_map(
+                get_mri_shapes,
+                mris,
+                chunksize=1,
+                desc=f"Collecting shape info for {data.name}",
+            )
+        )
+
+    df = pd.concat(dfs, axis=0)
+    out = DATA / "shape_summary_T1w.csv"
+    df.to_csv(out)
+    print(f"Saved shape summary to {out}")
+    df = df.round(2).drop_duplicates().sort_values(by=["data", "x_n", "x_mm", "orient"])
+    print(df)
+    """
+    Result:
+
+
+    """
+
+
+if __name__ == "__main__":
+    summarize_t1w()

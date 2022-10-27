@@ -4,6 +4,7 @@ import json
 import json as json_
 import os
 import re
+from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -30,17 +31,28 @@ MINMASK_SUFFIX = "_mask-min.nii.gz"
 EXTRACTED_SUFFIX = "_extracted.nii.gz"
 SLICETIME_SUFFIX = "_slicetime-corrected.nii.gz"
 MOTION_CORRECTED_SUFFIX = "_motion-corrected.nii.gz"
-MNI_REGISTERED_SUFFIX = "_mni-registered.nii.gz"
+ANAT_REGISTERED_SUFFIX = "_anat-reg.nii.gz"
+MNI_REGISTERED_SUFFIX = "_mni-reg.nii.gz"
 
 
 def min_mask_path_from_mask_path(mask: Path) -> Path:
     return Path(str(mask).replace(MASK_SUFFIX, MINMASK_SUFFIX))
 
 
-class FmriScan:
+class Loadable(ABC):
     def __init__(self, source: Path) -> None:
         super().__init__()
+        self.source: Path = source
+
+    def load(self) -> ANTsImage:
+        return image_read(str(self.source))
+
+
+class FmriScan(Loadable):
+    def __init__(self, source: Path) -> None:
+        super().__init__(source)
         self.source: Path
+        self.t1w_source: Path
         self.sid: str
         self.ses: Optional[str]
         self.run: Optional[str]
@@ -52,6 +64,7 @@ class FmriScan:
         self.source = source
         self.sid, self.ses, self.run = self.parse_source()
         self.json_file = self.find_json_file()
+        self.t1w_source = self.find_t1w_file()
         (
             self.slicetimes,
             self.slicetime_file,
@@ -78,7 +91,7 @@ class FmriScan:
 
         print(f"Loading {self.source}")
         img: ANTsImage = image_read(str(self.source))
-        img = self.reorient_4d_to_RAS(img)
+        # img = self.reorient_4d_to_RAS(img)
         print(f"Computing mask for {self.source}")
         mask = ants.get_mask(img)
         # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
@@ -130,6 +143,13 @@ class FmriScan:
         run = run_[1] if run_ is not None else None
         return sid, session, run
 
+    def find_t1w_file(self) -> Path:
+        anat_dir = self.source.parent.parent / "anat"
+        anat_img = sorted(anat_dir.glob("*T1w.nii.gz"))
+        if len(anat_img) != 1:
+            raise RuntimeError(f"Missing or too many T1w files at {anat_dir}")
+        return anat_img[0]
+
     def find_json_file(self) -> Path:
         local = Path(str(self.source).replace(NII_SUFFIX, ".json"))
         if local.exists():
@@ -176,8 +196,9 @@ class FmriScan:
         return timings, outfile, TR
 
 
-class BrainExtracted:
+class BrainExtracted(Loadable):
     def __init__(self, raw: FmriScan) -> None:
+        super().__init__(raw.extracted_path)
         self.raw = raw
         self.mask = self.raw.mask_path
         self.min_mask = min_mask_path_from_mask_path(self.mask)
@@ -276,8 +297,9 @@ class BrainExtracted:
         return SliceTimeCorrected(self, outfile)
 
 
-class SliceTimeCorrected:
+class SliceTimeCorrected(Loadable):
     def __init__(self, extracted: BrainExtracted, corrected: Path) -> None:
+        super().__init__(corrected)
         self.raw: FmriScan = extracted.raw
         self.extracted: BrainExtracted = extracted
         self.source: Path = corrected
@@ -309,12 +331,13 @@ class SliceTimeCorrected:
         return MotionCorrected(self, motion_corrected=outfile)
 
 
-class MotionCorrected:
+class MotionCorrected(Loadable):
     def __init__(self, corrected: SliceTimeCorrected, motion_corrected: Path) -> None:
         self.raw = corrected.raw
         self.extracted = corrected.extracted
         self.slicetime_corrected: SliceTimeCorrected = corrected
         self.source: Path = motion_corrected
+        super().__init__(self.source)
 
     @staticmethod
     def reorient_template_to_img(template: ANTsImage, img: ANTsImage) -> ANTsImage:
@@ -339,6 +362,25 @@ class MotionCorrected:
           Rest_w_VigilanceAttention   64   64   35  3.00  3.00  3.00  300  3000.00    RPI
           Rest_w_VigilanceAttention  128  128   70  1.50  1.50  1.50  300  3000.00    RPI
           Rest_w_VigilanceAttention  200   60   40  0.75  0.75  0.75  150  4000.00    RPI
+
+        >>> df.value_counts()
+        data                         x_n  y_n  z_n  x_mm  y_mm  z_mm  t    TR       orient
+        Park_v_Control               80   80   43   3.00  3.00  3.00  149  2.40     RPI       552
+                                     96   114  96   2.00  2.00  2.00  149  2.40     LPI       552
+        Rest_v_LearningRecall        64   64   36   3.00  3.00  3.00  195  2.00     RPI       432
+        Rest_w_Bilinguiality         100  100  72   1.80  1.80  1.80  823  0.88     RPI        90
+        Rest_w_VigilanceAttention    128  128  70   1.50  1.50  1.50  300  3000.00  RPI        84
+        Rest_w_Healthy_v_OsteoPain   64   64   36   3.44  3.44  3.00  300  2.50     RPI        74
+        Rest_w_Depression_v_Control  112  112  25   1.96  1.96  5.00  100  2.50     RPI        72
+        Rest_w_Older_v_Younger       74   74   32   2.97  2.97  4.00  300  2.00     RPI        62
+        Rest_w_VigilanceAttention    200  60   40   0.75  0.75  0.75  150  4000.00  RPI        44
+                                     64   64   35   3.00  3.00  3.00  300  3000.00  RPI         4
+        Park_v_Control               80   80   43   3.00  3.00  3.00  300  2.40     RPI         1
+        Rest_w_Bilinguiality         100  96   72   1.80  1.80  1.80  823  0.88     RPI         1
+                                          100  72   1.80  1.80  1.80  823  0.93     RIA         1
+        Rest_w_Healthy_v_OsteoPain   64   64   36   3.44  3.44  3.00  244  2.50     RPI         1
+                                                                      292  2.50     RPI         1
+
         """
 
         temp_orient = template.get_orientation()
@@ -347,7 +389,9 @@ class MotionCorrected:
         if (temp_orient == "LPI") and (img_orient == "RPI"):
             return oriented.reflect_image(axis=1).reflect_image(axis=2)
         else:
-            raise ValueError("Need to test this")
+            raise ValueError(
+                "Impossible! All scans to register should be RPI orientation"
+            )
 
         for i, (axis_temp, axis_img) in enumerate(zip(temp_orient, img_orient)):
             if axis_temp == axis_img:
@@ -374,6 +418,7 @@ class MotionCorrected:
         template = ants.mask_image(template, template_mask)
         # template = ants.reorient_image2(template)
         template = self.reorient_template_to_img(template, avg)
+        template_mask = self.reorient_template_to_img(template_mask, avg)
 
         # template = resample_image(
         #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
@@ -415,7 +460,7 @@ class MotionCorrected:
         return MNI152Registered(self, registered=outfile)
 
 
-class MNI152Registered:
+class MNI152Registered(Loadable):
     def __init__(self, motion_corrected: MotionCorrected, registered: Path) -> None:
         self.raw = motion_corrected.raw
         self.extracted = motion_corrected.extracted
@@ -424,26 +469,29 @@ class MNI152Registered:
         )
         self.motion_corrected: MotionCorrected = motion_corrected
         self.source: Path = registered
+        super().__init__(self.source)
 
 
 if __name__ == "__main__":
-    path = (
-        DATA
-        / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
-    )
+    # path = (
+    #     DATA
+    #     / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
+    # )
     # path = (
     #     DATA
     #     / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
     # )
 
-    print(TEMPLATE)
-    fmri = FmriScan(path)
-    extracted = fmri.brain_extract(force=False)
-    print(f"Extracted: {extracted.source}")
-    slice_corrected = extracted.slicetime_correct(force=False)
-    print(f"Slicetimed: {slice_corrected.source}")
-    motion_corrected = slice_corrected.motion_corrected(force=False)
-    print(f"Motion-corr: {motion_corrected.source}")
-    registered = motion_corrected.mni_register(force=True)
-    # registered = motion_corrected.mni_register(force=False)
-    print(f"Registered: {registered.source}")
+    # wonky subject with RIA orientation
+    paths = sorted((DATA / "updated/Rest_w_Depression_v_Control").rglob("*bold.nii.gz"))
+    for path in paths:
+        fmri = FmriScan(path)
+        extracted = fmri.brain_extract(force=False)
+        print(f"Extracted: {extracted.source}")
+        slice_corrected = extracted.slicetime_correct(force=False)
+        print(f"Slicetimed: {slice_corrected.source}")
+        motion_corrected = slice_corrected.motion_corrected(force=False)
+        print(f"Motion-corr: {motion_corrected.source}")
+        registered = motion_corrected.mni_register(force=True)
+        # registered = motion_corrected.mni_register(force=False)
+        print(f"Registered: {registered.source}")
