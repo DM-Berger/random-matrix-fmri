@@ -14,12 +14,16 @@
 #SBATCH --ntasks-per-node=48
 #SBATCH --mem=0
 
+module load nixpkgs/16.09 intel/2018.3 fsl/6.0.1
+# mkdir -p "$HOME/bin"
+# fslpython_install.sh  # surely we only do this once?
+
 SCRATCH="$(readlink -f "$SCRATCH")"
 PROJECT="$SCRATCH/random-matrix-fmri"
 CODE="$PROJECT/code"
 RUN_SCRIPT="$PROJECT/run_python.sh"
 
 PY_SCRIPTS="$CODE/scripts"
-PY_SCRIPT="$(readlink -f "$PY_SCRIPTS/predict_everything_array.py")"
+PY_SCRIPT="$(readlink -f "$PY_SCRIPTS/preprocess_all.py")"
 
 bash "$RUN_SCRIPT" "$PY_SCRIPT"

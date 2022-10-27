@@ -194,8 +194,10 @@ class FmriScan:
         if TR is None:
             raise KeyError(f"Could not find RepetitionTime field in {jsonfile}")
         outfile = Path(str(self.source).replace(NII_SUFFIX, SLICETIME_SUFFIX))
-        with open(outfile, "w") as handle:
-            handle.writelines(list(map(lambda t: f"{t}\n", timings)))
+        if not outfile.exists():
+            with open(outfile, "w") as handle:
+                handle.writelines(list(map(lambda t: f"{t}\n", timings)))
+            print(f"Wrote slice timings to {outfile}")
         return timings, outfile, TR
 
 
@@ -386,6 +388,10 @@ if __name__ == "__main__":
 
     fmri = FmriScan(path)
     extracted = fmri.brain_extract()
+    print(f"Extracted: {extracted.source}")
     slice_corrected = extracted.slicetime_correct()
+    print(f"Slicetimed: {slice_corrected.source}")
     motion_corrected = slice_corrected.motion_corrected()
+    print(f"Motion-corr: {motion_corrected.source}")
     registered = motion_corrected.mni_register()
+    print(f"Registered: {registered.source}")
