@@ -588,12 +588,16 @@ if __name__ == "__main__":
     #     / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
     # )
 
+
+    # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
+
     # wonky subject with RIA orientation
     UPDATED = DATA / "updated"
     parents = sorted(filter(lambda p: p.is_dir(), UPDATED.glob("*")))
     paths = []
     for parent in parents:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
+    paths = sorted(filter(lambda p: "derivative" in str(p), paths))
     process_map(brain_extract_parallel, paths, chunksize=1)
     process_map(inspect_extractions, paths, chunksize=1)
     sys.exit()
