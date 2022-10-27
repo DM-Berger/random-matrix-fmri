@@ -118,8 +118,17 @@ def summarize_t1w() -> None:
     print(df)
     """
     Result:
+                           data  x_n  y_n  z_n  x_mm  y_mm  z_mm orient
+                 Park_v_Control  256  256  176  1.00  1.00  1.00    AIL
+          Rest_v_LearningRecall  176  256  256  1.00  1.00  1.00    LPI
+           Rest_w_Bilinguiality  176  224  256  1.00  0.98  0.98    LPI
+           Rest_w_Bilinguiality  177  224  256  1.00  0.98  0.98    LPI
+    Rest_w_Depression_v_Control  288  288  181  0.87  0.87  1.00    RPI
+     Rest_w_Healthy_v_OsteoPain  256  256  160  1.00  1.00  1.00    RPI
+         Rest_w_Older_v_Younger  192  256  256  1.00  1.00  1.00    LPI
+      Rest_w_VigilanceAttention  240  320  320  0.70  0.70  0.70    RPI
 
-
+    Problem subject is: 'Rest_w_Bilinguiality/ds001747-download/sub-4127'
     """
 
 
