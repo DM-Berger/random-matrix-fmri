@@ -4,11 +4,13 @@ import json
 import json as json_
 import os
 import re
+import shutil
 import sys
 import traceback
 from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
+from warnings import warn
 
 import ants
 import numpy as np
@@ -207,7 +209,7 @@ class FmriScan(Loadable):
 
         # this data has local files but without slice timing in them
         if "Park" in str(root):
-            global_json = root / "task-ANT_bold.json"
+            global_json: Optional[Path] = root / "task-ANT_bold.json"
             return local_json, global_json
 
         # Rest_w_VigilanceAttention
@@ -224,13 +226,17 @@ class FmriScan(Loadable):
         # Rest_w_Healthy_v_OsteoPain
         elif "Osteo" in root.parent.name:
             global_json = root / "task-rest_bold.json"
+        elif "Learning" in str(root):
+            global_json = None
+        elif "Bilingual" in str(root):
+            global_json = None
         elif "Older" in str(root):
             global_json = None
         else:
             raise RuntimeError(f"Can't find .json info from source: {self.source}")
         return local_json, global_json
 
-    def write_out_slicetimes(self) -> Tuple[List[str], Path, float]:
+    def write_out_slicetimes(self) -> Tuple[Optional[List[str]], Optional[Path], float]:
         timings: Optional[List[str]] = None
         TR: Optional[float] = None
         for jsonfile in [self.local_json, self.global_json]:
@@ -247,20 +253,19 @@ class FmriScan(Loadable):
             if (found_TR is not None) and (TR is None):
                 TR = float(found_TR)
 
-        if timings is None:
-            raise KeyError(
-                f"Could not find SliceTiming field in any .json for {self.source}"
-            )
         if TR is None:
             raise KeyError(
                 f"Could not find RepetitionTime field in any .json for {self.source}"
             )
 
-        outfile = Path(str(self.source).replace(NII_SUFFIX, ".slicetimes.txt"))
-        if not outfile.exists():
-            with open(outfile, "w") as handle:
-                handle.writelines(list(map(lambda t: f"{t}\n", timings)))
-            print(f"Wrote slice timings to {outfile}")
+        if timings is not None:
+            outfile: Optional[Path] = Path(str(self.source).replace(NII_SUFFIX, ".slicetimes.txt"))
+            if not outfile.exists():
+                with open(outfile, "w") as handle:
+                    handle.writelines(list(map(lambda t: f"{t}\n", timings)))
+                print(f"Wrote slice timings to {outfile}")
+        else:
+            outfile = None
 
         return timings, outfile, TR
 
@@ -347,8 +352,16 @@ class BrainExtracted(Loadable):
                                     slice is referred to as 1 not 0)
             ```
         """
+
         infile = self.source
         outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
+        if not self.raw.slicetime_file.exists():
+            # just copy over extracted brain
+            shutil.copy(infile, outfile)
+            warn(
+                f"No slicetimes for {self.source}. Copying brain-extracted file instead."
+            )
+            return SliceTimeCorrected(self, outfile)
         if outfile.exists():
             if not force:
                 return SliceTimeCorrected(self, outfile)
