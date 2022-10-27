@@ -18,6 +18,7 @@ paper/latex/**/__*.tex
 **/wordcount.dvi
 
 # Data
+data
 data/*.pdf
 data/*.xlsx
 data/*.ods
