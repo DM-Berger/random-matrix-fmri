@@ -654,8 +654,8 @@ if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
     paths = get_fmri_paths()
     process_map(make_slicetime_file, paths, chunksize=1)
-    sys.exit()
     process_map(brain_extract_parallel, paths, chunksize=1)
+    sys.exit()
     process_map(inspect_extractions, paths, chunksize=1)
     for path in paths:
         fmri = FmriScan(path)
