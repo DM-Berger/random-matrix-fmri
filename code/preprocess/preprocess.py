@@ -228,7 +228,7 @@ class FmriScan(Loadable):
             global_json = root / "task-rest_bold.json"
         elif "Learning" in str(root):
             global_json = None
-        elif "Bilingual" in str(root):
+        elif "Biling" in str(root):
             global_json = None
         elif "Older" in str(root):
             global_json = None
