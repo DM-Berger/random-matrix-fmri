@@ -10,6 +10,7 @@ from typing import List, Optional, Tuple
 import ants
 import numpy as np
 from ants import ANTsImage, image_read, motion_correction, resample_image
+from ants.registration import reorient_image
 from nipype.interfaces.fsl import SliceTimer
 from numpy import ndarray
 
@@ -315,6 +316,27 @@ class MotionCorrected:
         self.slicetime_corrected: SliceTimeCorrected = corrected
         self.source: Path = motion_corrected
 
+    @staticmethod
+    def reorient_template_to_img(template: ANTsImage, img: ANTsImage) -> ANTsImage:
+        """The actual ANTs functions are completely broken for some reason, so we
+        do it manually...
+        """
+        temp_orient = template.get_orientation()
+        img_orient = img.get_orientation()
+        oriented = template.clone()
+        if (temp_orient == "LPI") and (img_orient == "RPI"):
+            return oriented.reflect_image(axis=1).reflect_image(axis=2)
+        else:
+            raise ValueError("Need to test this")
+
+        for i, (axis_temp, axis_img) in enumerate(zip(temp_orient, img_orient)):
+            if axis_temp == axis_img:
+                continue
+            oriented = oriented.reflect_image(axis=i)
+        # reoriented = template.new_image_like(oriented)
+        reoriented = oriented
+        return reoriented
+
     def mni_register(self, force: bool = False) -> MNI152Registered:
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
         if outfile.exists():
@@ -324,20 +346,27 @@ class MotionCorrected:
 
         img = ants.image_read(str(self.source))
         mask = ants.image_read(str(self.extracted.min_mask))
+        img = ants.mask_image(img, mask)
+        imgs: List[ANTsImage] = ants.ndimage_to_list(img)
+        avg = imgs[0].new_image_like(img.mean(axis=-1))
         template = ants.image_read(str(TEMPLATE))
         template_mask = ants.image_read(str(TEMPLATE_MASK))
         template = ants.mask_image(template, template_mask)
-        template = ants.reorient_image2(template)
+        # template = ants.reorient_image2(template)
+        template = self.reorient_template_to_img(template, avg)
 
-        img = ants.mask_image(img, mask)
-        imgs: List[ANTsImage] = ants.ndimage_to_list(img)
         # template = resample_image(
         #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
         # )
         template = resample_image(
             template, resample_params=imgs[0].spacing, use_voxels=False, interp_type=4
         )
-        avg = imgs[0].new_image_like(img.mean(axis=-1))
+        template_mask = resample_image(
+            template_mask,
+            resample_params=imgs[0].spacing,
+            use_voxels=False,
+            interp_type=4,
+        )
 
         print(f"Registering {self.source} average image to {TEMPLATE}")
         results = ants.registration(
@@ -378,14 +407,14 @@ class MNI152Registered:
 
 
 if __name__ == "__main__":
-    # path = (
-    #     DATA
-    #     / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
-    # )
     path = (
         DATA
-        / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
+        / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
     )
+    # path = (
+    #     DATA
+    #     / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
+    # )
 
     print(TEMPLATE)
     fmri = FmriScan(path)
