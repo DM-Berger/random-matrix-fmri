@@ -34,8 +34,7 @@ if __name__ == "__main__":
     dfs = []
     for data in DATASETS:
         fmris = sorted(data.rglob("*bold.nii.gz"))
-        print(f"Collecting shape info for {data.name}")
-        dfs.extend(process_map(get_fmri_shapes, fmris))
+        dfs.extend(process_map(get_fmri_shapes, fmris, chunksize=1, desc=f"Collecting shape info for {data.name}"))
 
     df = pd.concat(dfs, axis=0, ignore_index=True)
     out = DATA / "shape_summary.csv"
