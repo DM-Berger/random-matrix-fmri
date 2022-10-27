@@ -2,20 +2,21 @@ from __future__ import annotations
 
 import json
 import json as json_
+import os
 import re
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 import ants
 import numpy as np
-from ants import ANTsImage, image_read, motion_correction
+from ants import ANTsImage, image_read, motion_correction, resample_image
 from nipype.interfaces.fsl import SliceTimer
 from numpy import ndarray
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
 TEMPLATE = DATA / "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
-TEMPATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
+TEMPLATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
 if not TEMPLATE.exists():
     raise FileNotFoundError(
         f"No registration template found at {TEMPLATE}. "
@@ -33,42 +34,6 @@ MNI_REGISTERED_SUFFIX = "_mni-registered.nii.gz"
 
 def min_mask_path_from_mask_path(mask: Path) -> Path:
     return Path(str(mask).replace(MASK_SUFFIX, MINMASK_SUFFIX))
-
-
-def direction_parse(string: str) -> int:
-    if string in ["i", "x", "1"]:
-        return 1
-    elif string in ["j", "y", "2"]:
-        return 2
-    elif string in ["k", "z", "3"]:
-        return 3
-    else:
-        raise ValueError(
-            "Argument to --direction must be one of "
-            "['i', 'j', 'k', '1', '2', '3', 'x', 'y', 'z']."
-        )
-
-
-def slicetime_correct(
-    infile: Path, timings: Path, TR: float, slice_direction: str = "z"
-) -> Path:
-    """
-    Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k"
-    (i.e. k+, slices along third spatial dimension, first entry of file
-    corresponds to smallest index along thid spatial dim)
-    """
-    outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
-    cmd = SliceTimer()
-    cmd.inputs.in_file = str(infile)
-    cmd.inputs.custom_timings = str(timings)
-    cmd.inputs.time_repetition = TR
-    cmd.inputs.out_file = str(outfile)
-    cmd.inputs.output_type = "NIFTI_GZ"
-    cmd.inputs.slice_direction = slice_direction
-    if outfile.exists():
-        return outfile
-    cmd.run()
-    return outfile  # different interface than above
 
 
 class FmriScan:
@@ -92,7 +57,7 @@ class FmriScan:
             self.repetition_time,
         ) = self.write_out_slicetimes(self.json_file)
 
-    def brain_extract(self) -> BrainExtracted:
+    def brain_extract(self, force: bool = False) -> BrainExtracted:
         """Computes a 4D mask for input fMRI.
 
         Notes
@@ -106,10 +71,13 @@ class FmriScan:
         extraction across subjects
         """
         if self.mask_path.exists():
-            return BrainExtracted(self)
+            if not force:
+                return BrainExtracted(self)
+            os.remove(self.mask_path)
 
         print(f"Loading {self.source}")
         img: ANTsImage = image_read(str(self.source))
+        img = self.reorient_4d_to_RAS(img)
         print(f"Computing mask for {self.source}")
         mask = ants.get_mask(img)
         # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
@@ -125,6 +93,12 @@ class FmriScan:
         ants.image_write(extracted, str(self.extracted_path))
         print(f"Wrote min brain mask for {self.source} to {self.extracted_path}")
         return BrainExtracted(self)
+
+    def reorient_4d_to_RAS(self, img: ANTsImage) -> ANTsImage:
+        arrs = [ants.reorient_image2(im).numpy() for im in ants.ndimage_to_list(img)]
+        data = np.stack(arrs, axis=-1)
+        reoriented = img.new_image_like(data)
+        return reoriented
 
     @property
     def mask_path(self) -> Path:
@@ -212,7 +186,9 @@ class BrainExtracted:
         """Extract masked correlation matrix from self.source and compute eigenvalues"""
         raise NotImplementedError()
 
-    def slicetime_correct(self, slice_direction: int = 3) -> SliceTimeCorrected:
+    def slicetime_correct(
+        self, slice_direction: int = 3, force: bool = False
+    ) -> SliceTimeCorrected:
         """
         Notes
         -----
@@ -283,7 +259,9 @@ class BrainExtracted:
         infile = self.source
         outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
         if outfile.exists():
-            return SliceTimeCorrected(self, outfile)
+            if not force:
+                return SliceTimeCorrected(self, outfile)
+            os.remove(outfile)
 
         cmd = SliceTimer()
         cmd.inputs.in_file = str(infile)
@@ -307,10 +285,12 @@ class SliceTimeCorrected:
         """Extract masked correlation matrix from self.source and compute eigenvalues"""
         raise NotImplementedError()
 
-    def motion_corrected(self) -> MotionCorrected:
+    def motion_corrected(self, force: bool = False) -> MotionCorrected:
         outfile = Path(str(self.source).replace(NII_SUFFIX, MOTION_CORRECTED_SUFFIX))
         if outfile.exists():
-            return MotionCorrected(self, motion_corrected=outfile)
+            if not force:
+                return MotionCorrected(self, outfile)
+            os.remove(outfile)
 
         img = ants.image_read(str(self.source))
         mask = ants.image_read(str(self.extracted.min_mask))
@@ -335,15 +315,28 @@ class MotionCorrected:
         self.slicetime_corrected: SliceTimeCorrected = corrected
         self.source: Path = motion_corrected
 
-    def mni_register(self) -> MNI152Registered:
+    def mni_register(self, force: bool = False) -> MNI152Registered:
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
         if outfile.exists():
-            return MNI152Registered(self, registered=outfile)
+            if not force:
+                return MNI152Registered(self, registered=outfile)
+            os.remove(outfile)
+
         img = ants.image_read(str(self.source))
         mask = ants.image_read(str(self.extracted.min_mask))
         template = ants.image_read(str(TEMPLATE))
-        img = img * mask
+        template_mask = ants.image_read(str(TEMPLATE_MASK))
+        template = ants.mask_image(template, template_mask)
+        template = ants.reorient_image2(template)
+
+        img = ants.mask_image(img, mask)
         imgs: List[ANTsImage] = ants.ndimage_to_list(img)
+        # template = resample_image(
+        #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
+        # )
+        template = resample_image(
+            template, resample_params=imgs[0].spacing, use_voxels=False, interp_type=4
+        )
         avg = imgs[0].new_image_like(img.mean(axis=-1))
 
         print(f"Registering {self.source} average image to {TEMPLATE}")
@@ -360,6 +353,7 @@ class MotionCorrected:
             transformlist=transforms,
             imagetype=3,
         )
+        ants.plot(registered)
 
         # registereds = []
         # for img in imgs:
@@ -384,14 +378,23 @@ class MNI152Registered:
 
 
 if __name__ == "__main__":
-    path = DATA / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
+    # path = (
+    #     DATA
+    #     / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
+    # )
+    path = (
+        DATA
+        / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
+    )
 
+    print(TEMPLATE)
     fmri = FmriScan(path)
-    extracted = fmri.brain_extract()
+    extracted = fmri.brain_extract(force=False)
     print(f"Extracted: {extracted.source}")
-    slice_corrected = extracted.slicetime_correct()
+    slice_corrected = extracted.slicetime_correct(force=False)
     print(f"Slicetimed: {slice_corrected.source}")
-    motion_corrected = slice_corrected.motion_corrected()
+    motion_corrected = slice_corrected.motion_corrected(force=False)
     print(f"Motion-corr: {motion_corrected.source}")
-    registered = motion_corrected.mni_register()
+    registered = motion_corrected.mni_register(force=True)
+    # registered = motion_corrected.mni_register(force=False)
     print(f"Registered: {registered.source}")
