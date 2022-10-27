@@ -595,7 +595,7 @@ if __name__ == "__main__":
     paths = []
     for parent in parents:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
-    paths = sorted(filter(lambda p: "derivative" in str(p), paths))
+    paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
     process_map(brain_extract_parallel, paths, chunksize=1)
     process_map(inspect_extractions, paths, chunksize=1)
     sys.exit()
