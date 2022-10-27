@@ -706,13 +706,13 @@ def make_slicetime_file(path: Path) -> None:
 def inspect_extractions(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        orig = image_read(str(path))
         stripped = fmri.brain_extract(force=False)
-        extracted = image_read(str(stripped.source))
         orig_file = str(path).replace(NII_SUFFIX, "_plot.png")
         extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
-        if Path(extr_file).exists:
+        if Path(extr_file).exists():
             return
+        orig = image_read(str(path))
+        extracted = image_read(str(stripped.source))
         orig.ndimage_to_list()[5].plot(filename=orig_file)
         extracted.ndimage_to_list()[5].plot(filename=extr_file)
     except Exception:
@@ -721,13 +721,13 @@ def inspect_extractions(path: Path) -> None:
 def inspect_anat_extractions(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        orig = image_read(str(fmri.t1w_source))
         stripped = fmri.anat_extract(force=False)
-        extracted = image_read(str(stripped.source))
         orig_file = str(fmri.t1w_source).replace(NII_SUFFIX, "_plot.png")
         extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
-        if Path(extr_file).exists:
+        if Path(extr_file).exists():
             return
+        orig = image_read(str(fmri.t1w_source))
+        extracted = image_read(str(stripped.source))
         orig.plot(filename=orig_file)
         extracted.plot(filename=extr_file)
     except Exception:
