@@ -186,14 +186,25 @@ class FmriScan(Loadable):
         cmd.inputs.in_file = str(self.t1w_source.resolve())
         cmd.inputs.out_file = str(outfile)
         cmd.inputs.output_type = "NIFTI_GZ"
-        cmd.inputs.robust = True
-        cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
+        cmd.inputs.robust = False
+        cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.t1w_source}")
         results = cmd.run()
         bet_maskfile = Path(results.outputs.mask_file).resolve()
-        shutil.move(bet_maskfile, maskfile)
+        if bet_maskfile.exists():
+            shutil.move(bet_maskfile, maskfile)
+        else:
+            from pprint import pformat
+            raise FileNotFoundError(
+                f"===========================\n"
+                f"Cannot find maskfile: {bet_maskfile}. Details:\n"
+                f"results:\n{pformat(results, indent=2, depth=5)}"
+                f"outfile:\n{outfile}"
+                f"maskfile:\n{maskfile}\n"
+                f"==========================="
+            )
         print(f"Wrote brain mask to {maskfile}")
         print(f"Wrote extracted brain to {outfile}")
         return AnatExtracted(self, mask=maskfile, extracted=outfile)
@@ -743,7 +754,8 @@ if __name__ == "__main__":
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
