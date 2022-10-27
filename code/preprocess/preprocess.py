@@ -382,9 +382,8 @@ class MNI152Registered:
 
 
 if __name__ == "__main__":
-    path = Path(
-        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
-    )
+    path = DATA / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
+
     fmri = FmriScan(path)
     extracted = fmri.brain_extract()
     slice_corrected = extracted.slicetime_correct()
