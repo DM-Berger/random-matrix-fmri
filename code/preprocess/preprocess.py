@@ -184,7 +184,6 @@ class FmriScan(Loadable):
         cmd.inputs.in_file = str(self.t1w_source.resolve())
         cmd.inputs.out_file = str(outfile)
         cmd.inputs.output_type = "NIFTI_GZ"
-        cmd.inputs.functional = False
         cmd.inputs.robust = True
         cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
@@ -309,7 +308,9 @@ class FmriScan(Loadable):
             )
 
         if timings is not None:
-            outfile: Optional[Path] = Path(str(self.source).replace(NII_SUFFIX, ".slicetimes.txt"))
+            outfile: Optional[Path] = Path(
+                str(self.source).replace(NII_SUFFIX, ".slicetimes.txt")
+            )
             if not outfile.exists():
                 with open(outfile, "w") as handle:
                     handle.writelines(list(map(lambda t: f"{t}\n", timings)))
@@ -319,12 +320,14 @@ class FmriScan(Loadable):
 
         return timings, outfile, TR
 
+
 class AnatExtracted(Loadable):
     def __init__(self, raw: FmriScan, mask: Path, extracted: Path) -> None:
         super().__init__(raw.extracted_path)
         self.raw = raw
         self.mask = mask
         self.source: Path = extracted
+
 
 class BrainExtracted(Loadable):
     def __init__(self, raw: FmriScan) -> None:
@@ -685,6 +688,14 @@ def brain_extract_parallel(path: Path) -> None:
         traceback.print_exc()
 
 
+def anat_extract_parallel(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        fmri.anat_extract(force=False)
+    except Exception:
+        traceback.print_exc()
+
+
 def make_slicetime_file(path: Path) -> None:
     try:
         fmri = FmriScan(path)
@@ -700,8 +711,25 @@ def inspect_extractions(path: Path) -> None:
         extracted = image_read(str(stripped.source))
         orig_file = str(path).replace(NII_SUFFIX, "_plot.png")
         extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
+        if Path(extr_file).exists:
+            return
         orig.ndimage_to_list()[5].plot(filename=orig_file)
         extracted.ndimage_to_list()[5].plot(filename=extr_file)
+    except Exception:
+        traceback.print_exc()
+
+def inspect_anat_extractions(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        orig = image_read(str(fmri.t1w_source))
+        stripped = fmri.anat_extract(force=False)
+        extracted = image_read(str(stripped.source))
+        orig_file = str(fmri.t1w_source).replace(NII_SUFFIX, "_plot.png")
+        extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
+        if Path(extr_file).exists:
+            return
+        orig.plot(filename=orig_file)
+        extracted.plot(filename=extr_file)
     except Exception:
         traceback.print_exc()
 
@@ -711,7 +739,8 @@ if __name__ == "__main__":
     paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
-    process_map(inspect_extractions, paths, chunksize=1)
+    # process_map(inspect_extractions, paths, chunksize=1)
+    process_map(anat_extract_parallel, paths, chunksize=1)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
