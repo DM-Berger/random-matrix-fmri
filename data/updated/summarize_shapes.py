@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 
 import pandas as pd
 from ants import ANTsImage, image_read
@@ -31,7 +32,7 @@ def get_fmri_shapes(fmri: Path) -> DataFrame:
     )
 
 
-def summarize_fmri():
+def summarize_fmri() -> None:
     dfs = []
     for data in DATASETS:
         fmris = sorted(data.rglob("*bold.nii.gz"))
@@ -74,10 +75,11 @@ def summarize_fmri():
     """
 
 
-def get_mri_shapes(mri: Path) -> DataFrame:
+def get_mri_shapes(data_mri: Tuple[Path, Path]) -> DataFrame:
+    data, mri = data_mri
     img: ANTsImage = image_read(str(mri))
     x, y, z = img.shape
-    xx, yy, zz, TR = img.spacing
+    xx, yy, zz = img.spacing
     orient = img.get_orientation()
     return DataFrame(
         {
@@ -98,10 +100,11 @@ def summarize_t1w() -> None:
     dfs = []
     for data in DATASETS:
         mris = sorted(data.rglob("*T1w.nii.gz"))
+        data_mris = [(data, mri) for mri in mris]
         dfs.extend(
             process_map(
                 get_mri_shapes,
-                mris,
+                data_mris,
                 chunksize=1,
                 desc=f"Collecting shape info for {data.name}",
             )
