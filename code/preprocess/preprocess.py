@@ -147,6 +147,56 @@ class FmriScan(Loadable):
         # ants.image_write(extracted, str(self.extracted_path))
         return BrainExtracted(self)
 
+    def anat_extract(self, force: bool = False) -> AnatExtracted:
+        """Computes a 4D mask for input fMRI.
+
+        Notes
+        -----
+        Brain-Extracted Data:
+
+        Non-Extracted:
+            Parkinsons
+            Learning
+            Bilinguality
+            Depression
+            Osteo
+
+        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
+        the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
+        also must define a `min_mask` (or max_mask) for some purposes.
+
+        ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
+        extraction across subjects
+        """
+        outfile = Path(str(self.t1w_source).replace(NII_SUFFIX, EXTRACTED_SUFFIX))
+        maskfile = Path(str(self.t1w_source).replace(NII_SUFFIX, MASK_SUFFIX))
+        if outfile.exists():
+            if not force:
+                return AnatExtracted(self, mask=maskfile, extracted=outfile)
+            os.remove(outfile)
+
+        if os.environ.get("CC_CLUSTER") == "niagara":
+            DATA = Path(
+                "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated"
+            )
+
+        cmd = BET()
+        cmd.inputs.in_file = str(self.t1w_source.resolve())
+        cmd.inputs.out_file = str(outfile)
+        cmd.inputs.output_type = "NIFTI_GZ"
+        cmd.inputs.functional = False
+        cmd.inputs.robust = True
+        cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
+        cmd.inputs.mask = True
+
+        print(f"Computing mask for {self.source}")
+        results = cmd.run()
+        bet_maskfile = Path(results.outputs.mask_file).resolve()
+        bet_maskfile.rename(maskfile)
+        print(f"Wrote brain mask to {maskfile}")
+        print(f"Wrote extracted brain to {outfile}")
+        return AnatExtracted(self, mask=maskfile, extracted=outfile)
+
     def reorient_4d_to_RAS(self, img: ANTsImage) -> ANTsImage:
         arrs = [ants.reorient_image2(im).numpy() for im in ants.ndimage_to_list(img)]
         data = np.stack(arrs, axis=-1)
@@ -269,6 +319,12 @@ class FmriScan(Loadable):
 
         return timings, outfile, TR
 
+class AnatExtracted(Loadable):
+    def __init__(self, raw: FmriScan, mask: Path, extracted: Path) -> None:
+        super().__init__(raw.extracted_path)
+        self.raw = raw
+        self.mask = mask
+        self.source: Path = extracted
 
 class BrainExtracted(Loadable):
     def __init__(self, raw: FmriScan) -> None:
@@ -653,10 +709,10 @@ def inspect_extractions(path: Path) -> None:
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
     paths = get_fmri_paths()
-    process_map(make_slicetime_file, paths, chunksize=1)
-    process_map(brain_extract_parallel, paths, chunksize=1)
-    sys.exit()
+    # process_map(make_slicetime_file, paths, chunksize=1)
+    # process_map(brain_extract_parallel, paths, chunksize=1)
     process_map(inspect_extractions, paths, chunksize=1)
+    sys.exit()
     for path in paths:
         fmri = FmriScan(path)
         extracted = fmri.brain_extract(force=True)
