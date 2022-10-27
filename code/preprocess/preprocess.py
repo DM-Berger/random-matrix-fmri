@@ -320,7 +320,27 @@ class MotionCorrected:
     def reorient_template_to_img(template: ANTsImage, img: ANTsImage) -> ANTsImage:
         """The actual ANTs functions are completely broken for some reason, so we
         do it manually...
+
+        Notes
+        -----
+                               data  x_n  y_n   z_n x_mm  y_mm  z_mm    t       TR orient
+                     Park_v_Control   80   80   43  3.00  3.00  3.00  149     2.40    RPI
+                     Park_v_Control   80   80   43  3.00  3.00  3.00  300     2.40    RPI
+                     Park_v_Control   96  114   96  2.00  2.00  2.00  149     2.40    LPI
+              Rest_v_LearningRecall   64   64   36  3.00  3.00  3.00  195     2.00    RPI
+               Rest_w_Bilinguiality  100  100   72  1.80  1.80  1.80  823     0.88    RPI
+               Rest_w_Bilinguiality  100   96   72  1.80  1.80  1.80  823     0.88    RPI
+               Rest_w_Bilinguiality  100  100   72  1.80  1.80  1.80  823     0.93    RIA
+        Rest_w_Depression_v_Control  112  112   25  1.96  1.96  5.00  100     2.50    RPI
+         Rest_w_Healthy_v_OsteoPain   64   64   36  3.44  3.44  3.00  244     2.50    RPI
+         Rest_w_Healthy_v_OsteoPain   64   64   36  3.44  3.44  3.00  292     2.50    RPI
+         Rest_w_Healthy_v_OsteoPain   64   64   36  3.44  3.44  3.00  300     2.50    RPI
+             Rest_w_Older_v_Younger   74   74   32  2.97  2.97  4.00  300     2.00    RPI
+          Rest_w_VigilanceAttention   64   64   35  3.00  3.00  3.00  300  3000.00    RPI
+          Rest_w_VigilanceAttention  128  128   70  1.50  1.50  1.50  300  3000.00    RPI
+          Rest_w_VigilanceAttention  200   60   40  0.75  0.75  0.75  150  4000.00    RPI
         """
+
         temp_orient = template.get_orientation()
         img_orient = img.get_orientation()
         oriented = template.clone()
