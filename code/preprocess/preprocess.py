@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import json
+import json as json_
 import re
 import subprocess
 from abc import ABC, abstractmethod
@@ -31,9 +34,17 @@ from numpy import ndarray
 from pandas import DataFrame, Series
 from typing_extensions import Literal
 
+NII_SUFFIX = ".nii.gz"
+MASK_SUFFIX = "_mask.nii.gz"
+MINMASK_SUFFIX = "_mask-min.nii.gz"
+EXTRACTED_SUFFIX = "_extracted.nii.gz"
+SLICETIME_SUFFIX = "_slicetime-corrected.nii.gz"
+MOTION_CORRECTED_SUFFIX = "_motion-corrected.nii.gz"
+MNI_REGISTERED_SUFFIX = "_mni-registered.nii.gz"
 
-def min_mask_from_mask(mask: Path) -> Path:
-    return Path(str(mask).replace("_mask.nii.gz", "_mask_min.nii.gz"))
+
+def min_mask_path_from_mask_path(mask: Path) -> Path:
+    return Path(str(mask).replace(MASK_SUFFIX, MINMASK_SUFFIX))
 
 
 def direction_parse(string: str) -> int:
@@ -57,14 +68,12 @@ def slicetime_correct(
     third spatial dimension, first entry of file corresponds to smallest index along thid spatial
     dim)
     """
-    MCFLIRT_SUFFIX = "mcflirted.nii.gz"
-    SLICETIME_SUFFIX = "stationary.nii.gz"
-    outfile = Path(str(infile).replace(MCFLIRT_SUFFIX, SLICETIME_SUFFIX))
+    outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
     cmd = SliceTimer()
     cmd.inputs.in_file = str(infile)
     cmd.inputs.custom_timings = str(timings)
     cmd.inputs.time_repetition = TR
-    cmd.inputs.out_file = str(infile).replace(MCFLIRT_SUFFIX, SLICETIME_SUFFIX)
+    cmd.inputs.out_file = str(outfile)
     cmd.inputs.output_type = "NIFTI_GZ"
     cmd.inputs.slice_direction = slice_direction
     if outfile.exists():
@@ -73,22 +82,77 @@ def slicetime_correct(
     return outfile  # different interface than above
 
 
-class PreprocessedScan(ABC):
-    def __init__(self) -> None:
+class FmriScan:
+    def __init__(self, source: Path) -> None:
         super().__init__()
         self.source: Path
         self.sid: str
         self.ses: Optional[str]
         self.run: Optional[str]
         self.json_file: Path
+        self.slicetimes: List[float]
+        self.repetition_time: float
+        self.slicetime_file: Path
 
+        self.source = source
         self.sid, self.ses, self.run = self.parse_source()
-        self.json_file: Path = self.find_json_file()
+        self.json_file = self.find_json_file()
+        (
+            self.slicetimes,
+            self.slicetime_file,
+            self.repetition_time,
+        ) = self.write_out_slicetimes(self.json_file)
 
-    @abstractmethod
-    def eigenvalues(self) -> ndarray:
-        """Extract masked correlation matrix from self.source and compute eigenvalues"""
-        pass
+    def brain_extract(self) -> BrainExtracted:
+        """Computes a 4D mask for input fMRI.
+
+        Notes
+        -----
+
+        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
+        the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
+        also must define a `min_mask` (or max_mask) for some purposes.
+
+        ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
+        extraction across subjects
+        """
+        if self.mask_path.exists():
+            return BrainExtracted(self)
+
+        print(f"Loading {self.source}")
+        img: ANTsImage = image_read(str(self.source))
+        print(f"Computing mask for {self.source}")
+        mask = ants.get_mask(img)
+        # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
+        min_mask_frame = mask.min(axis=-1)
+        min_mask_data = np.stack([min_mask_frame for _ in range(mask.shape[-1])], axis=-1)
+        min_mask = img.new_image_like(min_mask_data)
+        extracted = img * mask
+
+        ants.image_write(mask, str(self.mask_path))
+        print(f"Wrote brain mask for {self.source} to {self.mask_path}")
+        ants.image_write(min_mask, str(self.min_mask_path))
+        print(f"Wrote min brain mask for {self.source} to {self.min_mask_path}")
+        ants.image_write(extracted, str(self.extracted_path))
+        print(f"Wrote min brain mask for {self.source} to {self.extracted_path}")
+        return BrainExtracted(self)
+
+    @property
+    def mask_path(self) -> Path:
+        parent = self.source.parent
+        stem = str(self.source.resolve().name).replace(NII_SUFFIX, "")
+        outname = f"{stem}_mask.nii.gz"
+        return Path(parent / outname)
+
+    @property
+    def min_mask_path(self) -> Path:
+        return min_mask_path_from_mask_path(self.mask_path)
+
+    @property
+    def extracted_path(self) -> Path:
+        parent = self.source.parent
+        outname = str(self.source.resolve().name).replace(NII_SUFFIX, EXTRACTED_SUFFIX)
+        return Path(parent / outname)
 
     def parse_source(self) -> Tuple[str, Optional[str], Optional[str]]:
         sid_ = re.search(r"sub-(?:[a-zA-Z]*)?([0-9]+)_.*", self.source.stem)
@@ -103,7 +167,7 @@ class PreprocessedScan(ABC):
         return sid, session, run
 
     def find_json_file(self) -> Path:
-        local = Path(str(self.source).replace(".nii.gz", ".json"))
+        local = Path(str(self.source).replace(NII_SUFFIX, ".json"))
         if local.exists():
             return local
 
@@ -131,97 +195,41 @@ class PreprocessedScan(ABC):
 
         raise RuntimeError(f"Can't find .json info from source: {self.source}")
 
+    def write_out_slicetimes(self, jsonfile: Path) -> Tuple[List[float], Path, float]:
+        with open(jsonfile, "r") as handle:
+            info = json_.load(handle)
+        timings = info.get("SliceTiming", None)
+        if timings is None:
+            raise KeyError(f"Could not find SliceTiming field in {jsonfile}")
+        TR = info.get("RepetitionTime", None)
+        if TR is None:
+            raise KeyError(f"Could not find RepetitionTime field in {jsonfile}")
+        outfile = Path(str(self.source).replace(NII_SUFFIX, SLICETIME_SUFFIX))
+        with open(outfile, "w") as handle:
+            handle.writelines(list(map(lambda t: f"{t}\n", timings)))
+        return timings, outfile, TR
 
-class SliceTimeAligned(PreprocessedScan):
-    CMD = (
-        "slicetimer -i {masked} "
-        "-o {time_corrected} "
-        "--repeat={TR} "
-        "--direction={direction} "
-        "--tcustom={slicetime_json}"
-    )
 
-    def __init__(self, source: Path, per_subject_slicetimes: bool) -> None:
-        self.source = source
-        self.per_subject: bool = per_subject_slicetimes
+class BrainExtracted:
+    def __init__(self, raw: FmriScan) -> None:
+        self.raw = raw
+        self.mask = self.raw.mask_path
+        self.min_mask = min_mask_path_from_mask_path(self.mask)
+        self.source: Path = raw.extracted_path
 
-    def slicetime_file(self) -> Path:
+    def eigenvalues(self) -> ndarray:
+        """Extract masked correlation matrix from self.source and compute eigenvalues"""
+        raise NotImplementedError()
+
+    def slicetime_correct(self, slice_direction: int = 3) -> SliceTimeCorrected:
         """
         Notes
         -----
-        https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html#timing-parameters
+        Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k" (i.e. k+, slices along
+        third spatial dimension, first entry of file corresponds to smallest index along thid spatial
+        dim)
 
-        # SliceTiming
-
-            The time at which each slice was acquired within each volume (frame) of the acquisition.
-            Slice timing is not slice order -- rather, it is a list of times containing the time (in
-            seconds) of each slice acquisition in relation to the beginning of volume acquisition.
-            The list goes through the slices along the slice axis in the slice encoding dimension
-            (see below). Note that to ensure the proper interpretation of the "SliceTiming" field,
-            it is important to check if the OPTIONAL SliceEncodingDirection exists. In particular,
-            if "SliceEncodingDirection" is negative, the entries in "SliceTiming" are defined in
-            reverse order with respect to the slice axis, such that the final entry in the
-            "SliceTiming" list is the time of acquisition of slice 0. Without this parameter slice
-            time correction will not be possible.
-
-        # SliceEncodingDirection
-
-            The axis of the NIfTI data along which slices were acquired, and the direction in which
-            "SliceTiming" is defined with respect to. i, j, k identifiers correspond to the first,
-            second and third axis of the data in the NIfTI file. A - sign indicates that the
-            contents of "SliceTiming" are defined in reverse order - that is, the first entry
-            corresponds to the slice with the largest index, and the final entry corresponds to
-            slice index zero. When present, the axis defined by "SliceEncodingDirection" needs to be
-            consistent with the slice_dim field in the NIfTI header. When absent, the entries in
-            "SliceTiming" must be in the order of increasing slice index as defined by the NIfTI
-            header.
-
-            Must be one of: "i", "j", "k", "i-", "j-", "k-".
-        """
-        if self.per_subject:
-            info_file = str(self.source).replace(".nii.gz", ".json")
-            info = json.load(info_file)
-            slicetimes: List[float] = info["SliceTiming"]
-            # now write to temp or perm file for FSL to use, and then run `slicetimer`
-            outfile = ...
-
-    @staticmethod
-    def cmd(
-        input: Path,
-        outfile: Path,
-        slicetime_file: Path,
-        TR: float,
-        direction: Literal["x", "y", "z", 1, 2, 3, "i", "j", "k"],
-        reverse: bool,
-        interleaved: bool,
-    ) -> str:
-        command = SliceTimeAligned.CMD.format(
-            masked=input,
-            time_corrected=str(outfile),
-            TR=str(TR),
-            direction=str(direction),
-            slicetime_file=str(slicetime_file),
-        )
-        if reverse:
-            command += " --down"
-        if interleaved:
-            command += " --odd"
-        return command
-
-
-class BrainExtracted(PreprocessedScan):
-    def __init__(self, mask: Path) -> None:
-        self.mask = mask
-        self.min_mask = min_mask_from_mask(self.mask)
-
-    def slice_time(self, per_subject_slicetimes: bool) -> None:
-        """Ultimately, uses FSL to execute:
-
-            slicetimer -i self
-
-        Notes
-        -----
-        For documentation, see:
+        For BIDS slice timing documentation, see:
 
         https://poc.vl-e.nl/distribution/manual/fsl-3.2/slicetimer/index.html
 
@@ -229,60 +237,112 @@ class BrainExtracted(PreprocessedScan):
 
         # INTRODUCTION
 
-        slicetimer is a pre-processing tool designed to correct for sampling offsets inherent in
-        slice-wise EPI acquisition sequences.
+            slicetimer is a pre-processing tool designed to correct for sampling offsets inherent in
+            slice-wise EPI acquisition sequences.
 
-        Each voxel's timecourse is processed independently and intensities are shifted in time so
-        that they reflect the interpolated value of the signal at a common reference timepoint for
-        all voxels, providing an instantaneous `snapshot' of the data, rather than a staggered
-        sample throughout each volume. Sinc interpolation with a Hanning windowing kernel is applied
-        to each timecourse to calculate the interpolated values.
+            Each voxel's timecourse is processed independently and intensities are shifted in time
+            so that they reflect the interpolated value of the signal at a common reference
+            timepoint for all voxels, providing an instantaneous `snapshot' of the data, rather than
+            a staggered sample throughout each volume. Sinc interpolation with a Hanning windowing
+            kernel is applied to each timecourse to calculate the interpolated values.
 
-        It is necessary to know in what order the slices were acquired and set the appropriate
-        option. The default correction is appropriate if slices were acquired from the bottom of the
-        brain.
+            It is necessary to know in what order the slices were acquired and set the appropriate
+            option. The default correction is appropriate if slices were acquired from the bottom of
+            the brain.
 
-        If slices were acquired from the top of the brain to the bottom select the --down option.
+            If slices were acquired from the top of the brain to the bottom select the --down
+            option.
 
-        If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...) then choose the
-        --odd option.
+            If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...) then choose
+            the --odd option.
 
-        If slices were not acquired in regular order you will need to use a slice order file or a
-        slice timings file. If a slice order file is to be used, create a text file with a single
-        number on each line, where the first line states which slice was acquired first, the second
-        line states which slice was acquired second, etc. The first slice is numbered 1 not 0.
+            If slices were not acquired in regular order you will need to use a slice order file or
+            a slice timings file. If a slice order file is to be used, create a text file with a
+            single number on each line, where the first line states which slice was acquired first,
+            the second line states which slice was acquired second, etc. The first slice is numbered
+            1 not 0.
 
-        If a slice timings file is to be used, put one value (ie for each slice) on each line of a
-        text file. The units are in TRs, with 0.5 corresponding to no shift. Therefore a sensible
-        range of values will be between 0 and 1.
+            If a slice timings file is to be used, put one value (ie for each slice) on each line of
+            a text file. The units are in TRs, with 0.5 corresponding to no shift. Therefore a
+            sensible range of values will be between 0 and 1.
 
         #  USAGE AND OPTIONS
 
-        ```
-        slicetimer -i  [-o ] [options]
+            ```
+            slicetimer -i  [-o ] [options]
 
-        Compulsory arguments (You MUST set one or more of):
+            Compulsory arguments (You MUST set one or more of):
 
-                -i,--in filename of input timeseries
+                    -i,--in filename of input timeseries
 
-        Optional arguments (You may optionally specify one or more of):
+            Optional arguments (You may optionally specify one or more of):
 
-                -o,--out        filename of output timeseries
-                -h,--help       display this message
-                -v,--verbose    switch on diagnostic messages
-                --down          reverse slice indexing
-                -r,--repeat     Specify TR of data - default is 3s
-                -d,--direction  direction of slice acquisition (x=1,y=2,z=3) - default is z
-                --odd           use interleaved acquisition
-                --tcustom       filename of single-column custom interleave timing file
-                --ocustom       filename of single-column custom interleave order file (first
-                                slice is referred to as 1 not 0)
-        ```
+                    -o,--out        filename of output timeseries
+                    -h,--help       display this message
+                    -v,--verbose    switch on diagnostic messages
+                    --down          reverse slice indexing
+                    -r,--repeat     Specify TR of data - default is 3s
+                    -d,--direction  direction of slice acquisition (x=1,y=2,z=3) - default is z
+                    --odd           use interleaved acquisition
+                    --tcustom       filename of single-column custom interleave timing file
+                    --ocustom       filename of single-column custom interleave order file (first
+                                    slice is referred to as 1 not 0)
+            ```
         """
-        pass
+        infile = self.source
+        outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
+        if outfile.exists():
+            return SliceTimeCorrected(self, outfile)
 
-    def slice_time_and_align(self) -> SliceTimeAligned:
-        pass
+        cmd = SliceTimer()
+        cmd.inputs.in_file = str(infile)
+        cmd.inputs.custom_timings = str(self.raw.slicetime_file)
+        cmd.inputs.time_repetition = self.raw.repetition_time
+        cmd.inputs.out_file = str(outfile)
+        cmd.inputs.output_type = "NIFTI_GZ"
+        cmd.inputs.slice_direction = slice_direction
+        print(f"Slice time correcting {infile}...")
+        cmd.run()
+        return SliceTimeCorrected(self, outfile)
+
+
+class SliceTimeCorrected:
+    def __init__(self, extracted: BrainExtracted, corrected: Path) -> None:
+        self.raw: FmriScan = extracted.raw
+        self.extracted: BrainExtracted = extracted
+        self.source: Path = corrected
+
+    def eigenvalues(self) -> ndarray:
+        """Extract masked correlation matrix from self.source and compute eigenvalues"""
+        raise NotImplementedError()
+
+    def motion_corrected(self) -> MotionCorrected:
+        outfile = Path(str(self.source).replace(NII_SUFFIX, MOTION_CORRECTED_SUFFIX))
+        if outfile.exists():
+            return MotionCorrected(self, motion_corrected=outfile)
+
+        img = ants.image_read(str(self.source))
+        mask = ants.image_read(str(self.extracted.min_mask))
+        mask3d = ants.ndimage_to_list(mask)[0]
+        results = motion_correction(
+            img,
+            fixed=None,  # uses mean image in this case
+            type_of_transform="BOLDRigid",
+            mask=mask3d,
+        )
+        corrected = results["motion_corrected"]
+        print(f"Performing motion correction for {self.source}")
+        ants.image_write(corrected, str(outfile))
+        print(f"Saved motion-corrected image to {outfile}")
+        return MotionCorrected(self, motion_corrected=outfile)
+
+
+class MotionCorrected:
+    def __init__(self, corrected: SliceTimeCorrected, motion_corrected: Path) -> None:
+        self.raw = corrected.raw
+        self.extracted = corrected.extracted
+        self.slicetime_corrected: SliceTimeCorrected = corrected
+        self.source: Path = motion_corrected
 
 
 class FullRegistered:
@@ -336,3 +396,13 @@ class RawfMRI:
         stem = str(self.source.resolve().name).replace(".nii.gz", "")
         outname = f"{stem}_extracted.nii.gz"
         return Path(parent / outname)
+
+
+if __name__ == "__main__":
+    path = Path(
+        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
+    )
+    fmri = FmriScan(path)
+    extracted = fmri.brain_extract()
+    slice_corrected = extracted.slicetime_correct()
+    motion_corrected = slice_corrected.motion_corrected()
