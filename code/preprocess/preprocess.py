@@ -187,6 +187,7 @@ class FmriScan(Loadable):
             raise RuntimeError(f"Missing T1w file at {anat_dir}")
         if len(anat_img) > 1:
             raise RuntimeError(f"Too many T1w files at {anat_dir}")
+
         return anat_img[0]
 
     def find_json_file(self) -> Tuple[Optional[Path], Optional[Path]]:
