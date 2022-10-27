@@ -168,8 +168,10 @@ class FmriScan(Loadable):
         ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
         extraction across subjects
         """
-        outfile = Path(str(self.t1w_source).replace(NII_SUFFIX, EXTRACTED_SUFFIX))
-        maskfile = Path(str(self.t1w_source).replace(NII_SUFFIX, MASK_SUFFIX))
+        outfile = Path(
+            str(self.t1w_source.resolve()).replace(NII_SUFFIX, EXTRACTED_SUFFIX)
+        )
+        maskfile = Path(str(self.t1w_source.resolve()).replace(NII_SUFFIX, MASK_SUFFIX))
         if outfile.exists():
             if not force:
                 return AnatExtracted(self, mask=maskfile, extracted=outfile)
@@ -188,10 +190,10 @@ class FmriScan(Loadable):
         cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
-        print(f"Computing mask for {self.source}")
+        print(f"Computing mask for {self.t1w_source}")
         results = cmd.run()
         bet_maskfile = Path(results.outputs.mask_file).resolve()
-        bet_maskfile.rename(maskfile)
+        shutil.move(bet_maskfile, maskfile)
         print(f"Wrote brain mask to {maskfile}")
         print(f"Wrote extracted brain to {outfile}")
         return AnatExtracted(self, mask=maskfile, extracted=outfile)
@@ -717,6 +719,7 @@ def inspect_extractions(path: Path) -> None:
         extracted.ndimage_to_list()[5].plot(filename=extr_file)
     except Exception:
         traceback.print_exc()
+
 
 def inspect_anat_extractions(path: Path) -> None:
     try:
