@@ -34,6 +34,10 @@ from numpy import ndarray
 from pandas import DataFrame, Series
 from typing_extensions import Literal
 
+ROOT = Path(__file__).resolve().parent.parent.parent
+DATA = ROOT / "data"
+TEMPLATE_PATH = DATA / ""
+
 NII_SUFFIX = ".nii.gz"
 MASK_SUFFIX = "_mask.nii.gz"
 MINMASK_SUFFIX = "_mask-min.nii.gz"
@@ -344,10 +348,32 @@ class MotionCorrected:
         self.slicetime_corrected: SliceTimeCorrected = corrected
         self.source: Path = motion_corrected
 
+    def mni_register(self) -> MNI152Registered:
+        outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
+        if outfile.exists():
+            return MNI152Registered(self, registered=outfile)
+        img = ants.image_read(str(self.source))
+        mask = ants.image_read(str(self.extracted.min_mask))
+        template = ants.image_read(str(TEMPLATE_PATH))
+        img = img * mask
+        results = ants.registration(
+            fixed=template,
+            moving=img,
+            type_of_transform="SyNBold",
+        )
 
-class FullRegistered:
-    def __init__(self) -> None:
-        pass
+        return MNI152Registered(self, registered=outfile)
+
+
+class MNI152Registered:
+    def __init__(self, motion_corrected: MotionCorrected, registered: Path) -> None:
+        self.raw = motion_corrected.raw
+        self.extracted = motion_corrected.extracted
+        self.slicetime_corrected: SliceTimeCorrected = (
+            motion_corrected.slicetime_corrected
+        )
+        self.motion_corrected: MotionCorrected = motion_corrected
+        self.source: Path = registered
 
 
 class RawfMRI:
