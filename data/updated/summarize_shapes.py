@@ -11,7 +11,7 @@ DATASETS = sorted(filter(lambda p: p.is_dir(), Path(".").glob("*")))
 
 
 def get_fmri_shapes(fmri: Path) -> DataFrame:
-    img: ANTsImage = image_read(fmri)
+    img: ANTsImage = image_read(str(fmri))
     x, y, z, t = img.shape
     xx, yy, zz, TR = img.spacing
     return DataFrame(
