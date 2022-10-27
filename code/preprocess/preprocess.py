@@ -3,36 +3,14 @@ from __future__ import annotations
 import json
 import json as json_
 import re
-import subprocess
-from abc import ABC, abstractmethod
-from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    cast,
-    no_type_check,
-)
+from typing import List, Optional, Tuple
 
 import ants
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import pytest
 from ants import ANTsImage, image_read, motion_correction
 from nipype.interfaces.fsl import SliceTimer
 from numpy import ndarray
-from pandas import DataFrame, Series
-from typing_extensions import Literal
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
