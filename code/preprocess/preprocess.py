@@ -182,6 +182,8 @@ class FmriScan(Loadable):
 
     def find_t1w_file(self) -> Path:
         anat_dir = self.source.parent.parent / "anat"
+        if anat_dir.parent.name == "ses-2":
+            anat_dir = anat_dir.parent.parent / "ses-1/anat"
         anat_img = sorted(anat_dir.glob("*T1w.nii.gz"))
         if len(anat_img) == 0:
             raise RuntimeError(f"Missing T1w file at {anat_dir}")
