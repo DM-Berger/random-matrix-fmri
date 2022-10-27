@@ -77,7 +77,7 @@ class FmriScan(Loadable):
             self.slicetimes,
             self.slicetime_file,
             self.repetition_time,
-        ) = self.write_out_slicetimes(self.json_file)
+        ) = self.write_out_slicetimes()
 
     def brain_extract(self, force: bool = False) -> BrainExtracted:
         """Computes a 4D mask for input fMRI.
@@ -183,8 +183,10 @@ class FmriScan(Loadable):
     def find_t1w_file(self) -> Path:
         anat_dir = self.source.parent.parent / "anat"
         anat_img = sorted(anat_dir.glob("*T1w.nii.gz"))
-        if len(anat_img) != 1:
-            raise RuntimeError(f"Missing or too many T1w files at {anat_dir}")
+        if len(anat_img) == 0:
+            raise RuntimeError(f"Missing T1w file at {anat_dir}")
+        if len(anat_img) > 1:
+            raise RuntimeError(f"Too many T1w files at {anat_dir}")
         return anat_img[0]
 
     def find_json_file(self) -> Tuple[Optional[Path], Optional[Path]]:
@@ -591,12 +593,23 @@ class MNI152Registered(Loadable):
         super().__init__(self.source)
 
 
+def get_fmri_paths() -> List[Path]:
+    UPDATED = DATA / "updated"
+    parents = sorted(filter(lambda p: p.is_dir(), UPDATED.glob("*")))
+    paths = []
+    for parent in parents:
+        paths.extend(sorted(parent.rglob("*bold.nii.gz")))
+    paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
+    return paths
+
+
 def brain_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
         fmri.brain_extract(force=False)
     except Exception:
         traceback.print_exc()
+
 
 def make_slicetime_file(path: Path) -> None:
     try:
@@ -620,24 +633,8 @@ def inspect_extractions(path: Path) -> None:
 
 
 if __name__ == "__main__":
-    # path = (
-    #     DATA
-    #     / "updated/Rest_w_Depression_v_Control/ds002748-download/sub-01/func/sub-01_task-rest_bold.nii.gz"
-    # )
-    # path = (
-    #     DATA
-    #     / "updated/Rest_w_Older_v_Younger/ds003871-download/sub-1004/func/sub-1004_task-rest_dir-AP_run-01_bold.nii.gz"
-    # )
-
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-
-    # wonky subject with RIA orientation
-    UPDATED = DATA / "updated"
-    parents = sorted(filter(lambda p: p.is_dir(), UPDATED.glob("*")))
-    paths = []
-    for parent in parents:
-        paths.extend(sorted(parent.rglob("*bold.nii.gz")))
-    paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
+    paths = get_fmri_paths()
     process_map(make_slicetime_file, paths, chunksize=1)
     sys.exit()
     process_map(brain_extract_parallel, paths, chunksize=1)
