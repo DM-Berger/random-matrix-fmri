@@ -4,6 +4,8 @@ import json
 import json as json_
 import os
 import re
+import sys
+import traceback
 from abc import ABC
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -12,8 +14,9 @@ import ants
 import numpy as np
 from ants import ANTsImage, image_read, motion_correction, resample_image
 from ants.registration import reorient_image
-from nipype.interfaces.fsl import SliceTimer
+from nipype.interfaces.fsl import BET, SliceTimer
 from numpy import ndarray
+from tqdm.contrib.concurrent import process_map
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data"
@@ -76,6 +79,14 @@ class FmriScan(Loadable):
 
         Notes
         -----
+        Brain-Extracted Data:
+
+        Non-Extracted:
+            Parkinsons
+            Learning
+            Bilinguality
+            Depression
+            Osteo
 
         The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
         the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
@@ -84,28 +95,43 @@ class FmriScan(Loadable):
         ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
         extraction across subjects
         """
-        if self.mask_path.exists():
+        outfile = self.mask_path
+        if outfile.exists():
             if not force:
                 return BrainExtracted(self)
-            os.remove(self.mask_path)
+            os.remove(outfile)
 
-        print(f"Loading {self.source}")
-        img: ANTsImage = image_read(str(self.source))
-        # img = self.reorient_4d_to_RAS(img)
+        cmd = BET()
+        cmd.inputs.in_file = str(self.source)
+        cmd.inputs.out_file = str(self.extracted_path)
+        cmd.inputs.output_type = "NIFTI_GZ"
+        cmd.inputs.functional = True
+        cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
+        cmd.inputs.mask = True
+
         print(f"Computing mask for {self.source}")
-        mask = ants.get_mask(img)
-        # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
-        min_mask_frame = mask.min(axis=-1)
-        min_mask_data = np.stack([min_mask_frame for _ in range(mask.shape[-1])], axis=-1)
-        min_mask = img.new_image_like(min_mask_data)
-        extracted = img * mask
+        results = cmd.run()
+        maskfile = Path(results.outputs.mask_file)
+        maskfile.rename(Path(str(maskfile).replace("extracted_", "")))
+        print(f"Wrote brain mask to {self.mask_path}")
+        print(f"Wrote extracted brain to {self.extracted_path}")
 
-        ants.image_write(mask, str(self.mask_path))
-        print(f"Wrote brain mask for {self.source} to {self.mask_path}")
-        ants.image_write(min_mask, str(self.min_mask_path))
-        print(f"Wrote min brain mask for {self.source} to {self.min_mask_path}")
-        ants.image_write(extracted, str(self.extracted_path))
-        print(f"Wrote min brain mask for {self.source} to {self.extracted_path}")
+        # print(f"Loading {self.source}")
+        # img: ANTsImage = image_read(str(self.source))
+        # # img = self.reorient_4d_to_RAS(img)
+        # print(f"Computing mask for {self.source}")
+        # mask = ants.get_mask(img)
+        # # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
+        # min_mask_frame = mask.min(axis=-1)
+        # min_mask_data = np.stack([min_mask_frame for _ in range(mask.shape[-1])], axis=-1)
+        # min_mask = img.new_image_like(min_mask_data)
+        # extracted = img * mask
+
+        # ants.image_write(mask, str(self.mask_path))
+        # print(f"Wrote brain mask for {self.source} to {self.mask_path}")
+        # ants.image_write(min_mask, str(self.min_mask_path))
+        # print(f"Wrote min brain mask for {self.source} to {self.min_mask_path}")
+        # ants.image_write(extracted, str(self.extracted_path))
         return BrainExtracted(self)
 
     def reorient_4d_to_RAS(self, img: ANTsImage) -> ANTsImage:
@@ -188,7 +214,7 @@ class FmriScan(Loadable):
         TR = info.get("RepetitionTime", None)
         if TR is None:
             raise KeyError(f"Could not find RepetitionTime field in {jsonfile}")
-        outfile = Path(str(self.source).replace(NII_SUFFIX, SLICETIME_SUFFIX))
+        outfile = Path(str(self.source).replace(NII_SUFFIX, ".slicetimes.txt"))
         if not outfile.exists():
             with open(outfile, "w") as handle:
                 handle.writelines(list(map(lambda t: f"{t}\n", timings)))
@@ -401,6 +427,51 @@ class MotionCorrected(Loadable):
         reoriented = oriented
         return reoriented
 
+    def t1w_register(self, force: bool = False) -> T1wRegistered:
+        """
+        Notes
+        -----
+        fMRI is too low-q to register straight to MNI template. we need to see if
+        it is better to go through anat in one way or another. e.g. the classic
+
+            fMRI: reg to -> ant: reg to -> MNI
+
+        or:
+
+            reg fMRI to anat: save reverse transform (anat_to_fmri)
+            reg anat to MNI: save reverse transform (mni_to_anat)
+
+        # State of Extraction
+
+        Not extracted:
+            Park_v_Control
+            Bilingual
+            Vigilance
+            Osteo
+            Learning
+            Older_v_Younger
+
+        Extracted:
+            Depression
+
+        """
+        outfile = Path(str(self.source).replace(NII_SUFFIX, ANAT_REGISTERED_SUFFIX))
+        if outfile.exists():
+            if not force:
+                return T1wRegistered(self, registered=outfile)
+            os.remove(outfile)
+
+        img = ants.image_read(str(self.source))
+        mask = ants.image_read(str(self.extracted.min_mask))
+        anat = ants.image_read(str(self.raw.t1w_source))
+
+        img = ants.mask_image(img, mask)
+        imgs: List[ANTsImage] = ants.ndimage_to_list(img)
+        avg = imgs[0].new_image_like(img.mean(axis=-1))
+        template = ants.image_read(str(TEMPLATE))
+        template_mask = ants.image_read(str(TEMPLATE_MASK))
+        template = ants.mask_image(template, template_mask)
+
     def mni_register(self, force: bool = False) -> MNI152Registered:
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
         if outfile.exists():
@@ -460,6 +531,18 @@ class MotionCorrected(Loadable):
         return MNI152Registered(self, registered=outfile)
 
 
+class T1wRegistered(Loadable):
+    def __init__(self, motion_corrected: MotionCorrected, registered: Path) -> None:
+        self.raw = motion_corrected.raw
+        self.extracted = motion_corrected.extracted
+        self.slicetime_corrected: SliceTimeCorrected = (
+            motion_corrected.slicetime_corrected
+        )
+        self.motion_corrected: MotionCorrected = motion_corrected
+        self.source: Path = registered
+        super().__init__(self.source)
+
+
 class MNI152Registered(Loadable):
     def __init__(self, motion_corrected: MotionCorrected, registered: Path) -> None:
         self.raw = motion_corrected.raw
@@ -470,6 +553,29 @@ class MNI152Registered(Loadable):
         self.motion_corrected: MotionCorrected = motion_corrected
         self.source: Path = registered
         super().__init__(self.source)
+
+
+def brain_extract_parallel(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        fmri.brain_extract(force=True)
+    except Exception:
+        traceback.print_exc()
+
+def inspect_extractions(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        orig = image_read(str(path))
+        stripped = fmri.brain_extract(force=False)
+        extracted = image_read(str(stripped.source))
+        orig_file = str(path).replace(NII_SUFFIX, "_plot.png")
+        extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
+        orig.ndimage_to_list()[5].plot(filename=orig_file)
+        extracted.ndimage_to_list()[5].plot(filename=extr_file)
+    except Exception:
+        traceback.print_exc()
+        print("orig_file", orig_file)
+        print("extr_file", extr_file)
 
 
 if __name__ == "__main__":
@@ -483,15 +589,28 @@ if __name__ == "__main__":
     # )
 
     # wonky subject with RIA orientation
+    data_paths =
+    UPDATED = DATA / "updated"
     paths = sorted((DATA / "updated/Rest_w_Depression_v_Control").rglob("*bold.nii.gz"))
+    paths.extend(sorted((DATA / "updated/Rest_w_Older_v_Younger").rglob("*bold.nii.gz")))
+    # process_map(brain_extract_parallel, paths, chunksize=1)
+    process_map(inspect_extractions, paths, chunksize=1)
+    sys.exit()
     for path in paths:
         fmri = FmriScan(path)
-        extracted = fmri.brain_extract(force=False)
+        extracted = fmri.brain_extract(force=True)
         print(f"Extracted: {extracted.source}")
+        continue
+
         slice_corrected = extracted.slicetime_correct(force=False)
         print(f"Slicetimed: {slice_corrected.source}")
+
         motion_corrected = slice_corrected.motion_corrected(force=False)
         print(f"Motion-corr: {motion_corrected.source}")
-        registered = motion_corrected.mni_register(force=True)
+
+        t1w_reg = motion_corrected.t1w_register(force=True)
+        print(f"T1w-registered: {t1w_reg.source}")
+
+        # registered = motion_corrected.mni_register(force=True)
         # registered = motion_corrected.mni_register(force=False)
-        print(f"Registered: {registered.source}")
+        # print(f"Registered: {registered.source}")
