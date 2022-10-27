@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pandas as pd
 from ants import ANTsImage, image_read
 from pandas import DataFrame
 from tqdm import tqdm
