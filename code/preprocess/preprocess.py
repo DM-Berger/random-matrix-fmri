@@ -63,14 +63,15 @@ class FmriScan(Loadable):
         self.sid: str
         self.ses: Optional[str]
         self.run: Optional[str]
-        self.json_file: Path
+        self.local_json: Optional[Path]
+        self.global_json: Optional[Path]
         self.slicetimes: List[float]
         self.repetition_time: float
         self.slicetime_file: Path
 
         self.source = source
         self.sid, self.ses, self.run = self.parse_source()
-        self.json_file = self.find_json_file()
+        self.local_json, self.global_json = self.find_json_file()
         self.t1w_source = self.find_t1w_file()
         (
             self.slicetimes,
@@ -107,7 +108,9 @@ class FmriScan(Loadable):
 
         infile = self.source
         if os.environ.get("CC_CLUSTER") == "niagara":
-            DATA = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
+            DATA = Path(
+                "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated"
+            )
 
         cmd = BET()
         cmd.inputs.in_file = str(self.source.resolve())
@@ -184,53 +187,74 @@ class FmriScan(Loadable):
             raise RuntimeError(f"Missing or too many T1w files at {anat_dir}")
         return anat_img[0]
 
-    def find_json_file(self) -> Path:
+    def find_json_file(self) -> Tuple[Optional[Path], Optional[Path]]:
         # recurse up to BIDS root for remaining json files
         root = self.source.parent
         while "download" not in root.name:
             root = root.parent
 
-        # this data has local files but without slice timing in them
-        if "Park" in str(root):
-            return root / "task-ANT_bold.json"
-
-        local = Path(str(self.source).replace(NII_SUFFIX, ".json"))
-        if local.exists():
-            return local
+        local_json: Optional[Path] = Path(str(self.source).replace(NII_SUFFIX, ".json"))
+        if not local_json.exists():
+            local_json = None
 
         # just hardcode the remaining cases where data is not per scan:
         source = self.source.name
+
+        # this data has local files but without slice timing in them
+        if "Park" in str(root):
+            global_json = root / "task-ANT_bold.json"
+            return local_json, global_json
+
         # Rest_w_VigilanceAttention
         if "prefrontal_bold" in source:
-            return root / "task-rest_acq-prefrontal_bold.json"
-        if "rest_acq-fullbrain" in source:
-            return root / "task-rest_acq-fullbrain_bold.json"
+            global_json = root / "task-rest_acq-prefrontal_bold.json"
+        elif "rest_acq-fullbrain" in source:
+            global_json = root / "task-rest_acq-fullbrain_bold.json"
         # Park_v_Control
-        if ("RC" in source) and ("task-ANT" in source):
-            return root / "task-ANT_bold.json"
+        elif ("RC" in source) and ("task-ANT" in source):
+            global_json = root / "task-ANT_bold.json"
         # Rest_w_Depression_v_Control
-        if "Depression" in root.parent.name:
-            return root / "task-rest_bold.json"
+        elif "Depression" in root.parent.name:
+            global_json = root / "task-rest_bold.json"
         # Rest_w_Healthy_v_OsteoPain
-        if "Osteo" in root.parent.name:
-            return root / "task-rest_bold.json"
+        elif "Osteo" in root.parent.name:
+            global_json = root / "task-rest_bold.json"
+        else:
+            raise RuntimeError(f"Can't find .json info from source: {self.source}")
+        return local_json, global_json
 
-        raise RuntimeError(f"Can't find .json info from source: {self.source}")
+    def write_out_slicetimes(self) -> Tuple[List[str], Path, float]:
+        timings: Optional[List[str]] = None
+        TR: Optional[float] = None
+        for jsonfile in [self.local_json, self.global_json]:
+            if jsonfile is None:
+                continue
 
-    def write_out_slicetimes(self, jsonfile: Path) -> Tuple[List[float], Path, float]:
-        with open(jsonfile, "r") as handle:
-            info = json_.load(handle)
-        timings = info.get("SliceTiming", None)
+            with open(jsonfile, "r") as handle:
+                info = json_.load(handle)
+            found_timings = info.get("SliceTiming", None)
+            if (found_timings is not None) and (timings is None):
+                timings = found_timings
+
+            found_TR = info.get("RepetitionTime", None)
+            if (found_TR is not None) and (TR is None):
+                TR = float(found_TR)
+
         if timings is None:
-            raise KeyError(f"Could not find SliceTiming field in {jsonfile}")
-        TR = info.get("RepetitionTime", None)
+            raise KeyError(
+                f"Could not find SliceTiming field in any .json for {self.source}"
+            )
         if TR is None:
-            raise KeyError(f"Could not find RepetitionTime field in {jsonfile}")
+            raise KeyError(
+                f"Could not find RepetitionTime field in any .json for {self.source}"
+            )
+
         outfile = Path(str(self.source).replace(NII_SUFFIX, ".slicetimes.txt"))
         if not outfile.exists():
             with open(outfile, "w") as handle:
                 handle.writelines(list(map(lambda t: f"{t}\n", timings)))
             print(f"Wrote slice timings to {outfile}")
+
         return timings, outfile, TR
 
 
@@ -574,6 +598,12 @@ def brain_extract_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+def make_slicetime_file(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+    except Exception:
+        traceback.print_exc()
+
 
 def inspect_extractions(path: Path) -> None:
     try:
@@ -608,9 +638,10 @@ if __name__ == "__main__":
     for parent in parents:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
     paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
+    process_map(make_slicetime_file, paths, chunksize=1)
+    sys.exit()
     process_map(brain_extract_parallel, paths, chunksize=1)
     process_map(inspect_extractions, paths, chunksize=1)
-    sys.exit()
     for path in paths:
         fmri = FmriScan(path)
         extracted = fmri.brain_extract(force=True)
