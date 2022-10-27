@@ -102,8 +102,8 @@ class FmriScan(Loadable):
             os.remove(outfile)
 
         cmd = BET()
-        cmd.inputs.in_file = str(self.source)
-        cmd.inputs.out_file = str(self.extracted_path)
+        cmd.inputs.in_file = str(self.source.resolve())
+        cmd.inputs.out_file = str(self.extracted_path.resolve())
         cmd.inputs.output_type = "NIFTI_GZ"
         cmd.inputs.functional = True
         cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
@@ -111,7 +111,7 @@ class FmriScan(Loadable):
 
         print(f"Computing mask for {self.source}")
         results = cmd.run()
-        maskfile = Path(results.outputs.mask_file)
+        maskfile = Path(results.outputs.mask_file).resolve()
         maskfile.rename(Path(str(maskfile).replace("extracted_", "")))
         print(f"Wrote brain mask to {self.mask_path}")
         print(f"Wrote extracted brain to {self.extracted_path}")
@@ -177,14 +177,18 @@ class FmriScan(Loadable):
         return anat_img[0]
 
     def find_json_file(self) -> Path:
-        local = Path(str(self.source).replace(NII_SUFFIX, ".json"))
-        if local.exists():
-            return local
-
         # recurse up to BIDS root for remaining json files
         root = self.source.parent
         while "download" not in root.name:
             root = root.parent
+
+        # this data has local files but without slice timing in them
+        if "Park" in str(root):
+            return root / "task-ANT_bold.json"
+
+        local = Path(str(self.source).replace(NII_SUFFIX, ".json"))
+        if local.exists():
+            return local
 
         # just hardcode the remaining cases where data is not per scan:
         source = self.source.name
