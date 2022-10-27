@@ -589,11 +589,12 @@ if __name__ == "__main__":
     # )
 
     # wonky subject with RIA orientation
-    data_paths =
     UPDATED = DATA / "updated"
-    paths = sorted((DATA / "updated/Rest_w_Depression_v_Control").rglob("*bold.nii.gz"))
-    paths.extend(sorted((DATA / "updated/Rest_w_Older_v_Younger").rglob("*bold.nii.gz")))
-    # process_map(brain_extract_parallel, paths, chunksize=1)
+    parents = sorted(filter(lambda p: p.is_dir(), UPDATED.glob("*")))
+    paths = []
+    for parent in parents:
+        paths.extend(sorted(parent.rglob("*bold.nii.gz")))
+    process_map(brain_extract_parallel, paths, chunksize=1)
     process_map(inspect_extractions, paths, chunksize=1)
     sys.exit()
     for path in paths:
