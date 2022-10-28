@@ -9,6 +9,7 @@ BILINGUALITY = DATA / "Rest_w_Bilinguality"
 OSTEOPATHIC = DATA / "Rest_w_Healthy_v_OsteoPain"
 LEARNING = DATA / "Rest_v_LearningRecall"
 DEPRESSION = DATA / "Rest_w_Depression_v_Control"
+OLDER = DATA / "Rest_w_Older_v_Younger"
 
 """
 Reasoning for dropping can be seen from below: we drop scans with abnormal shapes
@@ -52,5 +53,13 @@ BRAIN_EXTRACT_FAILS = [
     BILINGUALITY / "ds001747-download/sub-3941/anat/",
     DEPRESSION / "ds002748-download/sub-70/anat/",
     DEPRESSION / "ds002748-download/sub-56/anat/",
+    OLDER / "ds003871-download/sub-2032/anat/"
+    OLDER / "ds003871-download/sub-2030/anat/"
+    OLDER / "ds003871-download/sub-2029/anat/"
+    OLDER / "ds003871-download/sub-2024/anat/"
+    OLDER / "ds003871-download/sub-2012/anat/"
+    OLDER / "ds003871-download/sub-2011/anat/"
+    OLDER / "ds003871-download/sub-2001/anat/"
+    OLDER / "ds003871-download/sub-1035/anat/"
 
 ]

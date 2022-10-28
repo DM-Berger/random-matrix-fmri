@@ -190,10 +190,14 @@ class FmriScan(Loadable):
         if "Depress" in str(self.t1w_source):
             # this dataset is very strange, needs lower frac to maintain more brain...
             # some subjects still lose a bit in some slices with the lower value below,
-            # but...
-            cmd.inputs.frac = 0.05  # default with functional is 0.3, leaves too much skull
+            # but with frac = 0.05 only really 2 subjects are very mangled in some slices
+            cmd.inputs.frac = 0.05
+        elif "Older" in str(self.t1w_source):
+            # this dataset has a lot of neck left behind for some reason
+            cmd.inputs.robust = True
+            cmd.inputs.frac = 0.5
         else:
-            cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.t1w_source}")
@@ -771,7 +775,7 @@ def reinspect_anat_extractions(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Depress")
+    paths = get_fmri_paths(filt="Older")
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
