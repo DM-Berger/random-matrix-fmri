@@ -192,10 +192,10 @@ class FmriScan(Loadable):
             # but with frac = 0.05 only really 2 subjects are very mangled in some slices
             cmd.inputs.frac = 0.05
         elif "Older" in str(self.t1w_source):
-            # this dataset has a lot of neck left behind for some reason
-            # cmd.inputs.reduce_bias = True
+            # This dataset has a lot of neck left behind for some reason, so we use the
+            # robust option. Experimentation also hows that frac = 0.5 works well
             cmd.inputs.robust = True
-            cmd.inputs.frac = 0.5
+            cmd.inputs.frac = 0.6
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
@@ -207,6 +207,7 @@ class FmriScan(Loadable):
             shutil.move(bet_maskfile, maskfile)
         else:
             from pprint import pformat
+
             raise FileNotFoundError(
                 f"===========================\n"
                 f"Cannot find maskfile: {bet_maskfile}. Details:\n"
@@ -758,6 +759,7 @@ def inspect_anat_extractions(path: Path) -> None:
         extracted.plot(filename=extr_file)
     except Exception:
         traceback.print_exc()
+
 
 def reinspect_anat_extractions(path: Path) -> None:
     try:
