@@ -127,7 +127,7 @@ class FmriScan(Loadable):
         if "Learning" in str(self.source):
             cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         if "Osteo" in str(self.source):
-            cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.6  # default with functional is 0.3, leaves too much skull
         else:
             cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
@@ -753,6 +753,7 @@ def inspect_extractions(path: Path) -> None:
         extracted.ndimage_to_list()[5].plot(filename=extr_file)
     except Exception:
         traceback.print_exc()
+
 
 def reinspect_extractions(path: Path) -> None:
     try:
