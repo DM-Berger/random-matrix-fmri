@@ -189,7 +189,7 @@ class FmriScan(Loadable):
         cmd.inputs.robust = False
         if "Depress" in str(self.t1w_source):
             # this dataset is very strange, needs lower frac to maintain more brain...
-            cmd.inputs.frac = 0.2  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.1  # default with functional is 0.3, leaves too much skull
         else:
             cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
