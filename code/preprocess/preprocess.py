@@ -121,7 +121,7 @@ class FmriScan(Loadable):
         cmd.inputs.out_file = str(self.extracted_path.resolve())
         cmd.inputs.output_type = "NIFTI_GZ"
         cmd.inputs.functional = True
-        cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
+        cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.source}")
@@ -163,6 +163,9 @@ class FmriScan(Loadable):
         maskfile = Path(str(self.t1w_source.resolve()).replace(NII_SUFFIX, MASK_SUFFIX))
         if outfile.exists():
             if not force:
+                return AnatExtracted(self, mask=maskfile, extracted=outfile)
+            if "ses-2" in str(outfile):
+                # special case, no need to recompute even when forcing
                 return AnatExtracted(self, mask=maskfile, extracted=outfile)
             os.remove(outfile)
 
