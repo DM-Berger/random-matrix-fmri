@@ -186,7 +186,6 @@ class FmriScan(Loadable):
         cmd.inputs.in_file = str(self.t1w_source.resolve())
         cmd.inputs.out_file = str(outfile)
         cmd.inputs.output_type = "NIFTI_GZ"
-        cmd.inputs.robust = False
         if "Depress" in str(self.t1w_source):
             # this dataset is very strange, needs lower frac to maintain more brain...
             # some subjects still lose a bit in some slices with the lower value below,
@@ -194,8 +193,8 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.05
         elif "Older" in str(self.t1w_source):
             # this dataset has a lot of neck left behind for some reason
-            cmd.inputs.robust = False
-            cmd.inputs.reduce_bias = True
+            # cmd.inputs.reduce_bias = True
+            cmd.inputs.robust = True
             cmd.inputs.frac = 0.7
         else:
             cmd.inputs.frac = 0.3
