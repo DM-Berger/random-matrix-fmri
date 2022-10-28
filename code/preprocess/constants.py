@@ -47,19 +47,18 @@ SUBJECTS_TO_DROP = [
     OSTEOPATHIC / 'ds000208-download/sub-70/func/sub-70_task-rest_bold.nii.gz',  # noqa
 ]
 
-BRAIN_EXTRACT_FAILS = [
+ANAT_BRAIN_EXTRACT_FAILS = [
     PARKINSONS / "ds001907-download/sub-RC4109/ses-1/anat/",
     BILINGUALITY / "ds001747-download/sub-4128/anat/",
     BILINGUALITY / "ds001747-download/sub-3941/anat/",
     DEPRESSION / "ds002748-download/sub-70/anat/",
     DEPRESSION / "ds002748-download/sub-56/anat/",
-    OLDER / "ds003871-download/sub-2032/anat/"
-    OLDER / "ds003871-download/sub-2030/anat/"
-    OLDER / "ds003871-download/sub-2029/anat/"
-    OLDER / "ds003871-download/sub-2024/anat/"
-    OLDER / "ds003871-download/sub-2012/anat/"
-    OLDER / "ds003871-download/sub-2011/anat/"
-    OLDER / "ds003871-download/sub-2001/anat/"
-    OLDER / "ds003871-download/sub-1035/anat/"
+]
 
+FUNC_BRAIN_EXTRACT_FAILS = [
+    PARKINSONS / "ds001907-download/sub-RC4109/ses-1/anat/",
+    BILINGUALITY / "ds001747-download/sub-4128/anat/",
+    BILINGUALITY / "ds001747-download/sub-3941/anat/",
+    DEPRESSION / "ds002748-download/sub-70/anat/",
+    DEPRESSION / "ds002748-download/sub-56/anat/",
 ]

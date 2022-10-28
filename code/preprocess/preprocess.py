@@ -196,6 +196,9 @@ class FmriScan(Loadable):
             # robust option. Experimentation also hows that the `frac` below works best
             cmd.inputs.robust = True
             cmd.inputs.frac = 0.7
+        elif "Vigil" in str(self.t1w_source):
+            # Perhaps the high resolution of this data allows for a very low frac
+            cmd.inputs.frac = 0.1
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
@@ -777,7 +780,7 @@ def reinspect_anat_extractions(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Older")
+    paths = get_fmri_paths(filt="Vigil")
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
