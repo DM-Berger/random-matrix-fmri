@@ -15,6 +15,7 @@ from warnings import warn
 
 import ants
 import numpy as np
+import gc
 from ants import ANTsImage, image_read, motion_correction, resample_image
 from ants.registration import reorient_image
 from nipype.interfaces.base.support import InterfaceResult
@@ -138,9 +139,22 @@ class FmriScan(Loadable):
         maskfile.rename(Path(str(maskfile).replace("extracted_", "")))
         print(f"Wrote brain mask to {self.mask_path}")
         print(f"Wrote extracted brain to {self.extracted_path}")
-        print(f"Cleaning up with ANTS get_mask...")
+
+        # dunno, but ANTs causing huge memory usage here
+        cmd = None
+        results = None
+        gc.collect()
+
+        print(f"Cleaning up {self.extracted_path} with ANTS get_mask...")
         img = image_read(str(self.extracted_path))
-        mask = img.get_mask()
+        if "Vigil" in str(self.source):
+            # too slow on this data for some reason
+            avg = img.ndimage_to_list()[0].new_image_like(img.mean(axis=-1))
+            mask3d = avg.get_mask()
+            mask4d = np.stack([mask3d.numpy() for _ in range(img.shape[-1])], axis=-1)
+            mask = img.astype("uint8").new_image_like(mask4d)
+        else:
+            mask = img.get_mask()
         img = img.mask_image(mask)
         ants.image_write(img, str(self.extracted_path))
 
@@ -818,6 +832,7 @@ if __name__ == "__main__":
     paths = get_fmri_paths(filt="Vigil")
     # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
+    # NOTE: for "Vigilance" data, can only have up to 10 workers
     process_map(brain_extract_parallel, paths, chunksize=1, max_workers=10)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
