@@ -193,9 +193,9 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.05
         elif "Older" in str(self.t1w_source):
             # This dataset has a lot of neck left behind for some reason, so we use the
-            # robust option. Experimentation also hows that frac = 0.5 works well
+            # robust option. Experimentation also hows that the `frac`  below works well
             cmd.inputs.robust = True
-            cmd.inputs.frac = 0.6
+            cmd.inputs.frac = 0.7
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
