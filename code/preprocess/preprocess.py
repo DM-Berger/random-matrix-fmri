@@ -9,6 +9,7 @@ import sys
 import traceback
 from abc import ABC
 from pathlib import Path
+from time import sleep
 from typing import List, Optional, Tuple
 from warnings import warn
 
@@ -153,21 +154,8 @@ class FmriScan(Loadable):
 
         Notes
         -----
-        Brain-Extracted Data:
-
-        Non-Extracted:
-            Parkinsons
-            Learning
-            Bilinguality
-            Depression
-            Osteo
-
-        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
-        the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
-        also must define a `min_mask` (or max_mask) for some purposes.
-
-        ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
-        extraction across subjects
+        Using "robust" option causes a huge amount of phony stderr spam about missing or
+        truncated files. Ignore it.
         """
         outfile = Path(
             str(self.t1w_source.resolve()).replace(NII_SUFFIX, EXTRACTED_SUFFIX)
@@ -198,12 +186,10 @@ class FmriScan(Loadable):
             cmd.inputs.robust = True
             cmd.inputs.frac = 0.7
         elif "Vigil" in str(self.t1w_source):
-            # Perhaps the high resolution of this data allows for a very low frac
+            # This also needs the robust treatment. Huge amounts of neck.
             # Also there are only 22 subjects for this dataset
-            # cmd.inputs.frac = 0.5  # THIS is pretty good!
-            # cmd.inputs.frac = 0.55  # not so good
             cmd.inputs.robust = True
-            cmd.inputs.frac = 0.5
+            cmd.inputs.frac = 0.3
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
@@ -211,6 +197,7 @@ class FmriScan(Loadable):
         print(f"Computing mask for {self.t1w_source}")
         results: InterfaceResult = cmd.run()
         bet_maskfile = Path(results.outputs.mask_file).resolve()
+        sleep(1)
         if bet_maskfile.exists():
             shutil.move(bet_maskfile, maskfile)
         else:
