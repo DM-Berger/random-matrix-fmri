@@ -810,7 +810,7 @@ if __name__ == "__main__":
     paths = get_fmri_paths(filt="Learning")
     # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
-    # process_map(brain_extract_parallel, paths, chunksize=1)
+    process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
