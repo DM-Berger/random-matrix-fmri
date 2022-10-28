@@ -22,4 +22,5 @@ FILE="$PROJECT/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-$ID/
 OUTDIR="$PROJECT/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-$ID/ses-1/anat"
 export SUBJECTS_DIR="$OUTDIR/freesurfer"
 
+module load freesurfer/7.1.0
 recon-all -subject "sub-$ID""_ses-1" -i "$FILE"
