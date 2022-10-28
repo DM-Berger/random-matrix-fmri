@@ -198,7 +198,7 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.7
         elif "Vigil" in str(self.t1w_source):
             # Perhaps the high resolution of this data allows for a very low frac
-            cmd.inputs.frac = 0.1
+            cmd.inputs.frac = 0.2
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
