@@ -695,7 +695,7 @@ def get_fmri_paths(filt: Optional[str] = None) -> List[Path]:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
     paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
     if filt is not None:
-        paths = sorted(filter(lambda p: filt in str(p)))
+        paths = sorted(filter(lambda p: filt in str(p), paths))
     return paths
 
 
