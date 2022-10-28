@@ -16,6 +16,7 @@ import ants
 import numpy as np
 from ants import ANTsImage, image_read, motion_correction, resample_image
 from ants.registration import reorient_image
+from nipype.interfaces.base.support import InterfaceResult
 from nipype.interfaces.fsl import BET, SliceTimer
 from numpy import ndarray
 from tqdm.contrib.concurrent import process_map
@@ -198,13 +199,13 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.7
         elif "Vigil" in str(self.t1w_source):
             # Perhaps the high resolution of this data allows for a very low frac
-            cmd.inputs.frac = 0.2
+            cmd.inputs.frac = 0.5
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.t1w_source}")
-        results = cmd.run()
+        results: InterfaceResult = cmd.run()
         bet_maskfile = Path(results.outputs.mask_file).resolve()
         if bet_maskfile.exists():
             shutil.move(bet_maskfile, maskfile)
@@ -214,7 +215,8 @@ class FmriScan(Loadable):
             raise FileNotFoundError(
                 f"===========================\n"
                 f"Cannot find maskfile: {bet_maskfile}. Details:\n"
-                f"results:\n{pformat(results, indent=2, depth=5)}"
+                f"results.inputs:\n{pformat(results.inputs, indent=2, depth=5)}\n"
+                f"results.outputs:\n{pformat(results.outputs, indent=2, depth=5)}\n"
                 f"outfile:\n{outfile}"
                 f"maskfile:\n{maskfile}\n"
                 f"==========================="
