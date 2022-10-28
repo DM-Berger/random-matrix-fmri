@@ -194,8 +194,9 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.05
         elif "Older" in str(self.t1w_source):
             # this dataset has a lot of neck left behind for some reason
-            cmd.inputs.robust = True
-            cmd.inputs.frac = 0.5
+            cmd.inputs.robust = False
+            cmd.inputs.reduce_bias = True
+            cmd.inputs.frac = 0.7
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
