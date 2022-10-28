@@ -121,12 +121,13 @@ class FmriScan(Loadable):
         cmd.inputs.out_file = str(self.extracted_path.resolve())
         cmd.inputs.output_type = "NIFTI_GZ"
         cmd.inputs.functional = True
-        cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
+        # cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
+        cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.source}")
         results = cmd.run()
-        maskfile = Path(results.outputs.mask_file).resolve()
+        maskfile = Path(results.outputs.mask_file).resolve()  # type: ignore
         maskfile.rename(Path(str(maskfile).replace("extracted_", "")))
         print(f"Wrote brain mask to {self.mask_path}")
         print(f"Wrote extracted brain to {self.extracted_path}")
@@ -199,7 +200,7 @@ class FmriScan(Loadable):
 
         print(f"Computing mask for {self.t1w_source}")
         results: InterfaceResult = cmd.run()
-        bet_maskfile = Path(results.outputs.mask_file).resolve()
+        bet_maskfile = Path(results.outputs.mask_file).resolve()  # type: ignore
         sleep(1)
         if bet_maskfile.exists():
             shutil.move(bet_maskfile, maskfile)
@@ -372,9 +373,9 @@ class BrainExtracted(Loadable):
         """
         Notes
         -----
-        Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k" (i.e. k+, slices along
-        third spatial dimension, first entry of file corresponds to smallest index along thid spatial
-        dim)
+        Only Rest_w_VigilanceAttention data has SliceEncodingDirection = "k"
+        (i.e. k+, slices along third spatial dimension, first entry of file
+        corresponds to smallest index along thid spatial dim)
 
         For BIDS slice timing documentation, see:
 
@@ -710,7 +711,7 @@ def get_fmri_paths(filt: Optional[str] = None) -> List[Path]:
 def brain_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        fmri.brain_extract(force=False)
+        fmri.brain_extract(force=True)
     except Exception:
         traceback.print_exc()
 
@@ -784,18 +785,19 @@ def slicetime_correct_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    # paths = get_fmri_paths(filt="Vigil")
-    paths = get_fmri_paths()
+    paths = get_fmri_paths(filt="Vigil")
+    # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
-    # process_map(brain_extract_parallel, paths, chunksize=1)
+    process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
-    process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
+    # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
 
     sys.exit()
     for path in paths:
