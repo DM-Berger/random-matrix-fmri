@@ -199,8 +199,10 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.7
         elif "Vigil" in str(self.t1w_source):
             # Perhaps the high resolution of this data allows for a very low frac
+            # Also there are only 22 subjects for this dataset
             # cmd.inputs.frac = 0.5  # THIS is pretty good!
-            cmd.inputs.frac = 0.55
+            # cmd.inputs.frac = 0.55  # not so good
+            cmd.inputs.frac = 0.4
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
