@@ -125,9 +125,9 @@ class FmriScan(Loadable):
         if "Vigil" in str(self.source):
             cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         if "Learning" in str(self.source):
-            cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         else:
-            cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.source}")
