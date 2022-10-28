@@ -26,4 +26,4 @@ OUTDIR="$PROJECT/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-$I
 export SUBJECTS_DIR="$OUTDIR/freesurfer"
 mkdir -p "$SUBJECTS_DIR"
 cd "$DATA" || exit 1
-recon-all -subject "sub-$ID""_ses-1" -i "$FILE"
+recon-all -subject "sub-$ID""_ses-1" -i "$FILE" -all
