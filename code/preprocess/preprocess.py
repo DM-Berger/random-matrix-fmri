@@ -710,7 +710,7 @@ def brain_extract_parallel(path: Path) -> None:
 def anat_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        fmri.anat_extract(force=True)
+        fmri.anat_extract(force=False)
     except Exception:
         traceback.print_exc()
 
@@ -753,6 +753,19 @@ def inspect_anat_extractions(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+def reinspect_anat_extractions(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        stripped = fmri.anat_extract(force=False)
+        orig_file = str(fmri.t1w_source).replace(NII_SUFFIX, "_plot.png")
+        extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
+        orig = image_read(str(fmri.t1w_source))
+        extracted = image_read(str(stripped.source))
+        orig.plot(filename=orig_file)
+        extracted.plot(filename=extr_file)
+    except Exception:
+        traceback.print_exc()
+
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
@@ -760,9 +773,10 @@ if __name__ == "__main__":
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
+    process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
