@@ -189,7 +189,7 @@ class FmriScan(Loadable):
         cmd.inputs.robust = False
         if "Depress" in str(self.t1w_source):
             # this dataset is very strange, needs lower frac to maintain more brain...
-            cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.2  # default with functional is 0.3, leaves too much skull
         else:
             cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
@@ -710,7 +710,7 @@ def brain_extract_parallel(path: Path) -> None:
 def anat_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        fmri.anat_extract(force=False)
+        fmri.anat_extract(force=True)
     except Exception:
         traceback.print_exc()
 
@@ -773,7 +773,7 @@ if __name__ == "__main__":
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
