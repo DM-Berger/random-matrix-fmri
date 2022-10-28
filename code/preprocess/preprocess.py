@@ -138,6 +138,11 @@ class FmriScan(Loadable):
         maskfile.rename(Path(str(maskfile).replace("extracted_", "")))
         print(f"Wrote brain mask to {self.mask_path}")
         print(f"Wrote extracted brain to {self.extracted_path}")
+        print(f"Cleaning up with ANTS get_mask...")
+        img = image_read(str(self.extracted_path))
+        mask = img.get_mask()
+        masked = img.mask_image(mask)
+        ants.image_write(masked, str(self.extracted_path))
 
         # print(f"Loading {self.source}")
         # img: ANTsImage = image_read(str(self.source))
@@ -810,7 +815,7 @@ def slicetime_correct_parallel(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Osteo")
+    paths = get_fmri_paths(filt="Learning")
     # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     process_map(brain_extract_parallel, paths, chunksize=1)
