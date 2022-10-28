@@ -199,7 +199,8 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.7
         elif "Vigil" in str(self.t1w_source):
             # Perhaps the high resolution of this data allows for a very low frac
-            cmd.inputs.frac = 0.5
+            # cmd.inputs.frac = 0.5  # THIS is pretty good!
+            cmd.inputs.frac = 0.6
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
@@ -213,13 +214,13 @@ class FmriScan(Loadable):
             from pprint import pformat
 
             raise FileNotFoundError(
-                f"===========================\n"
-                f"Cannot find maskfile: {bet_maskfile}. Details:\n"
-                f"results.inputs:\n{pformat(results.inputs, indent=2, depth=5)}\n"
-                f"results.outputs:\n{pformat(results.outputs, indent=2, depth=5)}\n"
-                f"outfile:\n{outfile}"
-                f"maskfile:\n{maskfile}\n"
-                f"==========================="
+                f"\n\t===========================\n"
+                f"\tCannot find maskfile: {bet_maskfile}. Details:\n"
+                f"\tresults.inputs:\n{pformat(results.inputs, indent=2, depth=5)}\n"
+                f"\tresults.outputs:\n{pformat(results.outputs, indent=2, depth=5)}\n"
+                f"\toutfile: {outfile}\n"
+                f"\tmaskfile: {maskfile}\n"
+                f"\t===========================\n"
             )
         print(f"Wrote brain mask to {maskfile}")
         print(f"Wrote extracted brain to {outfile}")
