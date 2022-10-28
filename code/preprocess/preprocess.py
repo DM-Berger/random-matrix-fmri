@@ -122,7 +122,10 @@ class FmriScan(Loadable):
         cmd.inputs.output_type = "NIFTI_GZ"
         cmd.inputs.functional = True
         # cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
-        cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
+        if "Vigil" in str(self.source):
+            cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
+        else:
+            cmd.inputs.frac = 0.9  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.source}")
@@ -703,6 +706,7 @@ def get_fmri_paths(filt: Optional[str] = None) -> List[Path]:
     for parent in parents:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
     paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
+    paths = sorted(filter(lambda p: "prefrontal" not in str(p), paths))
     if filt is not None:
         paths = sorted(filter(lambda p: filt in str(p), paths))
     return paths
