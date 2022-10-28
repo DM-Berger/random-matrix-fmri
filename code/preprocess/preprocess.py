@@ -195,7 +195,7 @@ class FmriScan(Loadable):
             # this dataset has a lot of neck left behind for some reason
             # cmd.inputs.reduce_bias = True
             cmd.inputs.robust = True
-            cmd.inputs.frac = 0.7
+            cmd.inputs.frac = 0.5
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
