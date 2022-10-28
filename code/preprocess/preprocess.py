@@ -202,7 +202,8 @@ class FmriScan(Loadable):
             # Also there are only 22 subjects for this dataset
             # cmd.inputs.frac = 0.5  # THIS is pretty good!
             # cmd.inputs.frac = 0.55  # not so good
-            cmd.inputs.frac = 0.4
+            cmd.inputs.robust = True
+            cmd.inputs.frac = 0.5
         else:
             cmd.inputs.frac = 0.3
         cmd.inputs.mask = True
