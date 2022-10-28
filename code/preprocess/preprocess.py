@@ -187,7 +187,11 @@ class FmriScan(Loadable):
         cmd.inputs.out_file = str(outfile)
         cmd.inputs.output_type = "NIFTI_GZ"
         cmd.inputs.robust = False
-        cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
+        if "Depress" in str(self.t1w_source):
+            # this dataset is very strange, needs lower frac to maintain more brain...
+            cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
+        else:
+            cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
 
         print(f"Computing mask for {self.t1w_source}")
@@ -683,13 +687,15 @@ class MNI152Registered(Loadable):
         super().__init__(self.source)
 
 
-def get_fmri_paths() -> List[Path]:
+def get_fmri_paths(filt: Optional[str] = None) -> List[Path]:
     UPDATED = DATA / "updated"
     parents = sorted(filter(lambda p: p.is_dir(), UPDATED.glob("*")))
     paths = []
     for parent in parents:
         paths.extend(sorted(parent.rglob("*bold.nii.gz")))
     paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
+    if filt is not None:
+        paths = sorted(filter(lambda p: filt in str(p)))
     return paths
 
 
@@ -704,7 +710,7 @@ def brain_extract_parallel(path: Path) -> None:
 def anat_extract_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
-        fmri.anat_extract(force=False)
+        fmri.anat_extract(force=True)
     except Exception:
         traceback.print_exc()
 
@@ -750,13 +756,13 @@ def inspect_anat_extractions(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths()
+    paths = get_fmri_paths(filt="Depress")
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
+    # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)

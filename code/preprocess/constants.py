@@ -7,6 +7,7 @@ PSYCH_HIGH_RES = DATA / "Rest_w_VigilanceAttention"
 PARKINSONS = DATA / "Park_v_Control"
 BILINGUALITY = DATA / "Rest_w_Bilinguality"
 OSTEOPATHIC = DATA / "Rest_w_Healthy_v_OsteoPain"
+LEARNING = DATA / "Rest_v_LearningRecall"
 
 """
 Reasoning for dropping can be seen from below: we drop scans with abnormal shapes
@@ -42,4 +43,11 @@ SUBJECTS_TO_DROP = [
     PARKINSONS / "ds001907-download/sub-RC4121/ses-2/func/sub-RC4121_ses-2_task-rest_bold.nii.gz",  # noqa
     OSTEOPATHIC / 'ds000208-download/sub-59/func/sub-59_task-rest_bold.nii.gz',  # noqa
     OSTEOPATHIC / 'ds000208-download/sub-70/func/sub-70_task-rest_bold.nii.gz',  # noqa
+]
+
+BRAIN_EXTRACT_FAILS = [
+    PARKINSONS / "ds001907-download/sub-RC4109/ses-1/anat/",
+    BILINGUALITY / "ds001747-download/sub-4128/anat/",
+    BILINGUALITY / "ds001747-download/sub-3941/anat/",
+
 ]
