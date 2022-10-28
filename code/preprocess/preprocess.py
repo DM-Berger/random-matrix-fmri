@@ -776,16 +776,26 @@ def reinspect_anat_extractions(path: Path) -> None:
         traceback.print_exc()
 
 
+def slicetime_correct_parallel(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        extracted = fmri.brain_extract(force=False)
+        corrected = extracted.slicetime_correct(force=False)
+    except Exception:
+        traceback.print_exc()
+
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
     paths = get_fmri_paths(filt="Vigil")
     # process_map(make_slicetime_file, paths, chunksize=1)
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
+    # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
-    process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
+    # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
+    process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
+
     sys.exit()
     for path in paths:
         fmri = FmriScan(path)
