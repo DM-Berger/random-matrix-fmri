@@ -24,5 +24,6 @@ FILE="$DATA/ds001168-download/sub-$ID/ses-1/anat/sub-$ID""_ses-1_T1w.nii.gz"
 OUTDIR="$PROJECT/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-$ID/ses-1/anat"
 
 export SUBJECTS_DIR="$OUTDIR/freesurfer"
+mkdir -p "$SUBJECTS_DIR"
 cd "$DATA" || exit 1
 recon-all -subject "sub-$ID""_ses-1" -i "$FILE"
