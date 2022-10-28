@@ -191,7 +191,7 @@ class FmriScan(Loadable):
             # this dataset is very strange, needs lower frac to maintain more brain...
             # some subjects still lose a bit in some slices with the lower value below,
             # but...
-            cmd.inputs.frac = 0.02  # default with functional is 0.3, leaves too much skull
+            cmd.inputs.frac = 0.05  # default with functional is 0.3, leaves too much skull
         else:
             cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
