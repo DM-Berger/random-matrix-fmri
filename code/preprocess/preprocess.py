@@ -752,6 +752,19 @@ def inspect_extractions(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+def reinspect_extractions(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        stripped = fmri.brain_extract(force=False)
+        orig_file = str(path).replace(NII_SUFFIX, "_plot.png")
+        extr_file = str(stripped.source).replace(NII_SUFFIX, "_plot.png")
+        orig = image_read(str(path))
+        extracted = image_read(str(stripped.source))
+        orig.ndimage_to_list()[5].plot(filename=orig_file)
+        extracted.ndimage_to_list()[5].plot(filename=extr_file)
+    except Exception:
+        traceback.print_exc()
+
 
 def inspect_anat_extractions(path: Path) -> None:
     try:
@@ -800,10 +813,11 @@ if __name__ == "__main__":
     # process_map(brain_extract_parallel, paths, chunksize=1)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
-    process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
+    # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
+    process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
 
     sys.exit()
     for path in paths:
