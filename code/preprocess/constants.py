@@ -8,6 +8,7 @@ PARKINSONS = DATA / "Park_v_Control"
 BILINGUALITY = DATA / "Rest_w_Bilinguality"
 OSTEOPATHIC = DATA / "Rest_w_Healthy_v_OsteoPain"
 LEARNING = DATA / "Rest_v_LearningRecall"
+DEPRESSION = DATA / "Rest_w_Depression_v_Control"
 
 """
 Reasoning for dropping can be seen from below: we drop scans with abnormal shapes
@@ -49,5 +50,7 @@ BRAIN_EXTRACT_FAILS = [
     PARKINSONS / "ds001907-download/sub-RC4109/ses-1/anat/",
     BILINGUALITY / "ds001747-download/sub-4128/anat/",
     BILINGUALITY / "ds001747-download/sub-3941/anat/",
+    DEPRESSION / "ds002748-download/sub-70/anat/",
+    DEPRESSION / "ds002748-download/sub-56/anat/",
 
 ]
