@@ -126,6 +126,8 @@ class FmriScan(Loadable):
             cmd.inputs.frac = 0.3  # default with functional is 0.3, leaves too much skull
         if "Learning" in str(self.source):
             cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
+        if "Osteo" in str(self.source):
+            cmd.inputs.frac = 0.5  # default with functional is 0.3, leaves too much skull
         else:
             cmd.inputs.frac = 0.7  # default with functional is 0.3, leaves too much skull
         cmd.inputs.mask = True
@@ -807,7 +809,7 @@ def slicetime_correct_parallel(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Learning")
+    paths = get_fmri_paths(filt="Osteo")
     # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     process_map(brain_extract_parallel, paths, chunksize=1)
