@@ -21,9 +21,15 @@ from tqdm.contrib.concurrent import process_map
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DATA = ROOT / "data"
+UPDATED = DATA / "updated"
+RMT_DIR = UPDATED / "rmt"
+
 if os.environ.get("CC_CLUSTER") == "niagara":
     ROOT = Path("/scratch/j/jlevman/dberger/random-matrix-fmri")
     DATA = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data")
+    UPDATED = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
+    RMT_DIR = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/rmt")
+
 
 TEMPLATE = DATA / "tpl-MNI152NLin2009cAsym_res-02_desc-brain_T1w.nii.gz"
 if not TEMPLATE.exists():
@@ -57,6 +63,14 @@ class Loadable(ABC):
 
 class RMTComputatable(Loadable):
     def eigenvalues(self):
+        from empyricalRMT.eigenvalues import Eigenvalues
+
+        img = self.load()
+        arr = img.get_fdata()
+        arr2d = arr.reshape(-1, arr.shape[-1])
+        eigs = Eigenvalues.from_time_series(
+            arr, covariance=False, trim_zeros=False, time_axis=1
+        )
         pass
 
     def load(self) -> Nifti2Image:
