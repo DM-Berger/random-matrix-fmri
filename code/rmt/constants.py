@@ -16,9 +16,19 @@ from pandas import DataFrame
 from rmt._types import Subgroups
 
 DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "data"
+UPDATED = DATA_ROOT / "updated"
 LEGACY_DATA_ROOT = DATA_ROOT / "legacy"
+RMT_DIR = UPDATED / "rmt"
 FULLPRE_DIRNAME = "rmt_fullpre"
 
+NII_SUFFIX = ".nii.gz"
+MASK_SUFFIX = "_mask.nii.gz"
+EXTRACTED_SUFFIX = "_extracted.nii.gz"
+SLICETIME_SUFFIX = "_slicetime-corrected.nii.gz"
+MOTION_CORRECTED_SUFFIX = "_motion-corrected.nii.gz"
+ANAT_REGISTERED_SUFFIX = "_anat-reg.nii.gz"
+MNI_REGISTERED_SUFFIX = "_mni-reg.nii.gz"
+EIGS_SUFFIX = "_eigs.nii.gz"
 
 # fmt: off
 LEARNING_DATA                  = LEGACY_DATA_ROOT / "Rest_v_LearningRecall" / "rmt"

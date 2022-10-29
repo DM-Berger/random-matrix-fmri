@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+# fmt: off
+import sys  # isort: skip
+from pathlib import Path  # isort: skip
+ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(ROOT))
+# fmt: on
+
 import gc
 import json as json_
 import os
@@ -12,17 +19,26 @@ from time import sleep
 from typing import Any, List, Optional, Tuple
 from warnings import warn
 
-import ants
 import nibabel as nib
 import numpy as np
 from nibabel import Nifti2Image
 from numpy import ndarray
 from tqdm.contrib.concurrent import process_map
 
-ROOT = Path(__file__).resolve().parent.parent.parent.parent
-DATA = ROOT / "data"
-UPDATED = DATA / "updated"
-RMT_DIR = UPDATED / "rmt"
+from rmt.constants import ANAT_REGISTERED_SUFFIX
+from rmt.constants import DATA_ROOT as DATA
+from rmt.constants import (
+    EIGS_SUFFIX,
+    EXTRACTED_SUFFIX,
+    MASK_SUFFIX,
+    MNI_REGISTERED_SUFFIX,
+    MOTION_CORRECTED_SUFFIX,
+    NII_SUFFIX,
+    RMT_DIR,
+    SLICETIME_SUFFIX,
+    UPDATED,
+)
+from rmt.preprocess.extract import Loadable, RMTComputatable
 
 if os.environ.get("CC_CLUSTER") == "niagara":
     ROOT = Path("/scratch/j/jlevman/dberger/random-matrix-fmri")
@@ -37,44 +53,6 @@ if not TEMPLATE.exists():
         f"No registration template found at {TEMPLATE}. "
         f"Run `python {DATA / 'download_template.py'} to download it."
     )
-
-NII_SUFFIX = ".nii.gz"
-MASK_SUFFIX = "_mask.nii.gz"
-MINMASK_SUFFIX = "_mask-min.nii.gz"
-EXTRACTED_SUFFIX = "_extracted.nii.gz"
-SLICETIME_SUFFIX = "_slicetime-corrected.nii.gz"
-MOTION_CORRECTED_SUFFIX = "_motion-corrected.nii.gz"
-ANAT_REGISTERED_SUFFIX = "_anat-reg.nii.gz"
-MNI_REGISTERED_SUFFIX = "_mni-reg.nii.gz"
-
-
-def min_mask_path_from_mask_path(mask: Path) -> Path:
-    return Path(str(mask).replace(MASK_SUFFIX, MINMASK_SUFFIX))
-
-
-class Loadable(ABC):
-    def __init__(self, source: Path) -> None:
-        super().__init__()
-        self.source: Path = source
-
-    def load(self) -> Nifti2Image:
-        return nib.load(str(self.source))
-
-
-class RMTComputatable(Loadable):
-    def eigenvalues(self):
-        from empyricalRMT.eigenvalues import Eigenvalues
-
-        img = self.load()
-        arr = img.get_fdata()
-        arr2d = arr.reshape(-1, arr.shape[-1])
-        eigs = Eigenvalues.from_time_series(
-            arr, covariance=False, trim_zeros=False, time_axis=1
-        )
-        pass
-
-    def load(self) -> Nifti2Image:
-        return nib.load(str(self.source))
 
 
 class FmriScan(Loadable):
@@ -92,7 +70,7 @@ class FmriScan(Loadable):
         self.slicetime_file: Optional[Path]
 
         self.source = source
-        self.sid, self.ses, self.run = self.parse_source()
+        self.sid, self.ses, self.run, self.data = self.parse_source()
         self.local_json, self.global_json = self.find_json_file()
         self.t1w_source = self.find_t1w_file()
         (
@@ -123,6 +101,7 @@ class FmriScan(Loadable):
         ants.get_mask seems to be single-core, so it is extremely worth
         parallelizing brain extraction across subjects
         """
+        import ants
         from ants import image_read
         from nipype.interfaces.fsl import BET
 
@@ -245,6 +224,7 @@ class FmriScan(Loadable):
         return AnatExtracted(self, mask=maskfile, extracted=outfile)
 
     def reorient_4d_to_RAS(self, img: Any) -> Any:
+        import ants
         from ants import ANTsImage
 
         assert isinstance(img, ANTsImage)
@@ -262,26 +242,24 @@ class FmriScan(Loadable):
         return Path(parent / outname)
 
     @property
-    def min_mask_path(self) -> Path:
-        return min_mask_path_from_mask_path(self.mask_path)
-
-    @property
     def extracted_path(self) -> Path:
         parent = self.source.parent
         outname = str(self.source.resolve().name).replace(NII_SUFFIX, EXTRACTED_SUFFIX)
         return Path(parent / outname)
 
-    def parse_source(self) -> Tuple[str, Optional[str], Optional[str]]:
+    def parse_source(self) -> Tuple[str, Optional[str], Optional[str], Optional[str]]:
         sid_ = re.search(r"sub-(?:[a-zA-Z]*)?([0-9]+)_.*", self.source.stem)
         ses = re.search(r"ses-([0-9]+)_.*", self.source.stem)
         run_ = re.search(r"run-([0-9]+)_.*", self.source.stem)
+        data_ = re.search(r"data/updated/(.*)/ds00.*", str(self.source))
 
         if sid_ is None:
             raise RuntimeError(f"Didn't find an SID in filename {self.source}")
         sid = sid_[1]
         session = ses[1] if ses is not None else None
         run = run_[1] if run_ is not None else None
-        return sid, session, run
+        data = data_[1] if data_ is not None else None
+        return sid, session, run, data
 
     def find_t1w_file(self) -> Path:
         anat_dir = self.source.parent.parent / "anat"
@@ -383,17 +361,12 @@ class AnatExtracted(Loadable):
         self.source: Path = extracted
 
 
-class BrainExtracted(Loadable):
+class BrainExtracted(RMTComputatable):
     def __init__(self, raw: FmriScan) -> None:
         super().__init__(raw.extracted_path)
         self.raw = raw
         self.mask = self.raw.mask_path
-        self.min_mask = min_mask_path_from_mask_path(self.mask)
         self.source: Path = raw.extracted_path
-
-    def eigenvalues(self) -> ndarray:
-        """Extract masked correlation matrix from self.source and compute eigenvalues"""
-        raise NotImplementedError()
 
     def slicetime_correct(
         self, slice_direction: int = 3, force: bool = False
@@ -499,7 +472,7 @@ class BrainExtracted(Loadable):
         return SliceTimeCorrected(self, outfile)
 
 
-class SliceTimeCorrected(Loadable):
+class SliceTimeCorrected(RMTComputatable):
     def __init__(self, extracted: BrainExtracted, corrected: Path) -> None:
         super().__init__(corrected)
         self.raw: FmriScan = extracted.raw
@@ -511,6 +484,7 @@ class SliceTimeCorrected(Loadable):
         raise NotImplementedError()
 
     def motion_corrected(self, force: bool = False) -> MotionCorrected:
+        import ants
         from ants import motion_correction
 
         outfile = Path(str(self.source).replace(NII_SUFFIX, MOTION_CORRECTED_SUFFIX))
@@ -536,7 +510,7 @@ class SliceTimeCorrected(Loadable):
         return MotionCorrected(self, motion_corrected=outfile)
 
 
-class MotionCorrected(Loadable):
+class MotionCorrected(RMTComputatable):
     def __init__(self, corrected: SliceTimeCorrected, motion_corrected: Path) -> None:
         self.raw = corrected.raw
         self.extracted = corrected.extracted
@@ -638,6 +612,7 @@ class MotionCorrected(Loadable):
             Depression
 
         """
+        import ants
         from ants import ANTsImage
 
         outfile = Path(str(self.source).replace(NII_SUFFIX, ANAT_REGISTERED_SUFFIX))
@@ -734,7 +709,7 @@ class T1wRegistered(Loadable):
         super().__init__(self.source)
 
 
-class MNI152Registered(Loadable):
+class MNI152Registered(RMTComputatable):
     def __init__(self, motion_corrected: MotionCorrected, registered: Path) -> None:
         self.raw = motion_corrected.raw
         self.extracted = motion_corrected.extracted
