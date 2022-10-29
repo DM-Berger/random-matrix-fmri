@@ -147,8 +147,10 @@ class FmriScan(Loadable):
 
         print(f"Cleaning up {self.extracted_path} with ANTS get_mask...")
         img = image_read(str(self.extracted_path))
-        if "Vigil" in str(self.source):
-            # too slow on this data for some reason
+        if ("Vigil" in str(self.source)) or ("Biling" in str(self.source)):
+            # Vigilance data is high spatial resolution, and Bilingual data is very
+            # long (800 timepoints). Takes too long to use get_mask with the full
+            # image data in both cases, so we use the average image instead
             avg = img.ndimage_to_list()[0].new_image_like(img.mean(axis=-1))
             mask3d = avg.get_mask()
             mask4d = np.stack([mask3d.numpy() for _ in range(img.shape[-1])], axis=-1)
@@ -466,7 +468,7 @@ class BrainExtracted(Loadable):
 
         infile = self.source
         outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
-        if not self.raw.slicetime_file.exists():
+        if (self.raw.slicetime_file is None) or (not self.raw.slicetime_file.exists()):
             # just copy over extracted brain
             shutil.copy(infile, outfile)
             warn(
@@ -509,13 +511,13 @@ class SliceTimeCorrected(Loadable):
             os.remove(outfile)
 
         img = ants.image_read(str(self.source))
-        mask = ants.image_read(str(self.extracted.min_mask))
-        mask3d = ants.ndimage_to_list(mask)[0]
+        # img8 = img.ndimage_to_list()[8]  # don't use first volume...
+        # mask3d = img8.get_mask()
         results = motion_correction(
             img,
             fixed=None,  # uses mean image in this case
             type_of_transform="BOLDRigid",
-            mask=mask3d,
+            # mask=mask3d,
         )
         corrected = results["motion_corrected"]
         print(f"Performing motion correction for {self.source}")
@@ -826,21 +828,32 @@ def slicetime_correct_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+def motion_correct_parallel(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        extracted = fmri.brain_extract(force=False)
+        corrected = extracted.slicetime_correct(force=False)
+        corrected.motion_corrected(force=False)
+    except Exception:
+        traceback.print_exc()
+
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Vigil")
-    # paths = get_fmri_paths()
+    # paths = get_fmri_paths(filt="Depression")
+    paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     # NOTE: for "Vigilance" data, can only have up to 10 workers
-    process_map(brain_extract_parallel, paths, chunksize=1, max_workers=10)
+    # NOTE: for "Bilingual" data, can only have up to 7? workers
+    # process_map(brain_extract_parallel, paths, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(anat_extract_parallel, paths, chunksize=1, max_workers=40)
     # process_map(inspect_extractions, paths, chunksize=1, max_workers=40)
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
-    process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
+    process_map(motion_correct_parallel, paths, chunksize=1, max_workers=40)
+    # process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
 
     sys.exit()
     for path in paths:
