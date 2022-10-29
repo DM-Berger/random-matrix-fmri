@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import gc
-import json
 import json as json_
 import os
 import re
@@ -16,8 +15,7 @@ from warnings import warn
 
 import ants
 import numpy as np
-from ants import ANTsImage, image_read, motion_correction, resample_image
-from ants.registration import reorient_image
+from ants import ANTsImage, image_read, motion_correction
 from nipype.interfaces.base.support import InterfaceResult
 from nipype.interfaces.fsl import BET, SliceTimer
 from numpy import ndarray
@@ -97,12 +95,13 @@ class FmriScan(Loadable):
             Depression
             Osteo
 
-        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in general be identical to
-        the mask at time t=2. We do unforunately need this to get a timeseries at each voxel, and so
-        also must define a `min_mask` (or max_mask) for some purposes.
+        The ANTS computed mask is truly 4D, e.g. the mask at t=1 will not in
+        general be identical to the mask at time t=2. We do unforunately need
+        this to get a timeseries at each voxel, and so also must define a
+        `min_mask` (or max_mask) for some purposes.
 
-        ants.get_mask seems to be single-core, so it is extremely worth parallelizing brain
-        extraction across subjects
+        ants.get_mask seems to be single-core, so it is extremely worth
+        parallelizing brain extraction across subjects
         """
         outfile = self.mask_path
         if outfile.exists():
@@ -636,15 +635,37 @@ class MotionCorrected(Loadable):
             os.remove(outfile)
 
         img = ants.image_read(str(self.source))
-        mask = ants.image_read(str(self.extracted.min_mask))
-        anat = ants.image_read(str(self.raw.t1w_source))
-
-        img = ants.mask_image(img, mask)
         imgs: List[ANTsImage] = ants.ndimage_to_list(img)
         avg = imgs[0].new_image_like(img.mean(axis=-1))
-        template = ants.image_read(str(TEMPLATE))
-        template_mask = ants.image_read(str(TEMPLATE_MASK))
-        template = ants.mask_image(template, template_mask)
+        avg_mask = avg.get_mask()
+        anat_cls = self.raw.anat_extract(force=False)
+        anat = ants.image_read(str(anat_cls.source))
+
+        # having the moving mask (`mask=avg_mask` below) is crucial to preventing
+        # severe distortions in the final registered image due to missing regions
+        print(f"Registering {self.source} average image to {str(anat_cls.source)}")
+        results = ants.registration(
+            fixed=anat,
+            moving=avg,
+            mask=avg_mask,
+            type_of_transform="SyNBold",
+        )
+        transforms = results["fwdtransforms"]
+        print("Applying transform from average image to full 4D data")
+        img = ants.apply_transforms(
+            fixed=anat,
+            moving=img,
+            transformlist=transforms,
+            imagetype=3,
+        )
+        ants.image_write(img, str(outfile))
+        print(f"Saved T1w-registered image to {outfile}")
+
+        # Save quality check image while we are here
+        plot_out = Path(str(outfile).replace(NII_SUFFIX, "_T1w-reg-plot.png"))
+        avg_reg = img.ndimage_to_list()[0].new_image_like(img.mean(axis=-1))
+        avg_reg.plot(filename=str(plot_out), reorient=False)
+        return T1wRegistered(self, registered=outfile)
 
     def mni_register(self, force: bool = False) -> MNI152Registered:
         """Register fMRI directly (!!) to MNI 2x2x2 mm template"""
@@ -659,13 +680,6 @@ class MotionCorrected(Loadable):
         avg = imgs[0].new_image_like(img.mean(axis=-1))
         avg_mask = avg.get_mask()
         template = ants.image_read(str(TEMPLATE))
-        # template = ants.reorient_image2(template)
-        # template = self.reorient_template_to_img(template, avg)
-        # template_mask = self.reorient_template_to_img(template_mask, avg)
-
-        # template = resample_image(
-        #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
-        # )
 
         # having the moving mask (`mask=avg_mask` below) is crucial to preventing
         # severe distortions in the final registered image due to missing regions
@@ -831,6 +845,7 @@ def motion_correct_parallel(path: Path) -> None:
         corrected.motion_corrected(force=False)
     except Exception:
         traceback.print_exc()
+
 
 def mni_register_parallel(path: Path) -> None:
     try:
