@@ -513,6 +513,7 @@ class SliceTimeCorrected(Loadable):
         img = ants.image_read(str(self.source))
         # img8 = img.ndimage_to_list()[8]  # don't use first volume...
         # mask3d = img8.get_mask()
+        print(f"Finding transform for {self.source}")
         results = motion_correction(
             img,
             fixed=None,  # uses mean image in this case
@@ -852,7 +853,7 @@ if __name__ == "__main__":
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
-    process_map(motion_correct_parallel, paths, chunksize=1, max_workers=40)
+    process_map(motion_correct_parallel, paths, max_workers=8)
     # process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
 
     sys.exit()
