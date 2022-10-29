@@ -1,22 +1,21 @@
 import shutil
 from pathlib import Path
+from typing import List
 
 from templateflow import api as tflow
 
 DATA = Path(__file__).resolve().parent
-ATLAS = "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
-MASK = "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
-ATLAS_OUTFILE = DATA / ATLAS
-MASK_OUTFILE = DATA / MASK
+TEMPLATE = "tpl-MNI152NLin2009cAsym_res-02_T1w.nii.gz"
+MASKED = "tpl-MNI152NLin2009cAsym_res-02_desc-brain_T1w.nii.gz"
+TEMPLATE_OUTFILE = DATA / TEMPLATE
+MASK_OUTFILE = DATA / MASKED
 
 if __name__ == "__main__":
-    outfile = tflow.get(
-        "MNI152NLin2009aAsym", resolution=1, suffix="T1w", raise_empty=True
+    outfiles: List[Path] = tflow.get(
+        "MNI152NLin2009cAsym", resolution=2, suffix="T1w", raise_empty=True
     )
-    outdir = Path(outfile).parent
-    atlas = outdir / ATLAS
-    mask = outdir / MASK
-    shutil.copy(atlas, ATLAS_OUTFILE)
-    print(f"Copied downloaded atlas to {ATLAS_OUTFILE}")
-    shutil.copy(mask, MASK_OUTFILE)
-    print(f"Copied downloaded mask to {MASK_OUTFILE}")
+    for outfile in outfiles:
+        out = DATA / Path(outfile).name
+        shutil.copy(Path(outfile), out)
+        print(f"Copied {outfile} to {out}")
+

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import json
 import json as json_
 import os
@@ -15,7 +16,6 @@ from warnings import warn
 
 import ants
 import numpy as np
-import gc
 from ants import ANTsImage, image_read, motion_correction, resample_image
 from ants.registration import reorient_image
 from nipype.interfaces.base.support import InterfaceResult
@@ -23,14 +23,13 @@ from nipype.interfaces.fsl import BET, SliceTimer
 from numpy import ndarray
 from tqdm.contrib.concurrent import process_map
 
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DATA = ROOT / "data"
 if os.environ.get("CC_CLUSTER") == "niagara":
     ROOT = Path("/scratch/j/jlevman/dberger/random-matrix-fmri")
     DATA = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data")
 
-TEMPLATE = DATA / "tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz"
-TEMPLATE_MASK = DATA / "tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz"
+TEMPLATE = DATA / "tpl-MNI152NLin2009cAsym_res-02_desc-brain_T1w.nii.gz"
 if not TEMPLATE.exists():
     raise FileNotFoundError(
         f"No registration template found at {TEMPLATE}. "
@@ -348,7 +347,7 @@ class FmriScan(Loadable):
 
             with open(jsonfile, "r") as handle:
                 info = json_.load(handle)
-            found_timings = info.get("SliceTiming", None)
+            found_timings: Optional[List[str]] = info.get("SliceTiming", None)
             if (found_timings is not None) and (timings is None):
                 timings = found_timings
 
@@ -413,34 +412,38 @@ class BrainExtracted(Loadable):
 
         # INTRODUCTION
 
-            slicetimer is a pre-processing tool designed to correct for sampling offsets inherent in
-            slice-wise EPI acquisition sequences.
+            slicetimer is a pre-processing tool designed to correct for sampling
+            offsets inherent in slice-wise EPI acquisition sequences.
 
-            Each voxel's timecourse is processed independently and intensities are shifted in time
-            so that they reflect the interpolated value of the signal at a common reference
-            timepoint for all voxels, providing an instantaneous `snapshot' of the data, rather than
-            a staggered sample throughout each volume. Sinc interpolation with a Hanning windowing
-            kernel is applied to each timecourse to calculate the interpolated values.
+            Each voxel's timecourse is processed independently and intensities
+            are shifted in time so that they reflect the interpolated value of
+            the signal at a common reference timepoint for all voxels, providing
+            an instantaneous `snapshot' of the data, rather than a staggered
+            sample throughout each volume. Sinc interpolation with a Hanning
+            windowing kernel is applied to each timecourse to calculate the
+            interpolated values.
 
-            It is necessary to know in what order the slices were acquired and set the appropriate
-            option. The default correction is appropriate if slices were acquired from the bottom of
-            the brain.
+            It is necessary to know in what order the slices were acquired and
+            set the appropriate option. The default correction is appropriate if
+            slices were acquired from the bottom of the brain.
 
-            If slices were acquired from the top of the brain to the bottom select the --down
-            option.
+            If slices were acquired from the top of the brain to the bottom
+            select the --down option.
 
-            If the slices were acquired with interleaved order (0, 2, 4 ... 1, 3, 5 ...) then choose
-            the --odd option.
+            If the slices were acquired with interleaved order (0, 2, 4 ... 1,
+            3, 5 ...) then choose the --odd option.
 
-            If slices were not acquired in regular order you will need to use a slice order file or
-            a slice timings file. If a slice order file is to be used, create a text file with a
-            single number on each line, where the first line states which slice was acquired first,
-            the second line states which slice was acquired second, etc. The first slice is numbered
-            1 not 0.
+            If slices were not acquired in regular order you will need to use a
+            slice order file or a slice timings file. If a slice order file is
+            to be used, create a text file with a single number on each line,
+            where the first line states which slice was acquired first, the
+            second line states which slice was acquired second, etc. The first
+            slice is numbered 1 not 0.
 
-            If a slice timings file is to be used, put one value (ie for each slice) on each line of
-            a text file. The units are in TRs, with 0.5 corresponding to no shift. Therefore a
-            sensible range of values will be between 0 and 1.
+            If a slice timings file is to be used, put one value (ie for each
+            slice) on each line of a text file. The units are in TRs, with 0.5
+            corresponding to no shift. Therefore a sensible range of values will
+            be between 0 and 1.
 
         #  USAGE AND OPTIONS
 
@@ -458,11 +461,12 @@ class BrainExtracted(Loadable):
                     -v,--verbose    switch on diagnostic messages
                     --down          reverse slice indexing
                     -r,--repeat     Specify TR of data - default is 3s
-                    -d,--direction  direction of slice acquisition (x=1,y=2,z=3) - default is z
+                    -d,--direction  direction of slice acquisition (x=1,y=2,z=3)
+                                    default is z
                     --odd           use interleaved acquisition
-                    --tcustom       filename of single-column custom interleave timing file
-                    --ocustom       filename of single-column custom interleave order file (first
-                                    slice is referred to as 1 not 0)
+                    --tcustom       filename of single-column custom interleave timing
+                    --ocustom       filename of single-column custom interleave order
+                                    (first slice is referred to as 1 not 0)
             ```
         """
 
@@ -560,22 +564,22 @@ class MotionCorrected(Loadable):
           Rest_w_VigilanceAttention  200   60   40  0.75  0.75  0.75  150  4000.00    RPI
 
         >>> df.value_counts()
-        data                         x_n  y_n  z_n  x_mm  y_mm  z_mm  t    TR       orient
-        Park_v_Control               80   80   43   3.00  3.00  3.00  149  2.40     RPI       552
-                                     96   114  96   2.00  2.00  2.00  149  2.40     LPI       552
-        Rest_v_LearningRecall        64   64   36   3.00  3.00  3.00  195  2.00     RPI       432
-        Rest_w_Bilinguiality         100  100  72   1.80  1.80  1.80  823  0.88     RPI        90
-        Rest_w_VigilanceAttention    128  128  70   1.50  1.50  1.50  300  3000.00  RPI        84
-        Rest_w_Healthy_v_OsteoPain   64   64   36   3.44  3.44  3.00  300  2.50     RPI        74
-        Rest_w_Depression_v_Control  112  112  25   1.96  1.96  5.00  100  2.50     RPI        72
-        Rest_w_Older_v_Younger       74   74   32   2.97  2.97  4.00  300  2.00     RPI        62
-        Rest_w_VigilanceAttention    200  60   40   0.75  0.75  0.75  150  4000.00  RPI        44
-                                     64   64   35   3.00  3.00  3.00  300  3000.00  RPI         4
-        Park_v_Control               80   80   43   3.00  3.00  3.00  300  2.40     RPI         1
-        Rest_w_Bilinguiality         100  96   72   1.80  1.80  1.80  823  0.88     RPI         1
-                                          100  72   1.80  1.80  1.80  823  0.93     RIA         1
-        Rest_w_Healthy_v_OsteoPain   64   64   36   3.44  3.44  3.00  244  2.50     RPI         1
-                                                                      292  2.50     RPI         1
+        data                      x_n  y_n  z_n  x_mm  y_mm  z_mm  t    TR       orient
+        Park_v_Control            80   80   43   3.00  3.00  3.00  149  2.40     RPI   552
+                                  96   114  96   2.00  2.00  2.00  149  2.40     LPI   552
+        Rest_v_LearningRecall     64   64   36   3.00  3.00  3.00  195  2.00     RPI   432
+        Rest_w_Bilinguiality      100  100  72   1.80  1.80  1.80  823  0.88     RPI    90
+        Rest_w_VigilanceAttenti   128  128  70   1.50  1.50  1.50  300  3000.00  RPI    84
+        Rest_w_Healthy_v_OsteoP   64   64   36   3.44  3.44  3.00  300  2.50     RPI    74
+        Rest_w_Depression_v_Conl  112  112  25   1.96  1.96  5.00  100  2.50     RPI    72
+        Rest_w_Older_v_Younger    74   74   32   2.97  2.97  4.00  300  2.00     RPI    62
+        Rest_w_VigilanceAttenti   200  60   40   0.75  0.75  0.75  150  4000.00  RPI    44
+                                  64   64   35   3.00  3.00  3.00  300  3000.00  RPI     4
+        Park_v_Control            80   80   43   3.00  3.00  3.00  300  2.40     RPI     1
+        Rest_w_Bilinguiality      100  96   72   1.80  1.80  1.80  823  0.88     RPI     1
+                                       100  72   1.80  1.80  1.80  823  0.93     RIA     1
+        Rest_w_Healthy_v_OsteoP   64   64   36   3.44  3.44  3.00  244  2.50     RPI     1
+                                                                   292  2.50     RPI     1
 
         """
 
@@ -643,6 +647,7 @@ class MotionCorrected(Loadable):
         template = ants.mask_image(template, template_mask)
 
     def mni_register(self, force: bool = False) -> MNI152Registered:
+        """Register fMRI directly (!!) to MNI 2x2x2 mm template"""
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
         if outfile.exists():
             if not force:
@@ -654,50 +659,38 @@ class MotionCorrected(Loadable):
         img = ants.mask_image(img, mask)
         imgs: List[ANTsImage] = ants.ndimage_to_list(img)
         avg = imgs[0].new_image_like(img.mean(axis=-1))
+        avg_mask = avg.get_mask()
         template = ants.image_read(str(TEMPLATE))
-        template_mask = ants.image_read(str(TEMPLATE_MASK))
-        template = ants.mask_image(template, template_mask)
         # template = ants.reorient_image2(template)
-        template = self.reorient_template_to_img(template, avg)
-        template_mask = self.reorient_template_to_img(template_mask, avg)
+        # template = self.reorient_template_to_img(template, avg)
+        # template_mask = self.reorient_template_to_img(template_mask, avg)
 
         # template = resample_image(
         #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
         # )
-        template = resample_image(
-            template, resample_params=imgs[0].spacing, use_voxels=False, interp_type=4
-        )
-        template_mask = resample_image(
-            template_mask,
-            resample_params=imgs[0].spacing,
-            use_voxels=False,
-            interp_type=4,
-        )
 
         print(f"Registering {self.source} average image to {TEMPLATE}")
         results = ants.registration(
             fixed=template,
             moving=avg,
+            mask=avg_mask,
             type_of_transform="SyNBold",
         )
         transforms = results["fwdtransforms"]
         print("Applying transform from average image to full 4D data")
-        registered = ants.apply_transforms(
+        img = ants.apply_transforms(
             fixed=template,
             moving=img,
             transformlist=transforms,
             imagetype=3,
         )
-        ants.plot(registered)
-
-        # registereds = []
-        # for img in imgs:
-        #     result = ants.apply_transforms(fixed=template, moving=img, transformlist=transform, )
-        #     registered = result["warpedmovout"]
-        #     registereds.append(registered)
-        # registered = results["warpedmovout"]
-        ants.image_write(registered, str(outfile))
+        ants.image_write(img, str(outfile))
         print(f"Saved MNI-registered image to {outfile}")
+
+        # Save quality check image while we are here
+        plot_out = Path(str(outfile).replace(NII_SUFFIX, "_reg-plot.png"))
+        avg_reg = img.ndimage_to_list()[0].new_image_like(img.mean(axis=-1))
+        avg_reg.plot(filename=str(plot_out), reorient=False)
         return MNI152Registered(self, registered=outfile)
 
 
@@ -829,6 +822,7 @@ def slicetime_correct_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+
 def motion_correct_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
@@ -843,6 +837,10 @@ if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
     # paths = get_fmri_paths(filt="Depression")
     paths = get_fmri_paths()
+    paths = [
+        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/sub-24_ses-2_task-rest_run-01_bold_extracted_slicetime-corrected_motion-corrected.nii.gz",
+        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/sub-24_ses-2_task-satellite_run-01_bold_extracted_slicetime-corrected_motion-corrected.nii.gz",
+    ]
     # process_map(make_slicetime_file, paths, chunksize=1)
     # NOTE: for "Vigilance" data, can only have up to 10 workers
     # NOTE: for "Bilingual" data, can only have up to 7? workers
@@ -853,16 +851,14 @@ if __name__ == "__main__":
     # process_map(inspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(reinspect_anat_extractions, paths, chunksize=1, max_workers=40)
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
-    process_map(motion_correct_parallel, paths, max_workers=8)
+    # process_map(motion_correct_parallel, paths, max_workers=8)
     # process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
 
-    sys.exit()
+    # sys.exit()
     for path in paths:
+        corrected = MotionCorrected()
         fmri = FmriScan(path)
-        extracted = fmri.brain_extract(force=True)
-        print(f"Extracted: {extracted.source}")
-        continue
-
+        extracted = fmri.brain_extract(force=False)
         slice_corrected = extracted.slicetime_correct(force=False)
         print(f"Slicetimed: {slice_corrected.source}")
 

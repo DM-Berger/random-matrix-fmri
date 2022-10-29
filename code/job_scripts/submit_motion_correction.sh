@@ -15,6 +15,6 @@
 
 SCRATCH="$(readlink -f "$SCRATCH")"
 PROJECT="$SCRATCH/random-matrix-fmri"
-SCRIPT="$PROJECT/code/preprocess/preprocess.py"
+SCRIPT="$PROJECT/code/rmt/preprocess/motion_correct.py"
 source .venv_preproc/bin/activate
 python "$SCRIPT"
