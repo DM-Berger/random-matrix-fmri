@@ -122,6 +122,25 @@ class UpdatedDataset(Enum):
             UpdatedDataset.WeeklyAttention: DATA / "Rest_w_VigilanceAttention",
         }[self]
 
+    def rmt_dir(self) -> Path:
+        return {
+            UpdatedDataset.Learning: RMT_DATA / "Rest_v_LearningRecall",
+            UpdatedDataset.Osteo: RMT_DATA / "Rest_w_Healthy_v_OsteoPain",
+            UpdatedDataset.Parkinsons: RMT_DATA / "Park_v_Control",
+            UpdatedDataset.Bilinguality: RMT_DATA / "Rest_w_Bilinguality",
+            UpdatedDataset.Depression: RMT_DATA / "Rest_w_Depression_v_Control",
+            UpdatedDataset.Older: RMT_DATA / "Rest_w_Older_v_Younger",
+            UpdatedDataset.VigilanceSes1: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.VigilanceSes2: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.TaskAttentionSes1: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.TaskAttentionSes2: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.WeeklyAttentionSes1: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.WeeklyAttentionSes2: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.Vigilance: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.TaskAttention: RMT_DATA / "Rest_w_VigilanceAttention",
+            UpdatedDataset.WeeklyAttention: RMT_DATA / "Rest_w_VigilanceAttention",
+        }[self]
+
     def participants_file(self) -> Optional[Path]:
         root = self.root_dir()
         root = Path(sorted(filter(lambda p: p.is_dir(), root.glob("*")))[0])
@@ -176,10 +195,10 @@ class PreprocLevel(Enum):
 
     def eig_files(self, root: Path) -> List[Path]:
         globs = {
-            PreprocLevel.BrainExtract: "*bold_extracted.npy",
-            PreprocLevel.SliceTimeAlign: "*slicetime-corrected.npy",
-            PreprocLevel.MotionCorrect: "*motion-corrected.npy",
-            PreprocLevel.MNIRegister: "*mni-reg.npy",
+            PreprocLevel.BrainExtract: "*bold_extracted_eigs.npy",
+            PreprocLevel.SliceTimeAlign: "*slicetime-corrected_eigs.npy",
+            PreprocLevel.MotionCorrect: "*motion-corrected_eigs.npy",
+            PreprocLevel.MNIRegister: "*mni-reg_eigs.npy",
         }
         glob = globs[self]
         return sorted(root.rglob(glob))
@@ -193,3 +212,9 @@ class TrimMethod(Enum):
 
 class NormMethod(Enum):
     pass
+
+
+if __name__ == "__main__":
+    source = UpdatedDataset.Learning
+    path = source.participants_file()
+    print(path)
