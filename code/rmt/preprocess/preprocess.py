@@ -5,19 +5,17 @@ import json as json_
 import os
 import re
 import shutil
-import sys
 import traceback
 from abc import ABC
 from pathlib import Path
 from time import sleep
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 from warnings import warn
 
 import ants
+import nibabel as nib
 import numpy as np
-from ants import ANTsImage, image_read, motion_correction
-from nipype.interfaces.base.support import InterfaceResult
-from nipype.interfaces.fsl import BET, SliceTimer
+from nibabel import Nifti2Image
 from numpy import ndarray
 from tqdm.contrib.concurrent import process_map
 
@@ -53,8 +51,16 @@ class Loadable(ABC):
         super().__init__()
         self.source: Path = source
 
-    def load(self) -> ANTsImage:
-        return image_read(str(self.source))
+    def load(self) -> Nifti2Image:
+        return nib.load(str(self.source))
+
+
+class RMTComputatable(Loadable):
+    def eigenvalues(self):
+        pass
+
+    def load(self) -> Nifti2Image:
+        return nib.load(str(self.source))
 
 
 class FmriScan(Loadable):
@@ -67,9 +73,9 @@ class FmriScan(Loadable):
         self.run: Optional[str]
         self.local_json: Optional[Path]
         self.global_json: Optional[Path]
-        self.slicetimes: List[float]
+        self.slicetimes: Optional[List[str]]
         self.repetition_time: float
-        self.slicetime_file: Path
+        self.slicetime_file: Optional[Path]
 
         self.source = source
         self.sid, self.ses, self.run = self.parse_source()
@@ -103,17 +109,14 @@ class FmriScan(Loadable):
         ants.get_mask seems to be single-core, so it is extremely worth
         parallelizing brain extraction across subjects
         """
+        from ants import image_read
+        from nipype.interfaces.fsl import BET
+
         outfile = self.mask_path
         if outfile.exists():
             if not force:
                 return BrainExtracted(self)
             os.remove(outfile)
-
-        infile = self.source
-        if os.environ.get("CC_CLUSTER") == "niagara":
-            DATA = Path(
-                "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated"
-            )
 
         cmd = BET()
         cmd.inputs.in_file = str(self.source.resolve())
@@ -157,23 +160,6 @@ class FmriScan(Loadable):
             mask = img.get_mask()
         img = img.mask_image(mask)
         ants.image_write(img, str(self.extracted_path))
-
-        # print(f"Loading {self.source}")
-        # img: ANTsImage = image_read(str(self.source))
-        # # img = self.reorient_4d_to_RAS(img)
-        # print(f"Computing mask for {self.source}")
-        # mask = ants.get_mask(img)
-        # # min_mask_frame = mask.ndimage_to_list()[0].new_image_like(mask.min(axis=-1))
-        # min_mask_frame = mask.min(axis=-1)
-        # min_mask_data = np.stack([min_mask_frame for _ in range(mask.shape[-1])], axis=-1)
-        # min_mask = img.new_image_like(min_mask_data)
-        # extracted = img * mask
-
-        # ants.image_write(mask, str(self.mask_path))
-        # print(f"Wrote brain mask for {self.source} to {self.mask_path}")
-        # ants.image_write(min_mask, str(self.min_mask_path))
-        # print(f"Wrote min brain mask for {self.source} to {self.min_mask_path}")
-        # ants.image_write(extracted, str(self.extracted_path))
         return BrainExtracted(self)
 
     def anat_extract(self, force: bool = False) -> AnatExtracted:
@@ -184,6 +170,9 @@ class FmriScan(Loadable):
         Using "robust" option causes a huge amount of phony stderr spam about missing or
         truncated files. Ignore it.
         """
+        from nipype.interfaces.base.support import InterfaceResult
+        from nipype.interfaces.fsl import BET
+
         outfile = Path(
             str(self.t1w_source.resolve()).replace(NII_SUFFIX, EXTRACTED_SUFFIX)
         )
@@ -195,11 +184,6 @@ class FmriScan(Loadable):
                 # special case, no need to recompute even when forcing
                 return AnatExtracted(self, mask=maskfile, extracted=outfile)
             os.remove(outfile)
-
-        if os.environ.get("CC_CLUSTER") == "niagara":
-            DATA = Path(
-                "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated"
-            )
 
         cmd = BET()
         cmd.inputs.in_file = str(self.t1w_source.resolve())
@@ -246,7 +230,11 @@ class FmriScan(Loadable):
         print(f"Wrote extracted brain to {outfile}")
         return AnatExtracted(self, mask=maskfile, extracted=outfile)
 
-    def reorient_4d_to_RAS(self, img: ANTsImage) -> ANTsImage:
+    def reorient_4d_to_RAS(self, img: Any) -> Any:
+        from ants import ANTsImage
+
+        assert isinstance(img, ANTsImage)
+
         arrs = [ants.reorient_image2(im).numpy() for im in ants.ndimage_to_list(img)]
         data = np.stack(arrs, axis=-1)
         reoriented = img.new_image_like(data)
@@ -302,7 +290,7 @@ class FmriScan(Loadable):
             root = root.parent
 
         local_json: Optional[Path] = Path(str(self.source).replace(NII_SUFFIX, ".json"))
-        if not local_json.exists():
+        if not local_json.exists():  # type: ignore
             local_json = None
 
         # just hardcode the remaining cases where data is not per scan:
@@ -363,8 +351,8 @@ class FmriScan(Loadable):
             outfile: Optional[Path] = Path(
                 str(self.source).replace(NII_SUFFIX, ".slicetimes.txt")
             )
-            if not outfile.exists():
-                with open(outfile, "w") as handle:
+            if not outfile.exists():  # type: ignore
+                with open(outfile, "w") as handle:  # type: ignore
                     handle.writelines(list(map(lambda t: f"{t}\n", timings)))
                 print(f"Wrote slice timings to {outfile}")
         else:
@@ -468,9 +456,15 @@ class BrainExtracted(Loadable):
                                     (first slice is referred to as 1 not 0)
             ```
         """
+        from nipype.interfaces.fsl import SliceTimer
 
         infile = self.source
         outfile = Path(str(infile).replace(NII_SUFFIX, SLICETIME_SUFFIX))
+        if outfile.exists():
+            if not force:
+                return SliceTimeCorrected(self, outfile)
+            os.remove(outfile)
+
         if (self.raw.slicetime_file is None) or (not self.raw.slicetime_file.exists()):
             # just copy over extracted brain
             shutil.copy(infile, outfile)
@@ -478,10 +472,6 @@ class BrainExtracted(Loadable):
                 f"No slicetimes for {self.source}. Copying brain-extracted file instead."
             )
             return SliceTimeCorrected(self, outfile)
-        if outfile.exists():
-            if not force:
-                return SliceTimeCorrected(self, outfile)
-            os.remove(outfile)
 
         cmd = SliceTimer()
         cmd.inputs.in_file = str(infile)
@@ -507,6 +497,8 @@ class SliceTimeCorrected(Loadable):
         raise NotImplementedError()
 
     def motion_corrected(self, force: bool = False) -> MotionCorrected:
+        from ants import motion_correction
+
         outfile = Path(str(self.source).replace(NII_SUFFIX, MOTION_CORRECTED_SUFFIX))
         if outfile.exists():
             if not force:
@@ -539,7 +531,7 @@ class MotionCorrected(Loadable):
         super().__init__(self.source)
 
     @staticmethod
-    def reorient_template_to_img(template: ANTsImage, img: ANTsImage) -> ANTsImage:
+    def reorient_template_to_img(template: Any, img: Any) -> Any:
         """The actual ANTs functions are completely broken for some reason, so we
         do it manually...
 
@@ -581,10 +573,14 @@ class MotionCorrected(Loadable):
                                                                    292  2.50     RPI     1
 
         """
+        from ants import ANTsImage
+
+        assert isinstance(template, ANTsImage)
+        assert isinstance(img, ANTsImage)
 
         temp_orient = template.get_orientation()
         img_orient = img.get_orientation()
-        oriented = template.clone()
+        oriented: ANTsImage = template.clone()
         if (temp_orient == "LPI") and (img_orient == "RPI"):
             return oriented.reflect_image(axis=1).reflect_image(axis=2)
         else:
@@ -592,13 +588,13 @@ class MotionCorrected(Loadable):
                 "Impossible! All scans to register should be RPI orientation"
             )
 
-        for i, (axis_temp, axis_img) in enumerate(zip(temp_orient, img_orient)):
-            if axis_temp == axis_img:
-                continue
-            oriented = oriented.reflect_image(axis=i)
-        # reoriented = template.new_image_like(oriented)
-        reoriented = oriented
-        return reoriented
+        # for i, (axis_temp, axis_img) in enumerate(zip(temp_orient, img_orient)):
+        #     if axis_temp == axis_img:
+        #         continue
+        #     oriented = oriented.reflect_image(axis=i)
+        # # reoriented = template.new_image_like(oriented)
+        # reoriented = oriented
+        # return reoriented
 
     def t1w_register(self, force: bool = False) -> T1wRegistered:
         """
@@ -628,6 +624,8 @@ class MotionCorrected(Loadable):
             Depression
 
         """
+        from ants import ANTsImage
+
         outfile = Path(str(self.source).replace(NII_SUFFIX, ANAT_REGISTERED_SUFFIX))
         if outfile.exists():
             if not force:
@@ -669,6 +667,8 @@ class MotionCorrected(Loadable):
 
     def mni_register(self, force: bool = False) -> MNI152Registered:
         """Register fMRI directly (!!) to MNI 2x2x2 mm template"""
+        from ants import ANTsImage
+
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
         if outfile.exists():
             if not force:
@@ -741,7 +741,7 @@ def get_fmri_paths(filt: Optional[str] = None) -> List[Path]:
     paths = sorted(filter(lambda p: "derivative" not in str(p), paths))
     paths = sorted(filter(lambda p: "prefrontal" not in str(p), paths))
     if filt is not None:
-        paths = sorted(filter(lambda p: filt in str(p), paths))
+        paths = sorted(filter(lambda p: filt in str(p), paths))  # type: ignore
     return paths
 
 
@@ -763,12 +763,14 @@ def anat_extract_parallel(path: Path) -> None:
 
 def make_slicetime_file(path: Path) -> None:
     try:
-        fmri = FmriScan(path)
+        FmriScan(path)
     except Exception:
         traceback.print_exc()
 
 
 def inspect_extractions(path: Path) -> None:
+    from ants import image_read
+
     try:
         fmri = FmriScan(path)
         stripped = fmri.brain_extract(force=False)
@@ -785,6 +787,8 @@ def inspect_extractions(path: Path) -> None:
 
 
 def reinspect_extractions(path: Path) -> None:
+    from ants import image_read
+
     try:
         fmri = FmriScan(path)
         stripped = fmri.brain_extract(force=False)
@@ -799,6 +803,8 @@ def reinspect_extractions(path: Path) -> None:
 
 
 def inspect_anat_extractions(path: Path) -> None:
+    from ants import image_read
+
     try:
         fmri = FmriScan(path)
         stripped = fmri.anat_extract(force=False)
@@ -815,6 +821,8 @@ def inspect_anat_extractions(path: Path) -> None:
 
 
 def reinspect_anat_extractions(path: Path) -> None:
+    from ants import image_read
+
     try:
         fmri = FmriScan(path)
         stripped = fmri.anat_extract(force=False)
@@ -832,7 +840,7 @@ def slicetime_correct_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
         extracted = fmri.brain_extract(force=False)
-        corrected = extracted.slicetime_correct(force=False)
+        extracted.slicetime_correct(force=False)
     except Exception:
         traceback.print_exc()
 
@@ -851,9 +859,9 @@ def mni_register_parallel(path: Path) -> None:
     try:
         fmri = FmriScan(path)
         extracted = fmri.brain_extract(force=False)
-        corrected = extracted.slicetime_correct(force=False)
-        corrected = corrected.motion_corrected(force=False)
-        registered = corrected.mni_register(force=False)
+        slice_corrected = extracted.slicetime_correct(force=False)
+        motion_corrected = slice_corrected.motion_corrected(force=False)
+        motion_corrected.mni_register(force=False)
     except Exception:
         traceback.print_exc()
 
