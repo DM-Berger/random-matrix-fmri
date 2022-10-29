@@ -1,0 +1,211 @@
+Errors: 9, 11, 19, 21, 22
+sub-09 in fact didn't even generate a brain...
+
+
+==> freesurf_8371866_10_8371877.out <==
+
+Started at Fri Oct 28 17:35:12 EDT 2022 
+Ended   at Fri Oct 28 23:39:16 EDT 2022
+#@#%# recon-all-run-time-hours 6.068
+recon-all -s sub-10_ses-1 finished without error at Fri Oct 28 23:39:16 EDT 2022
+
+
+
+==> freesurf_8371866_11_8371878.out <==
+
+mri_watershed Error: 
+ GLOBAL region of the brain empty !
+@#@FSTIME  2022:10:28:17:58:06 mri_watershed N 6 e 7.69 S 0.47 U 7.19 P 99% M 823192 F 0 R 349683 W 0 c 11 w 11 I 0 O 0 L 1.00 1.01 5.77
+@#@FSLOADPOST 2022:10:28:17:58:14 mri_watershed N 6 1.00 1.01 5.72
+Linux nia1680.scinet.local 3.10.0-1160.76.1.el7.x86_64 #1 SMP Wed Aug 10 16:21:17 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+
+recon-all -s sub-11_ses-1 exited with ERRORS at Fri Oct 28 17:58:14 EDT 2022
+
+For more details, see the log file /gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-11/ses-1/anat/freesurfer/sub-11_ses-1/scripts/recon-all.log
+
+
+
+==> freesurf_8371866_12_8371879.out <==
+
+Started at Fri Oct 28 17:35:14 EDT 2022 
+Ended   at Fri Oct 28 23:45:38 EDT 2022
+#@#%# recon-all-run-time-hours 6.173
+recon-all -s sub-12_ses-1 finished without error at Fri Oct 28 23:45:38 EDT 2022
+
+
+
+==> freesurf_8371866_13_8371880.out <==
+
+Started at Fri Oct 28 17:35:16 EDT 2022 
+Ended   at Fri Oct 28 23:04:39 EDT 2022
+#@#%# recon-all-run-time-hours 5.490
+recon-all -s sub-13_ses-1 finished without error at Fri Oct 28 23:04:39 EDT 2022
+
+
+
+==> freesurf_8371866_14_8371883.out <==
+
+Started at Fri Oct 28 17:37:46 EDT 2022 
+Ended   at Fri Oct 28 23:25:57 EDT 2022
+#@#%# recon-all-run-time-hours 5.803
+recon-all -s sub-14_ses-1 finished without error at Fri Oct 28 23:25:57 EDT 2022
+
+
+
+==> freesurf_8371866_15_8371886.out <==
+
+Started at Fri Oct 28 17:38:53 EDT 2022 
+Ended   at Fri Oct 28 23:24:12 EDT 2022
+#@#%# recon-all-run-time-hours 5.755
+recon-all -s sub-15_ses-1 finished without error at Fri Oct 28 23:24:12 EDT 2022
+
+
+
+==> freesurf_8371866_16_8371887.out <==
+
+Started at Fri Oct 28 17:38:53 EDT 2022 
+Ended   at Fri Oct 28 23:59:31 EDT 2022
+#@#%# recon-all-run-time-hours 6.344
+recon-all -s sub-16_ses-1 finished without error at Fri Oct 28 23:59:31 EDT 2022
+
+
+
+==> freesurf_8371866_17_8371890.out <==
+
+Started at Fri Oct 28 17:41:41 EDT 2022 
+Ended   at Fri Oct 28 23:34:51 EDT 2022
+#@#%# recon-all-run-time-hours 5.886
+recon-all -s sub-17_ses-1 finished without error at Fri Oct 28 23:34:51 EDT 2022
+
+
+
+
+==> freesurf_8371866_1_8371868.out <==
+
+Started at Fri Oct 28 17:35:13 EDT 2022 
+Ended   at Fri Oct 28 23:37:14 EDT 2022
+#@#%# recon-all-run-time-hours 6.034
+recon-all -s sub-01_ses-1 finished without error at Fri Oct 28 23:37:14 EDT 2022
+
+
+
+
+==> freesurf_8371866_18_8371892.out <==
+
+Started at Fri Oct 28 17:43:16 EDT 2022 
+Ended   at Sat Oct 29 00:06:47 EDT 2022
+#@#%# recon-all-run-time-hours 6.392
+recon-all -s sub-18_ses-1 finished without error at Sat Oct 29 00:06:47 EDT 2022
+
+
+
+
+==> freesurf_8371866_19_8371893.out <==
+recon-all -s sub-19_ses-1 exited with ERRORS at Fri Oct 28 21:30:40 EDT 2022
+
+For more details, see the log file /gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-19/ses-1/anat/freesurfer/sub-19_ses-1/scripts/recon-all.log
+To report a problem, see http://surfer.nmr.mgh.harvard.edu/fswiki/BugReporting
+
+
+
+
+==> freesurf_8371866_20_8371894.out <==
+
+Started at Fri Oct 28 17:43:16 EDT 2022 
+Ended   at Fri Oct 28 23:44:56 EDT 2022
+#@#%# recon-all-run-time-hours 6.028
+recon-all -s sub-20_ses-1 finished without error at Fri Oct 28 23:44:56 EDT 2022
+
+
+
+
+==> freesurf_8371866_21_8371903.out <==
+
+recon-all -s sub-21_ses-1 exited with ERRORS at Fri Oct 28 23:11:27 EDT 2022
+
+For more details, see the log file /gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-21/ses-1/anat/freesurfer/sub-21_ses-1/scripts/recon-all.log
+
+
+
+
+==> freesurf_8371866_22_8371866.out <==
+
+mri_watershed Error: 
+ GLOBAL region of the brain empty !
+recon-all -s sub-02_ses-1 exited with ERRORS at Fri Oct 28 18:03:51 EDT 2022
+For more details, see the log file /gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-02/ses-1/anat/freesurfer/sub-02_ses-1/scripts/recon-all.log
+
+
+
+
+==> freesurf_8371866_3_8371870.out <==
+
+Started at Fri Oct 28 17:35:13 EDT 2022 
+Ended   at Fri Oct 28 23:44:00 EDT 2022
+#@#%# recon-all-run-time-hours 6.146
+recon-all -s sub-03_ses-1 finished without error at Fri Oct 28 23:44:00 EDT 2022
+
+
+
+
+
+==> freesurf_8371866_4_8371871.out <==
+
+Started at Fri Oct 28 17:35:13 EDT 2022 
+Ended   at Sat Oct 29 00:04:10 EDT 2022
+#@#%# recon-all-run-time-hours 6.483
+recon-all -s sub-04_ses-1 finished without error at Sat Oct 29 00:04:10 EDT 2022
+
+
+
+
+
+==> freesurf_8371866_5_8371872.out <==
+
+Started at Fri Oct 28 17:35:14 EDT 2022 
+Ended   at Sat Oct 29 01:04:37 EDT 2022
+#@#%# recon-all-run-time-hours 7.490
+recon-all -s sub-05_ses-1 finished without error at Sat Oct 29 01:04:37 EDT 2022
+
+
+
+
+==> freesurf_8371866_6_8371873.out <==
+
+Started at Fri Oct 28 17:35:16 EDT 2022 
+Ended   at Fri Oct 28 23:28:28 EDT 2022
+#@#%# recon-all-run-time-hours 5.887
+recon-all -s sub-06_ses-1 finished without error at Fri Oct 28 23:28:28 EDT 2022
+
+
+
+
+
+==> freesurf_8371866_7_8371874.out <==
+
+Started at Fri Oct 28 17:35:14 EDT 2022 
+Ended   at Fri Oct 28 23:53:21 EDT 2022
+#@#%# recon-all-run-time-hours 6.302
+recon-all -s sub-07_ses-1 finished without error at Fri Oct 28 23:53:21 EDT 2022
+
+
+
+
+==> freesurf_8371866_8_8371875.out <==
+
+Started at Fri Oct 28 17:35:13 EDT 2022 
+Ended   at Fri Oct 28 23:25:18 EDT 2022
+#@#%# recon-all-run-time-hours 5.835
+recon-all -s sub-08_ses-1 finished without error at Fri Oct 28 23:25:18 EDT 2022
+
+
+
+
+
+==> freesurf_8371866_9_8371876.out <==
+error: mri_cc: no WM voxels found with norm > 40 -- check skull stripping
+
+recon-all -s sub-09_ses-1 exited with ERRORS at Fri Oct 28 20:03:45 EDT 2022
+
+For more details, see the log file /gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/Rest_w_VigilanceAttention/ds001168-download/sub-09/ses-1/anat/freesurfer/sub-09_ses-1/scripts/recon-all.log
+
