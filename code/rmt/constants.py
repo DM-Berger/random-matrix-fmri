@@ -28,7 +28,7 @@ SLICETIME_SUFFIX = "_slicetime-corrected.nii.gz"
 MOTION_CORRECTED_SUFFIX = "_motion-corrected.nii.gz"
 ANAT_REGISTERED_SUFFIX = "_anat-reg.nii.gz"
 MNI_REGISTERED_SUFFIX = "_mni-reg.nii.gz"
-EIGS_SUFFIX = "_eigs.nii.gz"
+EIGS_SUFFIX = "_eigs.npy"
 
 # fmt: off
 LEARNING_DATA                  = LEGACY_DATA_ROOT / "Rest_v_LearningRecall" / "rmt"

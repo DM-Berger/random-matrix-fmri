@@ -39,10 +39,11 @@ from rmt.constants import (
 )
 
 if os.environ.get("CC_CLUSTER") == "niagara":
-    ROOT = Path("/scratch/j/jlevman/dberger/random-matrix-fmri")
-    DATA = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data")
-    UPDATED = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated")
-    RMT_DIR = Path("/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/rmt")
+    ROOT = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri").resolve()
+    DATA = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data").resolve()
+    UPDATED = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated").resolve()
+    RMT_DIR = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/rmt").resolve()
+    os.environ["MPLCONFIGDIR"] = str(Path("/gpfs/fs0/scratch/j/jlevman/dberger/.mplconfig"))
 
 
 class Loadable(ABC):
@@ -82,7 +83,7 @@ class RMTComputatable(Loadable):
             arr2d, covariance=False, trim_zeros=False, time_axis=1
         )
         values = eigs.values
-        outdir = outfile.parent.parent  # two parents to skip past "func"
+        outdir = outfile.parent # two parents to skip past "func"
         if not outdir.exists():
             outdir.mkdir(exist_ok=True, parents=True)
         np.save(outfile, values, allow_pickle=False)
@@ -102,7 +103,8 @@ def get_paths() -> List[Path]:
     ]
     paths: List[Path] = []
     for glob in globs:
-        paths.extend(list(UPDATED.rglob(glob)))
+        found = sorted(UPDATED.rglob(glob))
+        paths.extend(found)
     paths = sorted(paths)
     return paths
 
