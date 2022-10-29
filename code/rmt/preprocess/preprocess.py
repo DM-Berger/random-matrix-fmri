@@ -655,8 +655,6 @@ class MotionCorrected(Loadable):
             os.remove(outfile)
 
         img = ants.image_read(str(self.source))
-        mask = ants.image_read(str(self.extracted.min_mask))
-        img = ants.mask_image(img, mask)
         imgs: List[ANTsImage] = ants.ndimage_to_list(img)
         avg = imgs[0].new_image_like(img.mean(axis=-1))
         avg_mask = avg.get_mask()
@@ -669,6 +667,8 @@ class MotionCorrected(Loadable):
         #     template, resample_params=imgs[0].shape, use_voxels=True, interp_type=4
         # )
 
+        # having the moving mask (`mask=avg_mask` below) is crucial to preventing
+        # severe distortions in the final registered image due to missing regions
         print(f"Registering {self.source} average image to {TEMPLATE}")
         results = ants.registration(
             fixed=template,
@@ -832,15 +832,21 @@ def motion_correct_parallel(path: Path) -> None:
     except Exception:
         traceback.print_exc()
 
+def mni_register_parallel(path: Path) -> None:
+    try:
+        fmri = FmriScan(path)
+        extracted = fmri.brain_extract(force=False)
+        corrected = extracted.slicetime_correct(force=False)
+        corrected = corrected.motion_corrected(force=False)
+        registered = corrected.mni_register(force=False)
+    except Exception:
+        traceback.print_exc()
+
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    # paths = get_fmri_paths(filt="Depression")
-    paths = get_fmri_paths()
-    paths = [
-        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/sub-24_ses-2_task-rest_run-01_bold_extracted_slicetime-corrected_motion-corrected.nii.gz",
-        "/home/derek/Desktop/Projects/GITHUB-RandomMatrixFMRI/data/updated/sub-24_ses-2_task-satellite_run-01_bold_extracted_slicetime-corrected_motion-corrected.nii.gz",
-    ]
+    paths = get_fmri_paths(filt="Park")
+    # paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     # NOTE: for "Vigilance" data, can only have up to 10 workers
     # NOTE: for "Bilingual" data, can only have up to 7? workers
@@ -853,21 +859,4 @@ if __name__ == "__main__":
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
     # process_map(motion_correct_parallel, paths, max_workers=8)
     # process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
-
-    # sys.exit()
-    for path in paths:
-        corrected = MotionCorrected()
-        fmri = FmriScan(path)
-        extracted = fmri.brain_extract(force=False)
-        slice_corrected = extracted.slicetime_correct(force=False)
-        print(f"Slicetimed: {slice_corrected.source}")
-
-        motion_corrected = slice_corrected.motion_corrected(force=False)
-        print(f"Motion-corr: {motion_corrected.source}")
-
-        t1w_reg = motion_corrected.t1w_register(force=True)
-        print(f"T1w-registered: {t1w_reg.source}")
-
-        # registered = motion_corrected.mni_register(force=True)
-        # registered = motion_corrected.mni_register(force=False)
-        # print(f"Registered: {registered.source}")
+    process_map(mni_register_parallel, paths, max_workers=40)
