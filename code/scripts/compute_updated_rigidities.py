@@ -12,5 +12,5 @@ if __name__ == "__main__":
     for source in UpdatedDataset:
         for preproc in PreprocLevel:
             for degree in [3, 5, 7, 9]:
-                data = UpdatedProcessedDataset(source=source, preproc=preproc)
+                data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
                 rigs = rigidities(dataset=data, degree=degree, parallel=True)
