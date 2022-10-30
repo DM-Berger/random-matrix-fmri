@@ -26,7 +26,7 @@ if __name__ == "__main__":
             }
         )
     ]  # length is 60
-    print(len(grid))
+    print(f"Job {TASK} of {len(grid)}...")
     source = grid[TASK].source
     preproc = grid[TASK].preproc
     for degree in [3, 5, 7, 9]:
