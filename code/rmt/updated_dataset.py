@@ -326,7 +326,7 @@ class UpdatedProcessedDataset:
             return eigs
 
         to_hash = (
-            self.id,
+            self.id,  # has source and preproc info in id
             trim_method.name if trim_method is not None else "none",
         )
         hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
@@ -441,7 +441,6 @@ def trim(eigenvalues: Eigenvalues, method: TrimMethod) -> Eigenvalues:
     return Eigenvalues(trimmed)
 
 
-# @MEMOIZER.cache
 def rigidities(
     dataset: UpdatedProcessedDataset,
     degree: int,
@@ -504,7 +503,6 @@ def rigidities(
     return df
 
 
-# @MEMOIZER.cache
 def levelvars(
     dataset: UpdatedProcessedDataset,
     degree: int,
@@ -565,15 +563,22 @@ def levelvars(
 
 
 if __name__ == "__main__":
+    """There is something wrong with the rigidities somehow...
+    """
     for source in UpdatedDataset:
-        if ("Vigil" not in source.name) and ("Task" not in source.name):
+        if source is not UpdatedDataset.Older:
             continue
         for preproc in PreprocLevel:
-            # for degree in [5, 7, 9]:
             data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
-            print(data.eigs_df())
-            # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-            # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+            if len(np.unique(data.labels()).ravel()) == 1:
+                print(f"Defective: {source} w preproc={preproc}")
+            if len(data.info.label.unique()) == 1:
+                print(data.info)
+            for degree in [3, 5, 7, 9]:
+                # rigs = rigidities(dataset=data, degree=degree, parallel=True)
+                level_vars = rigidities(dataset=data, degree=degree, parallel=True)
+                if len(level_vars.y.unique()) == 1:
+                    print(f"Problem for {source.name} {preproc.name} degree={degree}")
             #   data = UpdatedProcessedDataset(source=source, full_pre=True)
             #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
             #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
