@@ -6,14 +6,14 @@ sys.path.append(str(ROOT))
 # fmt: on
 
 
-from rmt.dataset import ProcessedDataset
-from rmt.enumerables import Dataset, TrimMethod
+from rmt.updated_dataset import UpdatedProcessedDataset
+from rmt.enumerables import UpdatedDataset, TrimMethod, PreprocLevel
 
 if __name__ == "__main__":
-    for source in [*Dataset]:
-        for preproc in [True, False]:
+    for source in [*UpdatedDataset]:
+        for preproc in [*PreprocLevel]:
             for trim_method in [None, *TrimMethod]:
-                data = ProcessedDataset(source=source, full_pre=preproc)
+                data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
                 data.trimmed(trim_method=trim_method)
                 print(
                     f"Computed for {source.name}, preproc={preproc}, trim={trim_method} "
