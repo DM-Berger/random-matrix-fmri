@@ -31,7 +31,7 @@ from typing_extensions import Literal
 from rmt.constants import DATASETS, DATASETS_FULLPRE
 from rmt.dataset import ProcessedDataset
 from rmt.enumerables import Dataset, PreprocLevel, TrimMethod, UpdatedDataset
-from rmt.preprocess.unify_attention_data import get_comparison_df, kmeans_label
+from rmt.preprocess.unify_attention_data import get_comparison_df, median_split_labels
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
 CACHE_DIR.mkdir(exist_ok=True, parents=True)
@@ -346,9 +346,9 @@ class UpdatedProcessedDataset:
             session = self.source.name[-1]
         else:
             session = None
-        table = get_comparison_df(table, attention, session=session)  # type: ignore
-        table["sid"] = table["sid"].apply(lambda s: f"{s:02d}")
-        labeled = kmeans_label(table)
+        # table = get_comparison_df(table, attention, session=session)  # type: ignore
+        # table["sid"] = table["sid"].apply(lambda s: f"{s:02d}")
+        labeled = median_split_labels(attention=attention, session=session)
 
         dfs = []
         for file in files:
@@ -655,14 +655,14 @@ def levelvars(
 
 if __name__ == "__main__":
     for source in UpdatedDataset:
-        # if ("Vigil" not in source.name) and ("Task" not in source.name):
-        #     continue
+        if ("Vigil" not in source.name) and ("Task" not in source.name):
+            continue
         for preproc in PreprocLevel:
-            for degree in [5, 7, 9]:
-                data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
-                print(data.eigs_df())
-                rigs = rigidities(dataset=data, degree=degree, parallel=True)
-                # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
-                #   data = UpdatedProcessedDataset(source=source, full_pre=True)
-                #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-                #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+            # for degree in [5, 7, 9]:
+            data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+            print(data.eigs_df())
+            # rigs = rigidities(dataset=data, degree=degree, parallel=True)
+            # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+            #   data = UpdatedProcessedDataset(source=source, full_pre=True)
+            #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
+            #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)

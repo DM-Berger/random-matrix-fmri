@@ -1,6 +1,8 @@
 import re
+from hashlib import sha256
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from sklearn.cluster import KMeans
@@ -8,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from typing_extensions import Literal
 
 DATA_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "data"
+CACHE_DIR = DATA_ROOT.parent / "__OBSERVABLES_CACHE__"
 UPDATED = DATA_ROOT / "updated"
 VIGILANCE = UPDATED / "Rest_w_VigilanceAttention/ds001168-download"
 COMBINED_DF = VIGILANCE / "all_participants.json"
@@ -76,26 +79,50 @@ def get_comparison_df(
         raise ValueError(f"Invalid attention kind: {attention}")
     if session is not None:
         df = df.loc[df["session"] == f"ses-{int(session)}"]
+
     return df
 
 
-def kmeans_label(df: DataFrame) -> DataFrame:
+def median_split_labels(
+    attention: Literal["weekly", "task", "vigilance"],
+    session: Literal[None, 1, 2, "ses-1", "ses-2"],
+) -> DataFrame:
+    if session == "ses-1":
+        session = 1
+    if session == "ses-2":
+        session = 2
+    to_hash = (attention, str(session))
+    hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
+    outfile = CACHE_DIR / f"med-split_{hsh}.json"
+    if outfile.exists():
+        labeled = pd.read_json(outfile)
+        labeled.loc[:, "sid"] = labeled["sid"].apply(lambda s: f"{int(s):02d}")
+        return labeled
+
+    table = pd.read_json(COMBINED_DF)
+    df = get_comparison_df(table, attention=attention, session=session)
     x = df.drop(columns=["sid", "session"])
     x = StandardScaler().fit_transform(x)
-    km = KMeans(n_clusters=2, random_state=42)
-    labels = km.fit_predict(x)
+    x = x.mean(axis=1)
+    labels = (x >= np.median(x)).astype(int)
     labeled = df.copy()
     labeled["label"] = labels
 
-    # ensure label "1" is "high attention"
-    g0 = x[labeled["label"] == 0]
-    g1 = x[labeled["label"] == 1]
-    mean0 = g0.mean()
-    mean1 = g1.mean()
-    if mean1 < mean0:
-        labeled["label"] = 1 - labeled["label"]
-    labeled.loc[labeled["label"] == 1, "label"] = "high"
-    labeled.loc[labeled["label"] == 0, "label"] = "low"
+    high_labels = {
+        "vigilance": "vigilant",
+        "weekly": "trait_attend",
+        "task": "task_attend",
+    }
+    low_labels = {
+        "vigilance": "nonvigilant",
+        "weekly": "trait_nonattend",
+        "task": "task_nonattend",
+    }
+    labeled.loc[labeled["label"] == 1, "label"] = high_labels[attention]
+    labeled.loc[labeled["label"] == 0, "label"] = low_labels[attention]
+    labeled.loc[:, "sid"] = labeled["sid"].apply(lambda s: f"{int(s):02d}")
+    labeled.to_json(outfile)
+    print(f"Saved Median-split groupings to {outfile}")
     return labeled
 
 
@@ -106,6 +133,6 @@ if __name__ == "__main__":
 
     for attention in ["vigilance", "weekly", "task"]:
         for session in [None, 1, 2]:
-            df_vig = get_comparison_df(df, attention="vigilance", session=session)
-            labeled = kmeans_label(df_vig)
+            labeled = median_split_labels(attention, session)
             print(f"{attention} session={session}\n{labeled.label.value_counts()}")
+            # print(labeled["sid"])
