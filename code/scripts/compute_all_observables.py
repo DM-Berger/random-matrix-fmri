@@ -25,7 +25,8 @@ if __name__ == "__main__":
                 "preproc": [*PreprocLevel],
             }
         )
-    ]  # length is 28
+    ]  # length is 60
+    print(len(grid))
     source = grid[TASK].source
     preproc = grid[TASK].preproc
     for degree in [3, 5, 7, 9]:
