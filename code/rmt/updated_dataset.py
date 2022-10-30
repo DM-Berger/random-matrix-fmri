@@ -475,7 +475,10 @@ def rigidities(
     if outfile.exists():
         if not silent:
             print(f"Loading pre-computed rigidities from {outfile}")
-        return pd.read_json(outfile)
+        df = pd.read_json(outfile)
+        # HACK! these were computed prior to the label fix, so just correct them
+        df.loc[:, "y"] = dataset.labels()
+        return df
 
     unfoldeds = dataset.unfolded(
         smoother=smoother, degree=degree, trim_method=trim_method
