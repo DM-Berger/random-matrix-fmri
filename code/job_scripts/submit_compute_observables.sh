@@ -9,7 +9,7 @@
 #SBATCH --job-name=all_obs
 #SBATCH --output=all_observables_%A_%a_%j.out
 #SBATCH --array=0-59
-#SBATCH --time=00-08:00:00
+#SBATCH --time=00-03:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=80
 
