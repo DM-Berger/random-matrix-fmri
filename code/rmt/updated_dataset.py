@@ -530,7 +530,7 @@ def trim(eigenvalues: Eigenvalues, method: TrimMethod) -> Eigenvalues:
 
 # @MEMOIZER.cache
 def rigidities(
-    dataset: ProcessedDataset,
+    dataset: UpdatedProcessedDataset,
     degree: int,
     smoother: SmoothMethod = SmoothMethod.Polynomial,
     trim_method: TrimMethod | None = None,
@@ -591,7 +591,7 @@ def rigidities(
 
 # @MEMOIZER.cache
 def levelvars(
-    dataset: ProcessedDataset,
+    dataset: UpdatedProcessedDataset,
     degree: int,
     smoother: SmoothMethod = SmoothMethod.Polynomial,
     trim_method: TrimMethod | None = None,
@@ -658,11 +658,11 @@ if __name__ == "__main__":
         # if ("Vigil" not in source.name) and ("Task" not in source.name):
         #     continue
         for preproc in PreprocLevel:
-            data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
-            print(data.eigs_df())
-            # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-            # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
-            # for degree in [5, 7, 9]:
-            #   data = UpdatedProcessedDataset(source=source, full_pre=True)
-            #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-            #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+            for degree in [5, 7, 9]:
+                data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+                print(data.eigs_df())
+                rigs = rigidities(dataset=data, degree=degree, parallel=True)
+                # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+                #   data = UpdatedProcessedDataset(source=source, full_pre=True)
+                #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
+                #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
