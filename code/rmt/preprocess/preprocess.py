@@ -656,6 +656,7 @@ class MotionCorrected(RMTComputatable):
 
     def mni_register(self, force: bool = False) -> MNI152Registered:
         """Register fMRI directly (!!) to MNI 2x2x2 mm template"""
+        import ants
         from ants import ANTsImage
 
         outfile = Path(str(self.source).replace(NII_SUFFIX, MNI_REGISTERED_SUFFIX))
@@ -857,8 +858,8 @@ def mni_register_parallel(path: Path) -> None:
 
 if __name__ == "__main__":
     # on Niagara need module load gcc/8.3.0 openblas/0.3.7 fsl/6.0.4
-    paths = get_fmri_paths(filt="Park")
-    # paths = get_fmri_paths()
+    # paths = get_fmri_paths(filt="Park")
+    paths = get_fmri_paths()
     # process_map(make_slicetime_file, paths, chunksize=1)
     # NOTE: for "Vigilance" data, can only have up to 10 workers
     # NOTE: for "Bilingual" data, can only have up to 7? workers
@@ -871,4 +872,4 @@ if __name__ == "__main__":
     # process_map(slicetime_correct_parallel, paths, chunksize=1, max_workers=40)
     # process_map(motion_correct_parallel, paths, max_workers=8)
     # process_map(reinspect_extractions, paths, chunksize=1, max_workers=40)
-    process_map(mni_register_parallel, paths, max_workers=40)
+    process_map(mni_register_parallel, paths, max_workers=12)

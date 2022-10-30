@@ -121,5 +121,5 @@ def compute_eigs(path: Path) -> None:
 if __name__ == "__main__":
     paths = get_paths()
     process_map(
-        compute_eigs, paths, desc="Computing eigenvalues", chunksize=1, max_workers=40
+        compute_eigs, paths, desc="Computing eigenvalues", chunksize=1, max_workers=12
     )
