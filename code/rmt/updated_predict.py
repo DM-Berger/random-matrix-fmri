@@ -51,8 +51,8 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.enumerables import Dataset, TrimMethod
-from rmt.features import Eigenvalues, Feature, Levelvars, Rigidities
+from rmt.enumerables import Dataset, PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.updated_features import UpdatedFeature
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
@@ -180,7 +180,7 @@ def kfold_eval(
 
 
 def select_features(
-    feature: Feature,
+    feature: UpdatedFeature,
     data: DataFrame,
     feature_slice: FeatureSlice,
 ) -> DataFrame:
@@ -227,8 +227,8 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
     return False
 
 
-def predict_feature(
-    feature: Feature,
+def predict_updated_feature(
+    feature: UpdatedFeature,
     feature_slice: FeatureSlice,
     logarithm: bool = True,
     debug: bool = False,
@@ -249,7 +249,7 @@ def predict_feature(
                         f"Feature: {feature}",
                         f"Dataset: {feature.source}",
                         f"norm: {feature.norm}",
-                        f"fullpre: {feature.full_pre}",
+                        f"preproc: {feature.preproc.name}",
                         f"feature_slice: {feature_slice.name}",
                         f"data shape before selection: {data.shape}",
                         f"data before selection:\n{data}",
@@ -283,7 +283,7 @@ def predict_feature(
     result = pd.concat(results, axis=0, ignore_index=True)
     result["data"] = feature.source.name
     result["feature"] = feature.name
-    result["preproc"] = "full" if feature.full_pre else "minimal"
+    result["preproc"] = feature.preproc.name
     result["slice"] = feature_slice.value
     result["deg"] = str(feature.degree)
     result["trim"] = feature.trim.value if feature.trim else "none"
@@ -307,17 +307,97 @@ def predict_feature(
     ]
 
 
-def predict_all(args: Namespace) -> DataFrame | None:
-    cls: Type[Feature] = args.cls
+def predict_updated_feature(
+    feature: UpdatedFeature,
+    feature_slice: FeatureSlice,
+    logarithm: bool = True,
+    debug: bool = False,
+) -> DataFrame | None:
+    data = feature.data
+    norm = feature.norm
+    if logarithm:
+        data = log_normalize(data, norm)
+    labels = data.y.unique().tolist()
+
+    results = []
+    for i in range(len(labels)):
+        for j in range(i + 1, len(labels)):
+            df = select_features(feature, data, feature_slice)
+            if len(df.columns) - 1 == 0:
+                info = "\n".join(
+                    [
+                        f"Feature: {feature}",
+                        f"Dataset: {feature.source}",
+                        f"norm: {feature.norm}",
+                        f"preproc: {feature.preproc.name}",
+                        f"feature_slice: {feature_slice.name}",
+                        f"data shape before selection: {data.shape}",
+                        f"data before selection:\n{data}",
+                        f"data shape after selection: {df.shape}",
+                        f"data after selection:\n{df}",
+                    ]
+                )
+                raise IndexError(f"Some bullshit.\n{info}")
+            if is_dud_comparison(labels, i, j):
+                continue
+            if debug:
+                continue  # just make sure no shape errors
+            title = f"{labels[i]} v {labels[j]}"
+            idx = (df.y == labels[i]) | (df.y == labels[j])
+            df = df.loc[idx]
+            X = df.drop(columns="y").to_numpy()
+            y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
+            result_dfs = [
+                # LR never converges, pointless
+                kfold_eval(X, y, SVC, norm=norm, title=title),
+                kfold_eval(X, y, RF, norm=norm, title=title),
+                kfold_eval(X, y, GBC, norm=norm, title=title),
+                kfold_eval(X, y, KNN3, norm=norm, title=title),
+                kfold_eval(X, y, KNN5, norm=norm, title=title),
+                kfold_eval(X, y, KNN9, norm=norm, title=title),
+            ]
+            results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
+    if debug:
+        return None
+
+    result = pd.concat(results, axis=0, ignore_index=True)
+    result["data"] = feature.source.name
+    result["feature"] = feature.name
+    result["preproc"] = feature.preproc.name
+    result["slice"] = feature_slice.value
+    result["deg"] = str(feature.degree)
+    result["trim"] = feature.trim.value if feature.trim else "none"
+    return result.loc[
+        :,
+        [
+            "data",
+            "feature",
+            "preproc",
+            "deg",
+            "trim",
+            "norm",
+            "slice",
+            "comparison",
+            "classifier",
+            "acc+",
+            "auroc",
+            "acc",
+            "f1",
+        ],
+    ]
+
+
+def predict_all_updated(args: Namespace) -> DataFrame | None:
+    cls: Type[UpdatedFeature] = args.cls
     try:
         feature = cls(
             source=args.source,
-            full_pre=args.full_pre,
+            preproc=args.preproc,
             norm=args.norm,
             degree=args.degree,
             trim=args.trim_method,
         )
-        return predict_feature(
+        return predict_updated_feature(
             feature=feature,
             feature_slice=args.feature_idx,
             logarithm=True,
@@ -330,20 +410,20 @@ def predict_all(args: Namespace) -> DataFrame | None:
         return None
 
 
-def summarize_all_predictions(
-    feature_cls: Type[Feature],
-    sources: Optional[list[Dataset]] = None,
+def summarize_all_updated_predictions(
+    feature_cls: Type[UpdatedFeature],
+    sources: Optional[list[UpdatedDataset]] = None,
     degrees: Optional[list[int]] = None,
     trims: Optional[list[TrimMethod | None]] = None,
     feature_slices: List[FeatureSlice] = [*FeatureSlice],
-    full_pres: Optional[list[bool]] = None,
+    preprocs: Optional[list[PreprocLevel]] = None,
     norms: Optional[list[bool]] = None,
     debug: bool = False,
 ) -> DataFrame:
     sources = sources or [*Dataset]
     trims = trims or [None, *TrimMethod]
     degrees = degrees or [3, 5, 7, 9]
-    full_pres = full_pres or [True, False]
+    preprocs = preprocs or [*PreprocLevel]
     norms = norms or [True, False]
 
     grid = [
@@ -355,13 +435,13 @@ def summarize_all_predictions(
                 degree=degrees,
                 trim_method=trims,
                 feature_idx=feature_slices,
-                full_pre=full_pres,
+                preproc=preprocs,
                 norm=norms,
                 debug=[debug],
             )
         )
     ]
-    dfs = process_map(predict_all, grid, desc="Predicting", chunksize=1)
+    dfs = process_map(predict_all_updated, grid, desc="Predicting", chunksize=1)
     dfs = [df_ for df_ in dfs if df_ is not None]
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
     return df
