@@ -49,95 +49,6 @@ Rest_w_VigilanceAttention/
 """
 
 
-def to_path_frame(info: dict[str, List[Path]]) -> DataFrame:
-    dfs = []
-    for key, paths in info.items():
-        df = DataFrame(columns=["path"], data=paths, index=paths)
-        df["cls"] = str(key)
-        dfs.append(df)
-    return pd.concat(dfs, axis=0, ignore_index=True)
-
-
-PATH_DATA: dict[Dataset, DataFrame] = {
-    # subs: "task", "rest" # noqa
-    Dataset.Learning: to_path_frame(DATASETS["LEARNING"]),
-    # subs: "allpain", "nopain", "duloxetine", "pain" # noqa
-    Dataset.Osteo: to_path_frame(DATASETS["OSTEO"]),
-    # subs: 'control', 'parkinsons', 'control_pre', 'park_pre' # noqa
-    Dataset.Parkinsons: to_path_frame(DATASETS["PARKINSONS"]),
-    # subs: "task", "rest" # noqa
-    Dataset.ReflectionSummed: to_path_frame(DATASETS["REFLECT_SUMMED"]),
-    # subs: "task", "rest" # noqa
-    Dataset.ReflectionInterleaved: to_path_frame(DATASETS["REFLECT_INTERLEAVED"]),
-    # subs: "high", "low" # noqa
-    Dataset.VigilanceSes1: to_path_frame(DATASETS["PSYCH_VIGILANCE_SES-1"]),
-    # subs: "high", "low" # noqa
-    Dataset.VigilanceSes2: to_path_frame(DATASETS["PSYCH_VIGILANCE_SES-2"]),
-    # subs: "high", "low" # noqa
-    Dataset.TaskAttentionSes1: to_path_frame(DATASETS["PSYCH_TASK_ATTENTION_SES-1"]),
-    # subs: "high", "low" # noqa
-    Dataset.TaskAttentionSes2: to_path_frame(DATASETS["PSYCH_TASK_ATTENTION_SES-2"]),
-    # subs: "high", "low" # noqa
-    Dataset.WeeklyAttentionSes1: to_path_frame(DATASETS["PSYCH_WEEKLY_ATTENTION_SES-1"]),
-    # subs: "high", "low" # noqa
-    Dataset.WeeklyAttentionSes2: to_path_frame(DATASETS["PSYCH_WEEKLY_ATTENTION_SES-2"]),
-}
-PATH_DATA[Dataset.Vigilance] = pd.concat(
-    [PATH_DATA[Dataset.VigilanceSes1], PATH_DATA[Dataset.VigilanceSes2]]
-)
-PATH_DATA[Dataset.TaskAttention] = pd.concat(
-    [PATH_DATA[Dataset.TaskAttentionSes1], PATH_DATA[Dataset.TaskAttentionSes2]]
-)
-PATH_DATA[Dataset.WeeklyAttention] = pd.concat(
-    [PATH_DATA[Dataset.WeeklyAttentionSes1], PATH_DATA[Dataset.WeeklyAttentionSes2]]
-)
-
-PATH_DATA_PRE: dict[Dataset, DataFrame] = {
-    # subs: "task", "rest" # noqa
-    Dataset.Learning: to_path_frame(DATASETS_FULLPRE["LEARNING"]),
-    # subs: "allpain", "nopain", "duloxetine", "pain" # noqa
-    Dataset.Osteo: to_path_frame(DATASETS_FULLPRE["OSTEO"]),
-    # subs: 'control', 'parkinsons', 'control_pre', 'park_pre' # noqa
-    Dataset.Parkinsons: to_path_frame(DATASETS_FULLPRE["PARKINSONS"]),
-    # subs: "task", "rest" # noqa
-    Dataset.ReflectionSummed: to_path_frame(DATASETS_FULLPRE["REFLECT_SUMMED"]),
-    # subs: "task", "rest" # noqa
-    Dataset.ReflectionInterleaved: to_path_frame(DATASETS_FULLPRE["REFLECT_INTERLEAVED"]),
-    # subs: "high", "low" # noqa
-    Dataset.VigilanceSes1: to_path_frame(DATASETS_FULLPRE["PSYCH_VIGILANCE_SES-1"]),
-    # subs: "high", "low" # noqa
-    Dataset.VigilanceSes2: to_path_frame(DATASETS_FULLPRE["PSYCH_VIGILANCE_SES-2"]),
-    # subs: "high", "low" # noqa
-    Dataset.TaskAttentionSes1: to_path_frame(
-        DATASETS_FULLPRE["PSYCH_TASK_ATTENTION_SES-1"]
-    ),
-    # subs: "high", "low" # noqa
-    Dataset.TaskAttentionSes2: to_path_frame(
-        DATASETS_FULLPRE["PSYCH_TASK_ATTENTION_SES-2"]
-    ),
-    # subs: "high", "low" # noqa
-    Dataset.WeeklyAttentionSes1: to_path_frame(
-        DATASETS_FULLPRE["PSYCH_WEEKLY_ATTENTION_SES-1"]
-    ),
-    # subs: "high", "low" # noqa
-    Dataset.WeeklyAttentionSes2: to_path_frame(
-        DATASETS_FULLPRE["PSYCH_WEEKLY_ATTENTION_SES-2"]
-    ),
-}
-PATH_DATA_PRE[Dataset.Vigilance] = pd.concat(
-    [PATH_DATA_PRE[Dataset.VigilanceSes1], PATH_DATA_PRE[Dataset.VigilanceSes2]]
-)
-PATH_DATA_PRE[Dataset.TaskAttention] = pd.concat(
-    [PATH_DATA_PRE[Dataset.TaskAttentionSes1], PATH_DATA_PRE[Dataset.TaskAttentionSes2]]
-)
-PATH_DATA_PRE[Dataset.WeeklyAttention] = pd.concat(
-    [
-        PATH_DATA_PRE[Dataset.WeeklyAttentionSes1],
-        PATH_DATA_PRE[Dataset.WeeklyAttentionSes2],
-    ]
-)
-
-
 def parse_source(source: Path) -> Tuple[str, Optional[str], Optional[str], Optional[str]]:
     sid_ = re.search(r"sub-(?:[a-zA-Z]*)?([0-9]+)_.*", source.stem)
     ses = re.search(r"ses-([0-9]+)_.*", source.stem)
@@ -190,6 +101,8 @@ class UpdatedProcessedDataset:
                 )
                 dfs.append(df)
             df = pd.concat(dfs, axis=0)
+            if len(df.label.unique()) == 1:
+                raise ValueError(f"Labeling issue for {self.source}")
             return df
 
         table_path: Path = self.source.participants_file()  # type: ignore
@@ -331,6 +244,8 @@ class UpdatedProcessedDataset:
                 )
                 dfs.append(df)
             df = pd.concat(dfs, axis=0)
+            if len(df.label.unique()) == 1:
+                raise ValueError(f"Bad table construction\n{df}")
             return df
 
         # now handle Vigilance data
@@ -601,7 +516,7 @@ def levelvars(
     L_hash = sha256(L.data.tobytes()).hexdigest()
     if trim_method is None:
         to_hash: tuple[Any, ...] = (
-            "rigidity",
+            "levelvars",
             dataset.id,
             str(degree),
             smoother.name,
@@ -609,7 +524,7 @@ def levelvars(
         )
     else:
         to_hash = (
-            "rigidity",
+            "levelvars",
             dataset.id,
             str(degree),
             smoother.name,

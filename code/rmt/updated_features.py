@@ -91,9 +91,10 @@ class Rigidities(UpdatedFeature):
 
     @property
     def data(self) -> DataFrame:
-        return rigidities(
+        df = rigidities(
             dataset=self.dataset, degree=self.degree, trim_method=self.trim, parallel=True
         )
+        return df
 
 
 class Levelvars(UpdatedFeature):
@@ -117,9 +118,10 @@ class Levelvars(UpdatedFeature):
 
     @property
     def data(self) -> DataFrame:
-        return levelvars(
+        df = levelvars(
             dataset=self.dataset, degree=self.degree, trim_method=self.trim, parallel=True
         )
+        return df
 
 
 class Eigenvalues(UpdatedFeature):

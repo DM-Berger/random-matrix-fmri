@@ -7,7 +7,7 @@ sys.path.append(str(ROOT))
 
 from pathlib import Path
 
-from rmt.updated_features import FEATURE_OUTFILES
+from rmt.updated_features import FEATURE_OUTFILES, Levelvars
 from rmt.updated_predict import FeatureSlice, summarize_all_updated_predictions
 
 if __name__ == "__main__":
@@ -22,4 +22,3 @@ if __name__ == "__main__":
         outfile = ROOT.parent / fname
         df.to_json(outfile)
         print(f"Saved predictions to {outfile}")
-        break
