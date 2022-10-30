@@ -561,24 +561,27 @@ def levelvars(
     print(f"Saved levelvars to {outfile}")
     return df
 
-
-if __name__ == "__main__":
-    """There is something wrong with the rigidities somehow...
+def find_bad_labelings() -> None:
+    """There was a bug where the cached files had erroneous labels. It is now fixed, but
+    this was the test of that.
     """
     for source in UpdatedDataset:
-        if source is not UpdatedDataset.Older:
-            continue
         for preproc in PreprocLevel:
             data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+
             if len(np.unique(data.labels()).ravel()) == 1:
                 print(f"Defective: {source} w preproc={preproc}")
             if len(data.info.label.unique()) == 1:
                 print(data.info)
+
             for degree in [3, 5, 7, 9]:
-                # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-                level_vars = rigidities(dataset=data, degree=degree, parallel=True)
-                if len(level_vars.y.unique()) == 1:
-                    print(f"Problem for {source.name} {preproc.name} degree={degree}")
-            #   data = UpdatedProcessedDataset(source=source, full_pre=True)
-            #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
-            #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+                lvars = levelvars(dataset=data, degree=degree, parallel=True)
+                rigs = rigidities(dataset=data, degree=degree, parallel=True)
+                if (len(lvars.y.unique()) == 1):
+                    print(f"Problem for {source.name} {preproc.name} degree={degree} levelvars")
+                if (len(rigs.y.unique()) == 1):
+                    print(f"Problem for {source.name} {preproc.name} degree={degree} rigidities")
+
+
+if __name__ == "__main__":
+    find_bad_labelings()
