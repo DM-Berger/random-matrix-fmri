@@ -364,7 +364,7 @@ def levelvars(
     L_hash = sha256(L.data.tobytes()).hexdigest()
     if trim_method is None:
         to_hash: tuple[Any, ...] = (
-            "rigidity",
+            "levelvars",
             dataset.id,
             str(degree),
             smoother.name,
@@ -372,7 +372,7 @@ def levelvars(
         )
     else:
         to_hash = (
-            "rigidity",
+            "levelvars",
             dataset.id,
             str(degree),
             smoother.name,
