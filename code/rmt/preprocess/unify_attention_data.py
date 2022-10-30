@@ -67,7 +67,7 @@ def get_comparison_df(
     if attention == "weekly":
         df = df.loc[:, base_cols + PANAS_ATTENTION_COLS]
         for col in NEG_SCORE:
-            df.iloc[:, col] = 9 - df[col].copy()
+            df.loc[:, col] = 9 - df[col].copy()
     elif attention == "vigilance":
         df = df.loc[:, base_cols + VIGILANCE_COLS]
     elif attention == "task":
