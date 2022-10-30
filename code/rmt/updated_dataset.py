@@ -171,7 +171,7 @@ class UpdatedProcessedDataset:
         if self.source is UpdatedDataset.Older:
             for file in files:
                 sid, session, run, _ = parse_source(file)
-                label = "younger" if sid.startswith("01") else "older"
+                label = "younger" if sid.startswith("10") else "older"
                 df = DataFrame(
                     {"sid": sid, "label": label, "session": session, "run": run},
                     index=[file],
@@ -317,7 +317,7 @@ class UpdatedProcessedDataset:
         if self.source is UpdatedDataset.Depression:
             for file in files:
                 sid, session, run, _ = parse_source(file)
-                group = str(table.loc[table["sid"] == sid]["group"])
+                group = str(table.loc[table["sid"] == sid]["group"].item())
                 label = "depress" if group == "depr" else "control"
 
                 df = DataFrame(

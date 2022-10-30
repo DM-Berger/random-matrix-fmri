@@ -400,6 +400,9 @@ current df.shape: {df.shape}
 
 
 def predict_all_updated(args: Namespace) -> DataFrame | None:
+    source: UpdatedDataset = args.source
+    if source is not UpdatedDataset.Depression:
+        return None
     cls: Type[UpdatedFeature] = args.cls
     try:
         feature = cls(
