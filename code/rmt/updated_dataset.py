@@ -179,6 +179,7 @@ class UpdatedProcessedDataset(ProcessedDataset):
                 dfs.append(df)
             df = pd.concat(dfs, axis=0)
             return df
+
         if self.source is UpdatedDataset.Parkinsons:
             for file in files:
                 sid, session, run, _ = parse_source(file)
@@ -194,6 +195,9 @@ class UpdatedProcessedDataset(ProcessedDataset):
         table_path: Path = self.source.participants_file()  # type: ignore
         sep = "\t" if table_path.suffix == ".tsv" else ","
         table = pd.read_csv(table_path, sep=sep)
+        table["sid"] = table["participant_id"].apply(lambda s: s.replace("sub-", ""))
+        table.drop(columns="participant_id", inplace=True)
+
         if self.source is UpdatedDataset.Learning:
             """Table looks like:
             participant_id  age sex  group
@@ -202,8 +206,6 @@ class UpdatedProcessedDataset(ProcessedDataset):
                     sub-03   32   F   wake
                     sub-04   29   F  sleep
             """
-            table["sid"] = table["participant_id"].apply(lambda s: s.replace("sub-", ""))
-            table.drop(columns="participant_id", inplace=True)
             for file in files:
                 sid, session, run, _ = parse_source(file)
                 label = "rest" if "task-rest" in str(file) else "task"
@@ -222,6 +224,112 @@ class UpdatedProcessedDataset(ProcessedDataset):
                 dfs.append(df)
             df = pd.concat(dfs, axis=0)
             return df
+
+        """Table looks like:
+        participant_id group sex  age  ethnicity  years_education  eng_proficiency_score
+            sub-2975    MC   F   21          1               14                   10.0
+            sub-3156    LB   M   22          1               14                   10.0
+            sub-3225    LB   M   25          1               18                   10.0
+
+        sp_proficiency_score  num_lang
+                            5.0       3.0
+                            NaN       4.0
+                            8.0       2.0
+        group:
+            MC = monolingual control
+            EB = "Early-acquisition bilingual"
+            LB = "Late-acquisition bilingual"
+        """
+        if self.source is UpdatedDataset.Bilinguality:
+            for file in files:
+                sid, session, run, _ = parse_source(file)
+                group = table.loc[table["sid"] == sid]["group"]
+                label = "monolingual" if group == "MC" else "bilingual"
+
+                df = DataFrame(
+                    {
+                        "sid": sid,
+                        "label": label,
+                        "session": session,
+                        "run": run,
+                    },
+                    index=[file],
+                )
+                dfs.append(df)
+            df = pd.concat(dfs, axis=0)
+            return df
+
+        """
+        Osteo data table:
+
+        sid      type  study  gender      Age        Drug  ...
+         01   control    NaN  female       59         NaN
+         02   control    NaN    male       59         NaN
+         03   control    NaN    male       52         NaN
+         04   control    NaN    male       48         NaN
+         05   control    NaN    male       78         NaN
+         ..       ...    ...     ...      ...         ...  ...
+         72   patient    2.0    male       49     placebo
+         73   patient    2.0    male       73     placebo
+         74   patient    2.0  female       63     placebo
+         75   patient    2.0  female       70     placebo
+         76   patient    2.0    male       64  duloxetine  ...
+        """
+
+        if self.source is UpdatedDataset.Osteo:
+            labels = {
+                "control+NaN": "nopain",
+                "patient+placebo": "pain",
+                "patient+duloxetine": "duloxetine",
+            }
+            for file in files:
+                sid, session, run, _ = parse_source(file)
+                group = table.loc[table["sid"] == sid]["type"]
+                drug = str(table.loc[table["sid"] == sid]["Drug"])
+                label = labels[f"{group}+{drug}"]
+
+                df = DataFrame(
+                    {
+                        "sid": sid,
+                        "label": label,
+                        "session": session,
+                        "run": run,
+                    },
+                    index=[file],
+                )
+                dfs.append(df)
+            df = pd.concat(dfs, axis=0)
+            return df
+
+        """
+        Depression data table looks like:
+
+        sid     age gender    group  IQ_Raven ICD-10  MADRS  Zung_SDS   BDI
+        sub-01   39      m     depr     113.0  F32.0    NaN      43.0  17.0
+        sub-02   50      m     depr      80.0  F32.0    NaN      47.0  10.0
+        sub-03   47      f     depr      87.0  F32.0    NaN      44.0  19.0
+        sub-52   32      m  control     128.0    NaN    NaN      38.0  13.0
+        sub-53   44      f  control     102.0    NaN    NaN      38.0   2.0
+        """
+        if self.source is UpdatedDataset.Depression:
+            for file in files:
+                sid, session, run, _ = parse_source(file)
+                group = str(table.loc[table["sid"] == sid]["group"])
+                label = "depress" if group == "depr" else "control"
+
+                df = DataFrame(
+                    {
+                        "sid": sid,
+                        "label": label,
+                        "session": session,
+                        "run": run,
+                    },
+                    index=[file],
+                )
+                dfs.append(df)
+            df = pd.concat(dfs, axis=0)
+            return df
+
 
         file = self.source.participants_file()
 
