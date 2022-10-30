@@ -28,9 +28,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.constants import DATASETS, DATASETS_FULLPRE
-from rmt.dataset import ProcessedDataset
-from rmt.enumerables import Dataset, PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
 from rmt.preprocess.unify_attention_data import get_comparison_df, median_split_labels
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
@@ -485,7 +483,7 @@ def rigidities(
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
     trim_label = "None" if trim_method is None else trim_method.name
     desc = f"Computing rigidities for {dataset}"
-    desc = desc.replace(")", f", trim={trim_label})")
+    desc = desc.replace(")", f", trim={trim_label}, degree={degree})")
     if parallel:
         rigidities = process_map(_compute_rigidity, args, desc=desc)
     else:
@@ -545,7 +543,7 @@ def levelvars(
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
     trim_label = "None" if trim_method is None else trim_method.name
     desc = f"Computing levelvars for {dataset}"
-    desc = desc.replace(")", f", trim={trim_label})")
+    desc = desc.replace(")", f", trim={trim_label}, degree={degree})")
     if parallel:
         lvars = process_map(_compute_levelvar, args, desc=desc)
     else:
