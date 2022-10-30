@@ -568,8 +568,9 @@ def rigidities(
         smoother=smoother, degree=degree, trim_method=trim_method
     )
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
+    trim_label = "None" if trim_method is None else trim_method.name
     desc = f"Computing rigidities for {dataset}"
-    desc = desc.replace(")", f", trim={trim_method.name})")
+    desc = desc.replace(")", f", trim={trim_label})")
     if parallel:
         rigidities = process_map(_compute_rigidity, args, desc=desc)
     else:
@@ -627,19 +628,20 @@ def levelvars(
         smoother=smoother, degree=degree, trim_method=trim_method
     )
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
+    trim_label = "None" if trim_method is None else trim_method.name
     desc = f"Computing levelvars for {dataset}"
-    desc = desc.replace(")", f", trim={trim_method.name})")
+    desc = desc.replace(")", f", trim={trim_label})")
     if parallel:
-        rigidities = process_map(_compute_levelvar, args, desc=desc)
+        lvars = process_map(_compute_levelvar, args, desc=desc)
     else:
-        rigidities = list(map(_compute_levelvar, tqdm(args, desc=desc)))
+        lvars = list(map(_compute_levelvar, tqdm(args, desc=desc)))
 
-    rigs, labels = [], []
-    for rig, label in zip(rigidities, dataset.labels()):
-        if rig is not None:
-            rigs.append(rig)
+    lvars_all, labels = [], []
+    for lvar, label in zip(lvars, dataset.labels()):
+        if lvar is not None:
+            lvars_all.append(lvar)
             labels.append(label)
-    df = DataFrame(data=np.stack(rigs, axis=0), columns=L)
+    df = DataFrame(data=np.stack(lvars_all, axis=0), columns=L)
     df["y"] = labels
     df.to_json(outfile, indent=2)
     print(f"Saved levelvars to {outfile}")
