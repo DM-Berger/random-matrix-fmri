@@ -11,7 +11,7 @@ from argparse import Namespace
 from empyricalRMT.smoother import SmoothMethod
 from sklearn.model_selection import ParameterGrid
 
-from rmt.enumerables import Dataset, PreprocLevel, TrimMethod
+from rmt.enumerables import UpdatedDataset, PreprocLevel, TrimMethod
 from rmt.updated_dataset import UpdatedProcessedDataset, levelvars, rigidities
 
 TASK = int(os.environ.get("SLURM_ARRAY_TASK_ID"))  # type: ignore
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         Namespace(**p)
         for p in ParameterGrid(
             {
-                "source": [*Dataset],
+                "source": [*UpdatedDataset],
                 "preproc": [*PreprocLevel],
             }
         )
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     preproc = grid[TASK].preproc
     for degree in [3, 5, 7, 9]:
         for trim_method in [None, *TrimMethod]:
-            data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+            data = UpdatedProcessedDataset(source=source, preproc_level==preproc)
             rigs = rigidities(
                 dataset=data,
                 degree=degree,

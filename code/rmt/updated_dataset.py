@@ -153,7 +153,7 @@ def parse_source(source: Path) -> Tuple[str, Optional[str], Optional[str], Optio
     return sid, session, run, data
 
 
-class UpdatedProcessedDataset(ProcessedDataset):
+class UpdatedProcessedDataset:
     def __init__(self, source: UpdatedDataset, preproc_level: PreprocLevel) -> None:
         self.source = source
         self.preproc_level = preproc_level
@@ -380,79 +380,79 @@ class UpdatedProcessedDataset(ProcessedDataset):
     def eigs(self) -> list[ndarray]:
         return list(map(lambda p: np.load(p), self.info.index))
 
-    # def eigs_df(
-    #     self, unify: Literal["pad", "percentile"] = "pad", diff: bool = False
-    # ) -> DataFrame:
-    #     raw = self.eigs()
-    #     if diff:
-    #         raw = [np.diff(r) for r in raw]
-    #     lengths = np.array([len(e) for e in raw])
-    #     if unify == "pad" and not np.all(lengths == lengths[0]):
-    #         # front zero-pad
-    #         length = np.max(lengths)
-    #         resized = []
-    #         for eig in raw:
-    #             padded = np.zeros(length)
-    #             padded[-len(eig) :] = eig
-    #             resized.append(padded)
-    #     elif unify == "percentile":
-    #         resized = []
-    #         for eig in raw:
-    #             resized.append(np.percentile(eig, np.linspace(0, 1, 100)))
-    #     else:
-    #         resized = raw
-    #     vals = np.stack(resized, axis=0)
-    #     vals[vals < 0.0] = 0.0
-    #     eigs = DataFrame(vals, columns=range(vals.shape[1]))
-    #     eigs["y"] = self.labels()
-    #     return eigs
+    def eigs_df(
+        self, unify: Literal["pad", "percentile"] = "pad", diff: bool = False
+    ) -> DataFrame:
+        raw = self.eigs()
+        if diff:
+            raw = [np.diff(r) for r in raw]
+        lengths = np.array([len(e) for e in raw])
+        if unify == "pad" and not np.all(lengths == lengths[0]):
+            # front zero-pad
+            length = np.max(lengths)
+            resized = []
+            for eig in raw:
+                padded = np.zeros(length)
+                padded[-len(eig) :] = eig
+                resized.append(padded)
+        elif unify == "percentile":
+            resized = []
+            for eig in raw:
+                resized.append(np.percentile(eig, np.linspace(0, 1, 100)))
+        else:
+            resized = raw
+        vals = np.stack(resized, axis=0)
+        vals[vals < 0.0] = 0.0
+        eigs = DataFrame(vals, columns=range(vals.shape[1]))
+        eigs["y"] = self.labels()
+        return eigs
 
-    # def trimmed(self, trim_method: TrimMethod | None) -> list[Eigenvalues]:
-    #     if trim_method is None:
-    #         eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
-    #         return eigs
+    def trimmed(self, trim_method: TrimMethod | None) -> list[Eigenvalues]:
+        if trim_method is None:
+            eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
+            return eigs
 
-    #     to_hash = (
-    #         self.id,
-    #         trim_method.name if trim_method is not None else "none",
-    #     )
-    #     hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
-    #     outfile = CACHE_DIR / f"{hsh}.npz"
-    #     if outfile.exists():
-    #         vals: list[ndarray] = [*np.load(outfile).values()]
-    #         return [Eigenvalues(val) for val in vals]
+        to_hash = (
+            self.id,
+            trim_method.name if trim_method is not None else "none",
+        )
+        hsh = sha256(str(tuple(sorted(to_hash))).encode()).hexdigest()
+        outfile = CACHE_DIR / f"{hsh}.npz"
+        if outfile.exists():
+            vals: list[ndarray] = [*np.load(outfile).values()]
+            return [Eigenvalues(val) for val in vals]
 
-    #     eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
-    #     eigs = [trim(e, trim_method) for e in eigs]
-    #     vals = [e.vals for e in eigs]
-    #     np.savez_compressed(outfile, *vals)
-    #     return eigs
+        eigs: list[Eigenvalues] = [Eigenvalues(e) for e in self.eigs()]
+        eigs = [trim(e, trim_method) for e in eigs]
+        vals = [e.vals for e in eigs]
+        np.savez_compressed(outfile, *vals)
+        return eigs
 
-    # def unfolded(
-    #     self, smoother: SmoothMethod, degree: int, trim_method: TrimMethod | None
-    # ) -> list[Unfolded]:
-    #     eigs = self.trimmed(trim_method=trim_method)
-    #     unfs = [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
-    #     return unfs
+    def unfolded(
+        self, smoother: SmoothMethod, degree: int, trim_method: TrimMethod | None
+    ) -> list[Unfolded]:
+        eigs = self.trimmed(trim_method=trim_method)
+        unfs = [eig.unfold(smoother=smoother, degree=degree) for eig in eigs]
+        return unfs
 
-    # def unfolded_df(self, degree: int, trim_method: TrimMethod | None) -> DataFrame:
-    #     unfoldeds = self.unfolded(
-    #         smoother=SmoothMethod.Polynomial, degree=degree, trim_method=trim_method
-    #     )
-    #     unfs = [u.vals for u in unfoldeds]
-    #     lengths = np.array([len(u) for u in unfs])  # type: ignore
-    #     # front zero-pad
-    #     length = np.max(lengths)
-    #     resized = []
-    #     for unf in unfs:
-    #         padded = np.zeros(length)
-    #         padded[-len(unf) :] = unf  # type: ignore
-    #         resized.append(padded)
-    #     vals = np.stack(resized, axis=0)
-    #     vals[vals < 0.0] = 0.0
-    #     df = DataFrame(vals, columns=range(vals.shape[1]))
-    #     df["y"] = self.labels()
-    #     return df
+    def unfolded_df(self, degree: int, trim_method: TrimMethod | None) -> DataFrame:
+        unfoldeds = self.unfolded(
+            smoother=SmoothMethod.Polynomial, degree=degree, trim_method=trim_method
+        )
+        unfs = [u.vals for u in unfoldeds]
+        lengths = np.array([len(u) for u in unfs])  # type: ignore
+        # front zero-pad
+        length = np.max(lengths)
+        resized = []
+        for unf in unfs:
+            padded = np.zeros(length)
+            padded[-len(unf) :] = unf  # type: ignore
+            resized.append(padded)
+        vals = np.stack(resized, axis=0)
+        vals[vals < 0.0] = 0.0
+        df = DataFrame(vals, columns=range(vals.shape[1]))
+        df["y"] = self.labels()
+        return df
 
     def __str__(self) -> str:
         return (
