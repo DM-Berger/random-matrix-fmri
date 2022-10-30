@@ -375,13 +375,10 @@ class UpdatedProcessedDataset(ProcessedDataset):
         return df
 
     def labels(self) -> ndarray:
-        return cast(ndarray, self.path_info["cls"].to_numpy())
+        return cast(ndarray, self.info["label"].to_numpy())
 
     def eigs(self) -> list[ndarray]:
-        def load(path: Path) -> ndarray:
-            return cast(ndarray, np.load(path))
-
-        return cast(list[ndarray], self.path_info["path"].apply(load).to_list())
+        return list(map(lambda p: np.load(p), self.info.index))
 
     def eigs_df(
         self, unify: Literal["pad", "percentile"] = "pad", diff: bool = False
@@ -662,7 +659,7 @@ if __name__ == "__main__":
             continue
         for preproc in PreprocLevel:
             data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
-            print(data.info)
+            print(data.eigs_df())
             # rigs = rigidities(dataset=data, degree=degree, parallel=True)
             # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
             # for degree in [5, 7, 9]:
