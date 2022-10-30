@@ -568,14 +568,12 @@ def rigidities(
         smoother=smoother, degree=degree, trim_method=trim_method
     )
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
+    desc = f"Computing rigidities for {dataset}"
+    desc = desc.replace(")", f", trim={trim_method.name})")
     if parallel:
-        rigidities = process_map(
-            _compute_rigidity, args, desc=f"Computing rigidities for {dataset}"
-        )
+        rigidities = process_map(_compute_rigidity, args, desc=desc)
     else:
-        rigidities = list(
-            map(_compute_rigidity, tqdm(args, desc=f"Computing rigidities for {dataset}"))
-        )
+        rigidities = list(map(_compute_rigidity, tqdm(args, desc=desc)))
 
     rigs, labels = [], []
     for rig, label in zip(rigidities, dataset.labels()):
@@ -629,17 +627,12 @@ def levelvars(
         smoother=smoother, degree=degree, trim_method=trim_method
     )
     args = [ObservableArgs(unfolded=unf.vals, L=L) for unf in unfoldeds]  # type: ignore
+    desc = f"Computing levelvars for {dataset}"
+    desc = desc.replace(")", f", trim={trim_method.name})")
     if parallel:
-        rigidities = process_map(
-            _compute_levelvar, args, desc=f"Computing level variances for {dataset}"
-        )
+        rigidities = process_map(_compute_levelvar, args, desc=desc)
     else:
-        rigidities = list(
-            map(
-                _compute_levelvar,
-                tqdm(args, desc=f"Computing level variances for {dataset}"),
-            )
-        )
+        rigidities = list(map(_compute_levelvar, tqdm(args, desc=desc)))
 
     rigs, labels = [], []
     for rig, label in zip(rigidities, dataset.labels()):
