@@ -51,7 +51,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.enumerables import Dataset, PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
 from rmt.updated_features import UpdatedFeature
 
 PROJECT = ROOT.parent
@@ -227,6 +227,86 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
     return False
 
 
+# def predict_updated_feature(
+#     feature: UpdatedFeature,
+#     feature_slice: FeatureSlice,
+#     logarithm: bool = True,
+#     debug: bool = False,
+# ) -> DataFrame | None:
+#     data = feature.data
+#     norm = feature.norm
+#     if logarithm:
+#         data = log_normalize(data, norm)
+#     labels = data.y.unique().tolist()
+
+#     results = []
+#     for i in range(len(labels)):
+#         for j in range(i + 1, len(labels)):
+#             df = select_features(feature, data, feature_slice)
+#             if len(df.columns) - 1 == 0:
+#                 info = "\n".join(
+#                     [
+#                         f"Feature: {feature}",
+#                         f"Dataset: {feature.source}",
+#                         f"norm: {feature.norm}",
+#                         f"preproc: {feature.preproc.name}",
+#                         f"feature_slice: {feature_slice.name}",
+#                         f"data shape before selection: {data.shape}",
+#                         f"data before selection:\n{data}",
+#                         f"data shape after selection: {df.shape}",
+#                         f"data after selection:\n{df}",
+#                     ]
+#                 )
+#                 raise IndexError(f"Some bullshit.\n{info}")
+#             if is_dud_comparison(labels, i, j):
+#                 continue
+#             if debug:
+#                 continue  # just make sure no shape errors
+#             title = f"{labels[i]} v {labels[j]}"
+#             idx = (df.y == labels[i]) | (df.y == labels[j])
+#             df = df.loc[idx]
+#             X = df.drop(columns="y").to_numpy()
+#             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
+#             result_dfs = [
+#                 # LR never converges, pointless
+#                 kfold_eval(X, y, SVC, norm=norm, title=title),
+#                 kfold_eval(X, y, RF, norm=norm, title=title),
+#                 kfold_eval(X, y, GBC, norm=norm, title=title),
+#                 kfold_eval(X, y, KNN3, norm=norm, title=title),
+#                 kfold_eval(X, y, KNN5, norm=norm, title=title),
+#                 kfold_eval(X, y, KNN9, norm=norm, title=title),
+#             ]
+#             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
+#     if debug:
+#         return None
+
+#     result = pd.concat(results, axis=0, ignore_index=True)
+#     result["data"] = feature.source.name
+#     result["feature"] = feature.name
+#     result["preproc"] = feature.preproc.name
+#     result["slice"] = feature_slice.value
+#     result["deg"] = str(feature.degree)
+#     result["trim"] = feature.trim.value if feature.trim else "none"
+#     return result.loc[
+#         :,
+#         [
+#             "data",
+#             "feature",
+#             "preproc",
+#             "deg",
+#             "trim",
+#             "norm",
+#             "slice",
+#             "comparison",
+#             "classifier",
+#             "acc+",
+#             "auroc",
+#             "acc",
+#             "f1",
+#         ],
+#     ]
+
+
 def predict_updated_feature(
     feature: UpdatedFeature,
     feature_slice: FeatureSlice,
@@ -238,6 +318,8 @@ def predict_updated_feature(
     if logarithm:
         data = log_normalize(data, norm)
     labels = data.y.unique().tolist()
+    if len(labels) == 1:
+        raise ValueError("Bad labeling!")
 
     results = []
     for i in range(len(labels)):
@@ -280,87 +362,17 @@ def predict_updated_feature(
     if debug:
         return None
 
-    result = pd.concat(results, axis=0, ignore_index=True)
-    result["data"] = feature.source.name
-    result["feature"] = feature.name
-    result["preproc"] = feature.preproc.name
-    result["slice"] = feature_slice.value
-    result["deg"] = str(feature.degree)
-    result["trim"] = feature.trim.value if feature.trim else "none"
-    return result.loc[
-        :,
-        [
-            "data",
-            "feature",
-            "preproc",
-            "deg",
-            "trim",
-            "norm",
-            "slice",
-            "comparison",
-            "classifier",
-            "acc+",
-            "auroc",
-            "acc",
-            "f1",
-        ],
-    ]
+    try:
+        result = pd.concat(results, axis=0, ignore_index=True)
+    except ValueError as e:
+        message = traceback.format_exc()
+        if "No objects to concatenate" in message:
+            raise RuntimeError(
+                f"""Something went wrong:
+current df.shape: {df.shape}
+"""
+            )
 
-
-def predict_updated_feature(
-    feature: UpdatedFeature,
-    feature_slice: FeatureSlice,
-    logarithm: bool = True,
-    debug: bool = False,
-) -> DataFrame | None:
-    data = feature.data
-    norm = feature.norm
-    if logarithm:
-        data = log_normalize(data, norm)
-    labels = data.y.unique().tolist()
-
-    results = []
-    for i in range(len(labels)):
-        for j in range(i + 1, len(labels)):
-            df = select_features(feature, data, feature_slice)
-            if len(df.columns) - 1 == 0:
-                info = "\n".join(
-                    [
-                        f"Feature: {feature}",
-                        f"Dataset: {feature.source}",
-                        f"norm: {feature.norm}",
-                        f"preproc: {feature.preproc.name}",
-                        f"feature_slice: {feature_slice.name}",
-                        f"data shape before selection: {data.shape}",
-                        f"data before selection:\n{data}",
-                        f"data shape after selection: {df.shape}",
-                        f"data after selection:\n{df}",
-                    ]
-                )
-                raise IndexError(f"Some bullshit.\n{info}")
-            if is_dud_comparison(labels, i, j):
-                continue
-            if debug:
-                continue  # just make sure no shape errors
-            title = f"{labels[i]} v {labels[j]}"
-            idx = (df.y == labels[i]) | (df.y == labels[j])
-            df = df.loc[idx]
-            X = df.drop(columns="y").to_numpy()
-            y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
-            result_dfs = [
-                # LR never converges, pointless
-                kfold_eval(X, y, SVC, norm=norm, title=title),
-                kfold_eval(X, y, RF, norm=norm, title=title),
-                kfold_eval(X, y, GBC, norm=norm, title=title),
-                kfold_eval(X, y, KNN3, norm=norm, title=title),
-                kfold_eval(X, y, KNN5, norm=norm, title=title),
-                kfold_eval(X, y, KNN9, norm=norm, title=title),
-            ]
-            results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
-    if debug:
-        return None
-
-    result = pd.concat(results, axis=0, ignore_index=True)
     result["data"] = feature.source.name
     result["feature"] = feature.name
     result["preproc"] = feature.preproc.name
@@ -420,7 +432,7 @@ def summarize_all_updated_predictions(
     norms: Optional[list[bool]] = None,
     debug: bool = False,
 ) -> DataFrame:
-    sources = sources or [*Dataset]
+    sources = sources or [*UpdatedDataset]
     trims = trims or [None, *TrimMethod]
     degrees = degrees or [3, 5, 7, 9]
     preprocs = preprocs or [*PreprocLevel]

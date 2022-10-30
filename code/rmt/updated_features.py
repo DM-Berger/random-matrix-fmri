@@ -861,32 +861,34 @@ class AllFeatures(UpdatedFeature):
 
 
 FEATURE_OUTFILES: dict[Type[UpdatedFeature], Path] = {
-    AllFeatures: PROJECT / "all_combined_predictions.json",
-    Eigenvalues: PROJECT / "eigenvalue_predictions.json",
-    EigsMinMax5: PROJECT / "eigs-minmax-5_predictions.json",
-    EigsMinMax10: PROJECT / "eigs-minmax-10_predictions.json",
-    EigsMinMax20: PROJECT / "eigs-minmax-20_predictions.json",
-    EigsMiddle10: PROJECT / "eigs-middle-10_predictions.json",
-    EigsMiddle20: PROJECT / "eigs-middle-20_predictions.json",
-    EigsMiddle40: PROJECT / "eigs-middle-40_predictions.json",
-    EigenvaluesSmoothed: PROJECT / "eig_smoothed_predictions.json",
+    AllFeatures: PROJECT / "all_combined_predictions_updated.json",
+    Eigenvalues: PROJECT / "eigenvalue_predictions_updated.json",
+    EigsMinMax5: PROJECT / "eigs-minmax-5_predictions_updated.json",
+    EigsMinMax10: PROJECT / "eigs-minmax-10_predictions_updated.json",
+    EigsMinMax20: PROJECT / "eigs-minmax-20_predictions_updated.json",
+    EigsMiddle10: PROJECT / "eigs-middle-10_predictions_updated.json",
+    EigsMiddle20: PROJECT / "eigs-middle-20_predictions_updated.json",
+    EigsMiddle40: PROJECT / "eigs-middle-40_predictions_updated.json",
+    EigenvaluesSmoothed: PROJECT / "eig_smoothed_predictions_updated.json",
     EigenvaluesPlusEigenvaluesSmoothed: PROJECT
-    / "eigenvalues+eig_smoothed_predictions.json",
-    EigenvaluesPlusSavGol: PROJECT / "eigenvalues+eig_savgol_predictions.json",
-    EigenvaluesSavGol: PROJECT / "eig_savgol_predictions.json",
-    Rigidities: PROJECT / "rigidity_predictions.json",
-    Levelvars: PROJECT / "levelvar_predictions.json",
-    EigPlusLevelvar: PROJECT / "eig+levelvar_predictions.json",
-    EigPlusRigidity: PROJECT / "eig+rigidity_predictions.json",
-    EigPlusUnfolded: PROJECT / "eig+unfolded_predictions.json",
-    EigPlusUnfoldedPlusLevelvar: PROJECT / "eig+unfolded+levelvar_predictions.json",
-    EigPlusUnfoldedPlusRigidity: PROJECT / "eig+unfolded+rigidity_predictions.json",
-    RigidityPlusLevelvar: PROJECT / "rigidity+levelvar_predictions.json",
-    Unfolded: PROJECT / "unfolded_predictions.json",
-    UnfoldedPlusLevelvar: PROJECT / "unfolded+levelvar_predictions.json",
-    UnfoldedPlusRigidity: PROJECT / "unfolded+rigidity_predictions.json",
+    / "eigenvalues+eig_smoothed_predictions_updated.json",
+    EigenvaluesPlusSavGol: PROJECT / "eigenvalues+eig_savgol_predictions_updated.json",
+    EigenvaluesSavGol: PROJECT / "eig_savgol_predictions_updated.json",
+    Rigidities: PROJECT / "rigidity_predictions_updated.json",
+    Levelvars: PROJECT / "levelvar_predictions_updated.json",
+    EigPlusLevelvar: PROJECT / "eig+levelvar_predictions_updated.json",
+    EigPlusRigidity: PROJECT / "eig+rigidity_predictions_updated.json",
+    EigPlusUnfolded: PROJECT / "eig+unfolded_predictions_updated.json",
+    EigPlusUnfoldedPlusLevelvar: PROJECT
+    / "eig+unfolded+levelvar_predictions_updated.json",
+    EigPlusUnfoldedPlusRigidity: PROJECT
+    / "eig+unfolded+rigidity_predictions_updated.json",
+    RigidityPlusLevelvar: PROJECT / "rigidity+levelvar_predictions_updated.json",
+    Unfolded: PROJECT / "unfolded_predictions_updated.json",
+    UnfoldedPlusLevelvar: PROJECT / "unfolded+levelvar_predictions_updated.json",
+    UnfoldedPlusRigidity: PROJECT / "unfolded+rigidity_predictions_updated.json",
     UnfoldedPlusRigidityPlusLevelvar: PROJECT
-    / "unfolded+rigidity+levelvar_predictions.json",
+    / "unfolded+rigidity+levelvar_predictions_updated.json",
 }
 
 if __name__ == "__main__":

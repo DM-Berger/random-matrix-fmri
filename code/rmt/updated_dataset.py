@@ -183,7 +183,7 @@ class UpdatedProcessedDataset:
         if self.source is UpdatedDataset.Parkinsons:
             for file in files:
                 sid, session, run, _ = parse_source(file)
-                label = "ctrl" if "RC41" in sid else "park"
+                label = "ctrl" if "41" in sid else "park"  # 41=ctrl, 42=park
                 df = DataFrame(
                     {"sid": sid, "label": label, "session": session, "run": run},
                     index=[file],
