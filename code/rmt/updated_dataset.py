@@ -31,6 +31,7 @@ from typing_extensions import Literal
 from rmt.constants import DATASETS, DATASETS_FULLPRE
 from rmt.dataset import ProcessedDataset
 from rmt.enumerables import Dataset, PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.preprocess.unify_attention_data import get_comparison_df, kmeans_label
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
 CACHE_DIR.mkdir(exist_ok=True, parents=True)
@@ -156,16 +157,15 @@ class UpdatedProcessedDataset(ProcessedDataset):
     def __init__(self, source: UpdatedDataset, preproc_level: PreprocLevel) -> None:
         self.source = source
         self.preproc_level = preproc_level
-        self.full_pre = full_pre
-        data = PATH_DATA_PRE if self.full_pre else PATH_DATA
-        self.demographics: DataFrame
-        self.path_info = data[self.source]
-        self.id = f"{self.source.name}__fullpre={self.full_pre}"
+        self.info: DataFrame = self.get_information_frame()
+        # self.full_pre = full_pre
+        # data = PATH_DATA_PRE if self.full_pre else PATH_DATA
+        # self.path_info = data[self.source]
+        self.id = f"{self.source.name}__preproc={self.preproc_level.name}"
 
     def get_information_frame(self) -> DataFrame:
         """Get a DataFrame linking each path to all phenotypic info"""
-        root = self.source.root_dir()
-        files = self.preproc_level.eig_files(root)
+        files = self.source.eig_files(self.preproc_level)
         dfs = []
 
         if self.source is UpdatedDataset.Older:
@@ -193,10 +193,13 @@ class UpdatedProcessedDataset(ProcessedDataset):
             return df
 
         table_path: Path = self.source.participants_file()  # type: ignore
-        sep = "\t" if table_path.suffix == ".tsv" else ","
-        table = pd.read_csv(table_path, sep=sep)
-        table["sid"] = table["participant_id"].apply(lambda s: s.replace("sub-", ""))
-        table.drop(columns="participant_id", inplace=True)
+        if "sv" in table_path.suffix:  # non-vigilance cases
+            sep = "\t" if table_path.suffix == ".tsv" else ","
+            table = pd.read_csv(table_path, sep=sep)
+            table["sid"] = table["participant_id"].apply(lambda s: s.replace("sub-", ""))
+            table.drop(columns="participant_id", inplace=True)
+        else:  #
+            table = pd.read_json(table_path)
 
         if self.source is UpdatedDataset.Learning:
             """Table looks like:
@@ -243,7 +246,7 @@ class UpdatedProcessedDataset(ProcessedDataset):
         if self.source is UpdatedDataset.Bilinguality:
             for file in files:
                 sid, session, run, _ = parse_source(file)
-                group = table.loc[table["sid"] == sid]["group"]
+                group = table.loc[table["sid"] == sid]["group"].item()
                 label = "monolingual" if group == "MC" else "bilingual"
 
                 df = DataFrame(
@@ -278,14 +281,14 @@ class UpdatedProcessedDataset(ProcessedDataset):
 
         if self.source is UpdatedDataset.Osteo:
             labels = {
-                "control+NaN": "nopain",
+                "control+nan": "nopain",
                 "patient+placebo": "pain",
                 "patient+duloxetine": "duloxetine",
             }
             for file in files:
                 sid, session, run, _ = parse_source(file)
-                group = table.loc[table["sid"] == sid]["type"]
-                drug = str(table.loc[table["sid"] == sid]["Drug"])
+                group = table.loc[table["sid"] == sid]["type"].item()
+                drug = str(table.loc[table["sid"] == sid]["Drug"].item())
                 label = labels[f"{group}+{drug}"]
 
                 df = DataFrame(
@@ -330,8 +333,46 @@ class UpdatedProcessedDataset(ProcessedDataset):
             df = pd.concat(dfs, axis=0)
             return df
 
+        # now handle Vigilance data
+        if "Weekly" in self.source.name:
+            attention = "weekly"
+        elif "Vigil" in self.source.name:
+            attention = "vigilance"
+        elif "Task" in self.source.name:
+            attention = "task"
+        else:
+            raise RuntimeError("Impossible")
+        if "Ses" in self.source.name:
+            session = self.source.name[-1]
+        else:
+            session = None
+        table = get_comparison_df(table, attention, session=session)  # type: ignore
+        table["sid"] = table["sid"].apply(lambda s: f"{s:02d}")
+        labeled = kmeans_label(table)
 
-        file = self.source.participants_file()
+        dfs = []
+        for file in files:
+            sid, session, run, _ = parse_source(file)
+            session = f"ses-{int(session)}"
+            sid_idx = labeled["sid"] == sid
+            idx = sid_idx
+            if session is not None:
+                ses_idx = labeled["session"] == session
+                idx &= ses_idx
+            label = str(labeled.loc[idx]["label"].item())
+
+            df = DataFrame(
+                {
+                    "sid": sid,
+                    "label": label,
+                    "session": session,
+                    "run": run,
+                },
+                index=[file],
+            )
+            dfs.append(df)
+        df = pd.concat(dfs, axis=0)
+        return df
 
     def labels(self) -> ndarray:
         return cast(ndarray, self.path_info["cls"].to_numpy())
@@ -616,8 +657,15 @@ def levelvars(
 
 
 if __name__ == "__main__":
-    for source in Dataset:
-        for degree in [5, 7, 9]:
-            data = UpdatedProcessedDataset(source=source, full_pre=True)
+    for source in UpdatedDataset:
+        if ("Vigil" not in source.name) and ("Task" not in source.name):
+            continue
+        for preproc in PreprocLevel:
+            data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+            print(data.info)
             # rigs = rigidities(dataset=data, degree=degree, parallel=True)
             # level_vars = levelvars(dataset=data, degree=degree, parallel=True)
+            # for degree in [5, 7, 9]:
+            #   data = UpdatedProcessedDataset(source=source, full_pre=True)
+            #   # rigs = rigidities(dataset=data, degree=degree, parallel=True)
+            #   # level_vars = levelvars(dataset=data, degree=degree, parallel=True)

@@ -17,6 +17,13 @@ Rest_w_VigilanceAttention/
 """
 
 
+class PreprocLevel(Enum):
+    BrainExtract = 0
+    SliceTimeAlign = 1
+    MotionCorrect = 2
+    MNIRegister = 3
+
+
 class Dataset(Enum):
     """
     Learning = "LEARNING"\n
@@ -151,15 +158,15 @@ class UpdatedDataset(Enum):
             UpdatedDataset.Bilinguality: root / "participants.tsv",
             UpdatedDataset.Depression: root / "participants.tsv",
             UpdatedDataset.Older: None,
-            UpdatedDataset.VigilanceSes1: root / "participants.tsv",
-            UpdatedDataset.VigilanceSes2: root / "participants.tsv",
-            UpdatedDataset.TaskAttentionSes1: root / "participants.tsv",
-            UpdatedDataset.TaskAttentionSes2: root / "participants.tsv",
-            UpdatedDataset.WeeklyAttentionSes1: root / "participants.tsv",
-            UpdatedDataset.WeeklyAttentionSes2: root / "participants.tsv",
-            UpdatedDataset.Vigilance: root / "participants.tsv",
-            UpdatedDataset.TaskAttention: root / "participants.tsv",
-            UpdatedDataset.WeeklyAttention: root / "participants.tsv",
+            UpdatedDataset.VigilanceSes1: root / "all_participants.json",
+            UpdatedDataset.VigilanceSes2: root / "all_participants.json",
+            UpdatedDataset.TaskAttentionSes1: root / "all_participants.json",
+            UpdatedDataset.TaskAttentionSes2: root / "all_participants.json",
+            UpdatedDataset.WeeklyAttentionSes1: root / "all_participants.json",
+            UpdatedDataset.WeeklyAttentionSes2: root / "all_participants.json",
+            UpdatedDataset.Vigilance: root / "all_participants.json",
+            UpdatedDataset.TaskAttention: root / "all_participants.json",
+            UpdatedDataset.WeeklyAttention: root / "all_participants.json",
         }[self]
 
     def subgroup_names(self) -> list[str]:
@@ -186,22 +193,20 @@ class UpdatedDataset(Enum):
             UpdatedDataset.WeeklyAttention: ["high", "low"],
         }[self]
 
-
-class PreprocLevel(Enum):
-    BrainExtract = 0
-    SliceTimeAlign = 1
-    MotionCorrect = 2
-    MNIRegister = 3
-
-    def eig_files(self, root: Path) -> List[Path]:
+    def eig_files(self, preproc_level: PreprocLevel) -> List[Path]:
         globs = {
             PreprocLevel.BrainExtract: "*bold_extracted_eigs.npy",
             PreprocLevel.SliceTimeAlign: "*slicetime-corrected_eigs.npy",
             PreprocLevel.MotionCorrect: "*motion-corrected_eigs.npy",
             PreprocLevel.MNIRegister: "*mni-reg_eigs.npy",
         }
-        glob = globs[self]
-        return sorted(root.rglob(glob))
+        glob = globs[preproc_level]
+        files = sorted(self.rmt_dir().rglob(glob))
+        # filter out by session
+        if "Ses" in self.name:
+            session = self.name[-1]
+            files = sorted(filter(lambda p: f"ses-{session}" in p.name, files))
+        return files
 
 
 class TrimMethod(Enum):
