@@ -314,7 +314,7 @@ def summarize_performance_by_aggregation(
     df = df.loc[~df.data.str.contains("Ses")]
 
     # cleaner view
-    """
+    # """
     sbn.displot(
         data=df,
         x="auroc",
@@ -339,10 +339,10 @@ def summarize_performance_by_aggregation(
             label="guess" if i == 0 else None,
         )
     plt.show()
-    """
+    # """
 
     # violin plot
-    """
+    # """
     sbn.catplot(
         data=df,
         y="auroc",
@@ -367,28 +367,29 @@ def summarize_performance_by_aggregation(
         )
     resize_fig()
     plt.show()
-    """
+    # """
 
     # # Very useful: shows best RMT performance due to outlier performances
-    # sbn.catplot(
-    #     data=df,
-    #     y="auroc",
-    #     x="subgroup",
-    #     hue="feature_group",
-    #     palette=FEATURE_GROUP_PALETTE,
-    #     hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-    #     kind="box",
-    #     col="preproc",
-    #     linewidth=0.5,
-    #     fliersize=0.75,  # outlier markers
-    #     legend_out=False,
-    # )
-    # fig = plt.gcf()
-    # # sbn.move_legend(fig, loc="upper right")
-    # for ax in fig.axes:
-    #     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-    # resize_fig()
-    # plt.show()
+    sbn.catplot(
+        data=df,
+        y="auroc",
+        x="subgroup",
+        hue="feature_group",
+        palette=FEATURE_GROUP_PALETTE,
+        hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+        kind="box",
+        col="preproc",
+        col_order=PREPROC_ORDER,
+        linewidth=0.5,
+        fliersize=0.75,  # outlier markers
+        legend_out=False,
+    )
+    fig = plt.gcf()
+    # sbn.move_legend(fig, loc="upper right")
+    for ax in fig.axes:
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    resize_fig()
+    plt.show()
 
     # Compare by classifier: AUROC < 0.5 = overfitting
     sbn.catplot(
@@ -401,6 +402,7 @@ def summarize_performance_by_aggregation(
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
         row="preproc",
+        row_order=PREPROC_ORDER,
         col="classifier",
         col_order=CLASSIFIER_ORDER,
         linewidth=0.25,
@@ -410,7 +412,7 @@ def summarize_performance_by_aggregation(
     fig = plt.gcf()
     # sbn.move_legend(fig, loc="upper right")
     for ax in fig.axes:
-        plt.setp(ax.get_xticklabels(), rotation=40, ha="right")
+        # plt.setp(ax.get_xticklabels(), rotation=40, ha="right")
         ymin, ymax = ax.get_ylim()
         ax.vlines(
             x=0.5,
@@ -423,24 +425,29 @@ def summarize_performance_by_aggregation(
     plt.show()
 
     # Also useful if you re-order hue and cols to show max_eigs most important
-    # sbn.catplot(
-    #     data=df,
-    #     y="auroc",
-    #     x="slice",
-    #     order=SLICE_ORDER,
-    #     hue="feature_group",
-    #     palette=FEATURE_GROUP_PALETTE,
-    #     hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-    #     kind="box",
-    #     col="preproc",
-    #     legend_out=False,
-    #     linewidth=0.5,
-    # )
-    # resize_fig()
-    # plt.show()
+    sbn.catplot(
+        data=df,
+        y="auroc",
+        x="slice",
+        order=SLICE_ORDER,
+        hue="feature_group",
+        palette=FEATURE_GROUP_PALETTE,
+        hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+        kind="box",
+        col="preproc",
+        col_order=PREPROC_ORDER,
+        legend_out=False,
+        linewidth=0.5,
+        fliersize=0.5,  # outlier markers
+    )
+    resize_fig()
+    plt.show()
+    fig = plt.gcf()
+    for ax in fig.axes:
+        plt.setp(ax.get_xticklabels(), rotation=40, ha="right")
 
     # This is important: Shows clear interaction between preproc and slice
-    """
+    # """
     sbn.catplot(
         data=df,
         x="auroc",
@@ -451,6 +458,7 @@ def summarize_performance_by_aggregation(
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
         row="preproc",
+        row_order=PREPROC_ORDER,
         col="subgroup",
         linewidth=0.25,
         fliersize=0.5,  # outlier markers
@@ -469,10 +477,10 @@ def summarize_performance_by_aggregation(
     fig.text(x=0.45, y=0.5, s="Minimal preprocessing")
     fig.text(x=0.45, y=0.98, s="More preprocessing")
     plt.show()
-    """
+    # """
 
     # This shows preproc / slice / feature interaction even more clearly than above
-    """
+    # """
     sbn.catplot(
         data=df,
         x="auroc",
@@ -483,6 +491,7 @@ def summarize_performance_by_aggregation(
         hue="slice",
         hue_order=SLICE_ORDER,
         row="preproc",
+        row_order=PREPROC_ORDER,
         linewidth=0.25,
         fliersize=0.5,
     )
@@ -500,10 +509,10 @@ def summarize_performance_by_aggregation(
     fig.text(x=0.45, y=0.5, s="Minimal preprocessing")
     fig.text(x=0.45, y=0.98, s="More preprocessing")
     plt.show()
-    """
+    # """
 
     # This one very clearly shows effect of preprocessing
-    """
+    # """
     grid: FacetGrid = sbn.catplot(
         data=df,
         y="auroc",
@@ -514,6 +523,7 @@ def summarize_performance_by_aggregation(
         order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
         hue="preproc",
+        hue_order=PREPROC_ORDER,
         linewidth=0.5,
         fliersize=0.75,
     )
@@ -527,9 +537,10 @@ def summarize_performance_by_aggregation(
     resize_fig()
     fig.subplots_adjust(top=0.93, right=0.945, bottom=0.105)
     plt.show()
-    """
+    # """
 
-    sys.exit()
+    return
+    """
     # The more levels we include, the less we "generalize" our claims
     for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
@@ -557,6 +568,7 @@ def summarize_performance_by_aggregation(
         #     .groupby(grouper)
         #     .apply(lambda g: g.nlargest(k, columns="auroc"))
         # )
+    """
 
 
 def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
@@ -1094,13 +1106,17 @@ def get_overfit_scores() -> None:
     )
 
 
-if __name__ == "__main__":
-    simplefilter(action="ignore", category=PerformanceWarning)
-    # print("\n" * 50)
-    # df = load_all_renamed()
-    # df.drop(columns=["acc+", "acc", "f1"], inplace=True)
+def print_correlations(by: list[str]) -> None:
+    df = load_all_renamed()
+    df.drop(columns=["acc+", "acc", "f1"], inplace=True)
+    corrs = df.groupby(by).apply(
+        lambda grp: pd.get_dummies(grp.drop(columns=["auroc"] + by)).corrwith(
+            grp["auroc"], method="spearman"
+        )
+    )
+    print(corrs)
+    print(corrs.reset_index().groupby(by).describe())
 
-    # dummies = pd.get_dummies(df.drop(columns="auroc"))
     # spearman = dummies.corrwith(df.auroc, method="spearman")
     # spearman.name = "spearman"
     # pearson = dummies.corrwith(df.auroc, method="pearson")
@@ -1108,10 +1124,21 @@ if __name__ == "__main__":
     # corrs = pd.concat([spearman, pearson]).sort_values(by="spearman", ascending=False)
     # print(corrs)
 
-    # get_overfit_scores()
-    # summarize_performance_by_aggregation(metric="auroc", summarizer="median")
 
-    generate_all_topk_plots()
+if __name__ == "__main__":
+    simplefilter(action="ignore", category=PerformanceWarning)
+    pd.options.display.max_rows = 1000
+    pd.options.display.max_info_rows = 1000
+    # pd.options.display.large_repr = "info"
+
+    # print_correlations(by=["data", "classifier", "preproc", "feature"])
+
+    # print("\n" * 50)
+
+    # get_overfit_scores()
+    summarize_performance_by_aggregation(metric="auroc", summarizer="median")
+
+    # generate_all_topk_plots()
     sys.exit()
 
     # df = load_all_renamed()
