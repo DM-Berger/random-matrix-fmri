@@ -892,10 +892,3 @@ FEATURE_OUTFILES: dict[Type[UpdatedFeature], Path] = {
     UnfoldedPlusRigidityPlusLevelvar: PROJECT
     / "unfolded+rigidity+levelvar_predictions_updated.json",
 }
-
-if __name__ == "__main__":
-    feature = EigenvaluesSmoothed(
-        UpdatedDataset.Learning, full_pre=False, norm=True, degree=3
-    )
-    print(feature.data)
-    print(feature)
