@@ -142,12 +142,14 @@ between the BOLD signals through \textbf{functional connectivity} analyses, wher
 collections of these signals are examined to infer connections between different voxels or regions
 of interest (ROIs) within the brain.
 
-Whether in the presence of experimental stimuli, or the relative absence, as in a resting state,
-complex functional connectivity networks are ubiquitous
-\citenum{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
+Whether in the presence of experimental stimuli, or the relative absence, as in resting state fMRI (rs-fMRI),
+complex patterns in functional connectivity networks are ubiquitous
+\cite{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
 This complexity suggests fMRI is a candidate to be studied using \textbf{Random Matrix Theory} (RMT), a set
 of mathematical tools originally developed some 50 years ago to solve complex problems in nuclear
-physics \citenum{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. In various
+physics \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}
+
+In various
 physical systems where nuclei can have different possible states, precisely modeling the entirety of
 the interactions between nuclei is often intractable. For such large, complex systems, the
 eigenvalues (or spectra) efficiently summarize the totality of the interactions between components
@@ -155,28 +157,69 @@ of the system, and RMT describes the expected behaviour of such eigenvalues. By 
 spectrum statistically, complex systems can be investigated by comparison to the universal
 properties predicted by RMT.
 
-In recent years, RMT analyses have been applied to study brain functioning.  The earliest  study
+\subsection{RMT and Neurobiological Signals}
+
+In recent years, RMT analyses have been applied to study brain functioning. The earliest study
 demonstrated that spectra of the correlations between electroencephalographic (EEG) signals closely
-resemble those of the Gaussian Orthogonal Ensemble (GOE) \citenum{sebaRandomMatrixAnalysis2003}.
+resemble those of the Gaussian Orthogonal Ensemble (GOE) \cite{sebaRandomMatrixAnalysis2003}.
 Somewhat more recently, RMT was used to evaluate the quality of whole brain features extracted from
-fMRI data \citenum{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has also
+fMRI data \cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has also
 been used in diffusion MRI to aid in the selection of the number of components to employ in
 principal-component reduction analysis and denoising
-\citenum{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
+\cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
 
 Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to investigate
-differences between rest and task states \citenum{wangSpectralPropertiesTemporal2015}, between
-subjects with and without ADHD \citenum{wangRandomMatrixTheory2016}, and between pain and non-pain
-states \citenum{matharooSpontaneousBackpainAlters2020}. Across these three studies, the spectra of
+differences between rest and task states \cite{wangSpectralPropertiesTemporal2015}, between
+subjects with and without ADHD \cite{wangRandomMatrixTheory2016}, and between pain and non-pain
+states \cite{matharooSpontaneousBackpainAlters2020}. Across these three studies, the spectra of
 resting or low-attention states exhibited properties closest to the GOE. These findings suggest that
 certain aspects of psychological processes might be characterized, in part, by features computed
 from the eigenvalues of fMRI correlation matrices, and that these features might vary in an
-interpretable manner across psychological processes. If this is the case, RMT could have unique
-potential in characterizing the functioning of the human brain.
+interpretable manner across psychological processes. If this is the case, RMT could aid
+in understanding the functioning of the human brain.
+
+
+\subsection{Eigenfeatures}
+
+The basic insight of RMT is thus that the \textit{eigenvalues alone} may provide interesting
+information about highly complex Neurobiological systems. However, in practice, the eigenvalues computed from
+empirically observed data are noisy. RMT is statistical in nature, describing only the
+\textit{expected} behaviour of the system spectra. To this end, a number of summary statistics or
+``spectral observables'' \cite{mehtaRandomMatrices2004} can be computed from empirically observed
+spectra, with these spectral observables sometimes being better suited for further analysis or
+comparison to theory. Two such summary statistics that have been somewhat popular are the
+\textit{spectral rigidity} and \textit{level number variance} (``rigidity'' and ``level variance''
+for short; details in Section \ref{sect:methods}).
+
+However, from a predictive standpoint, these summary statistics may eliminate predictively-useful
+information. If the basic RMT insight is that the eigenvalues are useful features to understand a
+system, then those eigenvalues alone (or other simple transformations of them) ought also to be
+predictively useful. We examine a number of such \textit{eigenfeatures} in this study.
+
+
+\subsection{Limitations of Previous Work}
+
+However, these previous studies took largely descriptive / explanatory approaches, noting only
+differences in RMT across subgroups and/or conditions, in many cases, with no formal statistical
+model or testing of the significance and robustness of these differences. No code was provided to
+allow the reproduction of the results, and the extraction of the spectral rigidity and level
+variance is non-trivial, and computationally demanding. Computation of these spectral observables
+requires an \textit{unfolding}
+procedure\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}, which is,
+unfortunately, a poorly-documented fitting procedure that requires making a number of
+difficult-to-justify decisions, and these decisions can dramatically impact RMT conclusions
+\cite{abul-magdUnfoldingSpectrumChaotic2014,abueleninSpectralUnfoldingChaotic2018,fossionRandommatrixSpectraTime2013,abueleninEffectUnfoldingSpectral2012,moralesImprovedUnfoldingDetrending2011}.
+On top of the flexibility in the implementation and application of RMT to empirical data, there
+is also the flexibility introduced by the choices in the complex preprocessing pipelines of fMRI\cite{parkerBenefitSliceTiming2019}.
+
+What is missing is a rigorous, systematic, reproducible investigation of the *predictice* value of
+RMT metrics across a wide variety of data, RMT analytic choices, choice of eigenfeature, and choice
+of preprocessing. The current study aims to rectify this.
+
 
 \section{Datasets}
 
-As our primary intention is to examine the potential utility of RMT-derived features across a wide
+To examine the potential utility of RMT-derived features across a wide
 variety of data, and not to decisively put forward or refute any specific hypotheses relating RMT to
 psychological processes, we examine a wide selection of fMRI datasets available on the
 \href{https://openneuro.org/}{OpenNeuro} platform (36).  This allows for a broad assessment of the
@@ -184,20 +227,20 @@ potential of voxelwise RMT features.
 
 However, since previous studies employing RMT for feature extraction have partially interpreted
 their findings with respect to attentional processes
-\citenum{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we have also elected to use
+\cite{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we have also elected to use
 datasets that involve attention in some way. This includes measures of attention or vigilance, or
 comparisons between a condition involving more attention and focus (e.g. a task state) or conditions
 which should involve less attention or focus (e.g. resting-state, pain medication vs. none).
 
 \subsection{Dataset: PSYCH}
-The PSYCH Dataset  is detailed in \citenum{gorgolewskiHighResolution7Tesla2015}. Subjects completed a
+The PSYCH Dataset  is detailed in \cite{gorgolewskiHighResolution7Tesla2015}. Subjects completed a
 battery of psychological measurements, and various resting-state fMRI (rs-fMRI) whole-brain 7-Tesla
 scans were obtained. For the purpose of keeping with the ``attention'' theme of the analyses in this
 paper, three pairings of subgroups were constructed via z-score splits of the various sum-scores of
 scale items involving concepts closely related to attention.
 
 \emph{Trait Attention}.
-The PANAS-X \citenum{watsonPANASXManualPositive1994} is a 9-point Likert-type self-report measure that
+The PANAS-X \cite{watsonPANASXManualPositive1994} is a 9-point Likert-type self-report measure that
 queries the extent to which subjects agree particular affective terms have applied to them over a
 recent time period (e.g. a few weeks). An ad hoc (i.e. face-valid) scale was constructed from the
 scale items: ``attentive'', ``alert'', ``interested'', ``concentrating'', and reverse-scored items
@@ -205,8 +248,8 @@ scale items: ``attentive'', ``alert'', ``interested'', ``concentrating'', and re
 attention'' category based on a median split of the average z-score across items.
 
 \emph{Task Attention}.
-The Conjunctive Continuous Performance Task (CCPT;
-\citenum{shalevConjunctiveContinuousPerformance2011} is a behavioural measure of sustained attention
+The Conjunctive Continuous Performance Task \cite{shalevConjunctiveContinuousPerformance2011} (CCPT)
+ is a behavioural measure of sustained attention
 where subjects must react only if they see a red square among other different coloured figures. For
 this paper, a sum score was constructed by subtracting the number of false positive and false
 negative responses from the number of success responses, and subjects with a z-score greater / less
@@ -215,25 +258,25 @@ than zero on this scale were placed in high / low ``task attention'' category.
 \emph{Vigilance}.
 The Mini New York cognition questionnaire assesses various elements of the subject's cognitive
 state, e.g. ``my thoughts involved other people'', ``I thought about something positive'' (translated
-from German; \citenum{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
+from German; \cite{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
 alertness (``I was fully awake'' / ``war ich vollkommen wach'') and was used to create high / low
 ``vigilance'' conditions in the same manner as the previous two splits.
 
 \subsubsection{Dataset 2}
 Dataset 2 (referred to in figures and tables with the label ``OSTEO'') is detailed in
-\citenum{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls (``nopain''
+\cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls (``nopain''
 condition) and individuals with knee osteoarthritis (``pain'' condition) treated for 2 weeks with
 either placebo (``pain'' condition) or duloxetine (``duloxetine'' condition). An additional grouping was
 also created with both the placebo and duloxetine data (``allpain'' condition), allowing for six
 subgroup comparisons. All subjects were imaged with whole-brain rs-fMRI. Scan parameters are
 documented in Table \ref{table:1}. The use of rs-fMRI and RMT for examining pain makes this dataset
-complementary to \citenum{matharooSpontaneousBackpainAlters2020}.
+complementary to \cite{matharooSpontaneousBackpainAlters2020}.
 
 \subsubsection{Dataset 3}
 Dataset 3  (referred to here with the label ``REFLECT'', due to the ``reflective” nature of the
-cognitive tasks) is described in full detail by \citenum{dupreMultiechoFMRIReplication2016}. Both
+cognitive tasks) is described in full detail by \cite{dupreMultiechoFMRIReplication2016}. Both
 multi-echo rs- and task-fMRI scans were conducted with scan parameters summarized in Table \ref{table:2}. Tasks
-involved viewing various affective images (see \citenum{sprengPatternsBrainActivity2010} for details)
+involved viewing various affective images (see \cite{sprengPatternsBrainActivity2010} for details)
 and performing tasks related to autobiographical memory, prospection, or theory-of-mind reasoning.
 Continuing with the theme of broadly comparing high versus low attention throughout this paper, the
 different tasks were simply treated generically as ``attending'', in contrast to the non-attentive
@@ -241,7 +284,7 @@ resting-state scans. This resulted in four task state scans and one resting-stat
 
 In order to combine the multi-echo data into a single, usable matrix, two methods were employed. In
 the ``summed'' condition, echoes were combined via summation, a method which has value in providing an
-image with overall increased contrast \citenum{kunduMultiechoFMRIReview2017}. In the ``interleave''
+image with overall increased contrast \cite{kunduMultiechoFMRIReview2017}. In the ``interleave''
 condition, echoes were interleaved at each voxel: that is, if we denote the voxel's \(i\)th signal value
 from echo \(j\) as \(t_{j,i}\), then the interleaved voxel of the new image has the time-series \([t_{1,1},
 t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
@@ -253,10 +296,10 @@ signal, but to ensure all scan information was used with minimal additional anal
 
 \subsubsection{Dataset 4}
 Dataset 4 (referred to in figures and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
-described in detail in \citenum{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
+described in detail in \cite{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
 in Table \ref{table:1}. Subjects with non-demented Parkinson's Disease (PD) and healthy controls performed a
 number of repetitions of the Attention Network Task
-(ANT; \citenum{fanActivationAttentionalNetworks2005} ). Subgroup details are available in Table \ref{table:1}. As the ANT
+(ANT; \cite{fanActivationAttentionalNetworks2005} ). Subgroup details are available in Table \ref{table:1}. As the ANT
 task demands high attention, it is not as straightforward to create ``high'' or ``low'' attention
 groups. Instead, since attention presumably is high and varies little in this dataset, and subgroups
 instead differ by virtue of the presence or absence of PD, any results here serve as a useful
@@ -266,10 +309,10 @@ examine the effects of preprocessing on the extracted RMT features.
 
 \subsubsection{Dataset 5}
 Dataset 5 (referred to in figures and tables with the label ``LEARN'') is documented and described in
-detail in \citenum{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
+detail in \cite{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
 were available for all subjects, allowing for within-subject comparisons. The complex task involved
 multiple phases, wherein subjects were exposed to named, black-and-white outlined satellite images
-related by family-resemblance of the components see figure 1 of \citenum{schapiroHumanHippocampalReplay2018}. After this learning task, subjects were tested on their
+related by family-resemblance of the components see figure 1 of \cite{schapiroHumanHippocampalReplay2018}. After this learning task, subjects were tested on their
 memory of the various learned features. Scans corresponding to both the initial learning and
 subsequent testing phase were included in the high-attention ``task'' subgroup for the purposes of
 the analysis of this paper. Resting state scans were included in the low-attention ``rest''
@@ -309,7 +352,7 @@ PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300 & 90  \\
 \begin{table}[h!]
 \caption{
     ID = Identifier for paper. Subgroup = name of subgroup. Subjects = Number of subjects.
-    Task = fMRI task. ANT = Attention Network Task \citenum{fanActivationAttentionalNetworks2005}
+    Task = fMRI task. ANT = Attention Network Task \cite{fanActivationAttentionalNetworks2005}
 }
 \label{table:2}
 \small
@@ -348,6 +391,31 @@ PSYCH   &  vigilant           & 11     & resting-state        & 3 \\
 \end{table}
 
 \section{Methods}
+\label{sect:methods}
+
+Given empirically observed eigenvalues \(\Lambda\), the spectral rigidity, \(\Delta_3(L)\), is
+calculated for any positive real value \(L < \max(\Lambda)\) as:
+\[
+\Delta_3(L) = \left \langle \min_{A,B} \frac{1}{L} \int_c^{c+L} \left(  \eta(\lambda) -A \lambda - B \right)^2 \right \rangle_c
+\]
+where \(\eta(\lambda)\) is the number of unfolded eigenvalues less than or equal to \(\lambda\),
+\(\langle \cdot \rangle_c\) denotes the average with respect to all starting points \(c\), and where
+\(A\) and \(B\) denote the slope and intercept, respectively, of the least squares fit of a straight
+line to \(\eta(\lambda)\) on \([c, c+L]\) \cite{guhrRandommatrixTheoriesQuantum1998a}. The spectral
+rigidty for a value \(L\) is thus the \textit{average nonlinearity}
+
+
+The level
+number variance, \(\Sigma^2(L)\), is closely related to the spectral rigidity
+\cite{mehtaRandomMatrices2004}, and is calculated as:
+
+\[
+\Sigma^2(L) = \left\langle \eta^2(L, c) \right\rangle_c - \left\langle \eta(L, c) \right\rangle^2_c
+\]
+
+where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and where \(c\), \(L\),
+and \(\langle \cdot \rangle_c\) are as above \cite{guhrRandommatrixTheoriesQuantum1998a}. Both the
+spectral rigidity and level number variance are also computed and investigated in this study.
 
 \subsection{Page Setup and Fonts}
 
