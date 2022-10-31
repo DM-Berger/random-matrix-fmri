@@ -199,21 +199,21 @@ these datasets, we highlight below only those aspects relevant to the current pa
 \centering
 \begin{tabular}{ c c c c c c c }
 \hline
-\textbf{ID}    & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} \\
+\textbf{ID}    & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} & \textbf{n\_scans} \\
 \hline
-PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300  \\
-PARK      & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4  & 149  \\
-OSTEO     & 64 x 64 x 36   & 3.4 x 3.4 x 3.0 & 2.5  & 300  \\
-BILING    & 100 x 100 x 72 & 1.8 x 1.8 x 1.8 & 0.88 & 823  \\
-LEARN     & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0  & 195  \\
-DEPRESS   & 112 x 112 x 25 & 2.0 x 2.0 x 5.0 & 2.5 & 100   \\
-AGING     & 74 x 74 x 32   & 3.0 x 3.0 x 4.0 & 2.0 & 300   \\
+AGING     & 74 x 74 x 32   & 3.0 x 3.0 x 4.0 & 2.0  & 300 & 62  \\
+BILING    & 100 x 100 x 72 & 1.8 x 1.8 x 1.8 & 0.88 & 823 & 90  \\
+DEPRESS   & 112 x 112 x 25 & 2.0 x 2.0 x 5.0 & 2.5  & 100 & 72  \\
+LEARN     & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0  & 195 & 432 \\
+OSTEO     & 64 x 64 x 36   & 3.4 x 3.4 x 3.0 & 2.5  & 300 & 74  \\
+PARK      & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4  & 149 & 552 \\
+PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300 & 90  \\
 \hline
 \end{tabular}
 \caption{
     ID = Identifier for paper. TR = Time of Repetition (seconds).
     Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
-    indicate P slices with dimensions M x N.
+    indicate P horizontal / axial slices each with dimensions M x N.
 }
 \label{table:1}
 \end{table}
@@ -223,28 +223,33 @@ AGING     & 74 x 74 x 32   & 3.0 x 3.0 x 4.0 & 2.0 & 300   \\
 \centering
 \begin{tabular}{ l l c c c }
 \hline
-\textbf{ID}  & \textbf{Subgroup / Condition}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
+\textbf{ID}  & \textbf{Subgroup}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
 \hline
-PSYCH   &  high\_vigilance    & 12 / 11 & resting-state                    & 2 \\
-        &  low\_vigilance     & 10 / 11 & resting-state                    & 2 \\
-        &  trait\_attend      & 12 / 15 & resting-state                    & 2 \\
-        &  trait\_non-attend  & 10 / 7  & resting-state                    & 2 \\
-        &  task\_attend       & 13 / 15 & resting-state                    & 2 \\
-        &  task\_nonattend    &  9 / 7  & resting-state                    & 2 \\
+AGING   &  older             & 28      & resting-state         & 1 \\
+        &  younger           & 34      & resting-state         & 1 \\
 \hline
-LEARN   &  task              & 24      & learn image sketches & 16 \\
-        &  rest              & 24      & resting-state                    & 2 \\
+BILING  &  bilingual          & 59      & resting-state        & 1 \\
+        &  monolingual        & 33      & resting-state        & 1 \\
 \hline
-REFLECT &  control (no pain) & 20      & resting-state                    & 1 \\
-        &  duloxetine        & 19      & resting-state                    & 1 \\
-        &  placebo           & 37      & resting-state                    & 1 \\
-        &  allpain (duloxetine + placebo) & 56         & resting-state    & 1 \\
+DEPRESS &  depression         & 51      & resting-state        & 1 \\
+        &  control            & 21      & resting-state        & 1 \\
 \hline
-PARK    &  Parkinson's       & 17      & ANT                              & 6 \\
-        &  control           & 17      & ANT                              & 6 \\
+LEARN   &  task              & 24      & learn image sketches  & 16 \\
+        &  rest              & 24      & resting-state         & 2 \\
 \hline
-ECHO    &  summed/interleave & 31      & resting-state                    & 1 \\
-        &  summed/interleave & 31      & imagery/reflection               & 4 \\
+OSTEO   &  duloxetine        & 19      & taking duloxetine     & 1 \\
+        &  pain              & 37      & placebo               & 1 \\
+        &  nopain            & 20      & control               & 1 \\
+\hline
+PARK    &  Parkinson's       & 25      & ANT                   & 12 \\
+        &  control           & 21      & ANT                   & 12 \\
+\hline
+PSYCH   &  vigilant           & 11     & resting-state        & 3 \\
+        &  nonigilant         & 11     & resting-state        & 3 \\
+        &  trait-attentive     & 11    & resting-state        & 3 \\
+        &  trait-non-attentive & 11    & resting-state        & 3 \\
+        &  task-attentive     & 11     & resting-state        & 3 \\
+        &  task-nonattentive  & 11     & resting-state        & 3 \\
 \hline
 \end{tabular}
 \caption{

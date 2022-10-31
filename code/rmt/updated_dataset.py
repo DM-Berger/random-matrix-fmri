@@ -595,5 +595,17 @@ def find_bad_labelings() -> None:
                     print(f"Problem for {source.name} {preproc.name} degree={degree}")
 
 
+def print_subgroup_counts() -> None:
+    for source in sorted(UpdatedDataset, key=lambda d: d.name):
+        data = UpdatedProcessedDataset(
+            source=source, preproc_level=PreprocLevel.BrainExtract
+        )
+        print(data.source.name)
+        print(data.info.groupby(["label"]).count()["sid"])
+        print(data.info.drop(columns=["session", "run"]).groupby(["sid"]).count())
+        print("="*80)
+
+
 if __name__ == "__main__":
-    find_bad_labelings()
+    # find_bad_labelings()
+    print_subgroup_counts()
