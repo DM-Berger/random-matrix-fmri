@@ -568,7 +568,11 @@ def find_bad_labelings() -> None:
     """
     for source in UpdatedDataset:
         for preproc in PreprocLevel:
-            data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+            try:
+                data = UpdatedProcessedDataset(source=source, preproc_level=preproc)
+            except IndexError:
+                print(f"Problem for {source.name} {preproc.name}")
+                continue
 
             if len(np.unique(data.labels()).ravel()) == 1:
                 print(f"Defective: {source} w preproc={preproc}")
