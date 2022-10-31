@@ -26,7 +26,8 @@ from rmt.predict import log_normalize
 
 PROJECT = ROOT.parent
 RESULTS = PROJECT / "results"
-PLOT_OUTDIR = RESULTS / "plots"
+PLOT_OUTDIR = RESULTS / "plots/legacy"
+UPDATED_PLOT_OUTDIR = RESULTS / "plots/updated"
 BLUE = tuple(np.array((1, 70, 198)) / 255)
 
 TITLE_ARGS = dict(fontsize=10)
@@ -36,6 +37,11 @@ Colors = dict[str, tuple[float, float, float]]
 
 def outdir(feature_name: str) -> Path:
     out = PLOT_OUTDIR / feature_name
+    out.mkdir(exist_ok=True, parents=True)
+    return out
+
+def updated_outdir(feature_name: str) -> Path:
+    out = UPDATED_PLOT_OUTDIR / feature_name
     out.mkdir(exist_ok=True, parents=True)
     return out
 
