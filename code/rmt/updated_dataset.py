@@ -561,6 +561,7 @@ def levelvars(
     print(f"Saved levelvars to {outfile}")
     return df
 
+
 def find_bad_labelings() -> None:
     """There was a bug where the cached files had erroneous labels. It is now fixed, but
     this was the test of that.
@@ -575,12 +576,19 @@ def find_bad_labelings() -> None:
                 print(data.info)
 
             for degree in [3, 5, 7, 9]:
-                lvars = levelvars(dataset=data, degree=degree, parallel=True)
-                rigs = rigidities(dataset=data, degree=degree, parallel=True)
-                if (len(lvars.y.unique()) == 1):
-                    print(f"Problem for {source.name} {preproc.name} degree={degree} levelvars")
-                if (len(rigs.y.unique()) == 1):
-                    print(f"Problem for {source.name} {preproc.name} degree={degree} rigidities")
+                try:
+                    lvars = levelvars(dataset=data, degree=degree, parallel=True)
+                    rigs = rigidities(dataset=data, degree=degree, parallel=True)
+                    if len(lvars.y.unique()) == 1:
+                        print(
+                            f"Problem for {source.name} {preproc.name} degree={degree} levelvars"
+                        )
+                    if len(rigs.y.unique()) == 1:
+                        print(
+                            f"Problem for {source.name} {preproc.name} degree={degree} rigidities"
+                        )
+                except IndexError:
+                    print(f"Problem for {source.name} {preproc.name} degree={degree}")
 
 
 if __name__ == "__main__":

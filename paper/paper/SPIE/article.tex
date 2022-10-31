@@ -86,7 +86,7 @@
 
 \section*{Purpose}
 Random matrix theory (RMT) is an increasingly useful tool for understanding large, complex systems.
-Prior studies have examined functional Magnetic Resonance Imaging (fMRI) images using tools from
+Prior studies have examined functional Magnetic Resonance Imaging (fMRI) scans using tools from
 RMT, with some success. However, RMT computations are complex, and sensitive to numerous analytic
 choices, and previous investigations have been mostly explanatory / descriptive. We systematically
 investigate the usefulness of RMT in a variety of fMRI datasets in a predictive framework.
@@ -101,10 +101,11 @@ eigenfeatures across various datasets.
 \section*{Results}
 We find eiegenfeatures to be broadly predictive in a wide variety of contexts, and that RMT-specific
 features like the spectral rigidity and level number variance have considerable potential in
-feature-engineering for fMRI. On median, we find ...
+feature-engineering for fMRI. On median, we find ... However, we also find the utility of the
+extracted eigenfeatures to depend strongly and complexly on various analytic decisions.
 
 \section*{Conclusions}
-Use RMT yo.
+Consider using RMT.
 
 % This document shows the required format and appearance of a manuscript prepared for SPIE journals.
 % It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the
@@ -129,15 +130,132 @@ Use RMT yo.
 
 \section{Introduction}
 \label{sect:intro}  % \label{} allows reference to this section
-This document shows the format and appearance of a manuscript prepared for submission to an SPIE journal. Note that this template is only intended to be used as a guideline for author convenience. It is designed for optimum clarity and ease of reading for editors and reviewers, but the template does not reflect the final page layout of a published journal paper. Accepted papers are professionally typeset in XML according to the layout and design of the journal.
+% This document shows the format and appearance of a manuscript prepared for submission to an SPIE
+% journal. Note that this template is only intended to be used as a guideline for author convenience.
+% It is designed for optimum clarity and ease of reading for editors and reviewers, but the template
+% does not reflect the final page layout of a published journal paper. Accepted papers are
+% professionally typeset in XML according to the layout and design of the journal.
 
-\subsection{Use of This Document}
+In functional magnetic resonance imaging (fMRI), changes in the blood-oxygenation-level-dependent
+(BOLD) signals are related to neural activity. It is common to investigate statistical relationships
+between the BOLD signals through \textbf{functional connectivity} analyses, where correlations between
+collections of these signals are examined to infer connections between different voxels or regions
+of interest (ROIs) within the brain.
 
-This document is prepared using LaTeX2e\cite{Lamport94,Goossens97} with the class file {\ttfamily spieman.cls}.  The LaTeX source file used to create this document is {\ttfamily article.tex}, which contains important formatting information embedded in it. Authors may use it as a template to create their own manuscript. While LaTeX properly handles most formatting issues, the author may occasionally need to intervene to obtain a satisfactorily  formatted manuscript.
+Whether in the presence of experimental stimuli, or the relative absence, as in a resting state,
+complex functional connectivity networks are ubiquitous
+\citenum{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
+This complexity suggests fMRI is a candidate to be studied using \textbf{Random Matrix Theory} (RMT), a set
+of mathematical tools originally developed some 50 years ago to solve complex problems in nuclear
+physics \citenum{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. In various
+physical systems where nuclei can have different possible states, precisely modeling the entirety of
+the interactions between nuclei is often intractable. For such large, complex systems, the
+eigenvalues (or spectra) efficiently summarize the totality of the interactions between components
+of the system, and RMT describes the expected behaviour of such eigenvalues. By analysing the
+spectrum statistically, complex systems can be investigated by comparison to the universal
+properties predicted by RMT.
 
-\subsection{English}
+In recent years, RMT analyses have been applied to study brain functioning.  The earliest  study
+demonstrated that spectra of the correlations between electroencephalographic (EEG) signals closely
+resemble those of the Gaussian Orthogonal Ensemble (GOE) \citenum{sebaRandomMatrixAnalysis2003}.
+Somewhat more recently, RMT was used to evaluate the quality of whole brain features extracted from
+fMRI data \citenum{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has also
+been used in diffusion MRI to aid in the selection of the number of components to employ in
+principal-component reduction analysis and denoising
+\citenum{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
 
-Authors are strongly encouraged to follow the principles of sound technical writing, as found in Refs.~\citenum{Alred03} and \citenum{Perelman97}, for example. In addition, good English usage is essential. Authors whose native language is not English may wish to collaborate with a colleague whose English skills are more advanced. Alternatively, you may wish to have your manuscript professionally edited prior to submission by Editage, our recommended independent editorial service: \linkable{https://www.editage.com/spie/}. SPIE authors will receive a 15\% discount off their services. A spell checker can be helpful to discover misspelled words, but authors should also proofread their papers carefully prior to submission. Manuscripts that do not meet acceptable English standards or lack clarity may be rejected.
+Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to investigate
+differences between rest and task states \citenum{wangSpectralPropertiesTemporal2015}, between
+subjects with and without ADHD \citenum{wangRandomMatrixTheory2016}, and between pain and non-pain
+states \citenum{matharooSpontaneousBackpainAlters2020}. Across these three studies, the spectra of
+resting or low-attention states exhibited properties closest to the GOE. These findings suggest that
+certain aspects of psychological processes might be characterized, in part, by features computed
+from the eigenvalues of fMRI correlation matrices, and that these features might vary in an
+interpretable manner across psychological processes. If this is the case, RMT could have unique
+potential in characterizing the functioning of the human brain.
+
+\section{Datasets}
+
+As our primary intention is to examine the potential utility of RMT-derived features across a wide
+variety of data, and not to decisively put forward or refute any specific hypotheses relating RMT to
+psychological processes, we examine a wide selection of fMRI datasets available on the
+\href{https://openneuro.org/}{OpenNeuro} platform [36].  This allows for a broad assessment of the
+potential of voxelwise RMT features.
+
+However, since previous studies employing RMT for feature extraction have partially interpreted
+their findings with respect to attentional processes
+\citenum{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we have elected to use
+datasets that involve attention in some way. This includes measures of attention or vigilance, or
+comparisons between a condition involving more attention and focus (e.g. a task state) or conditions
+which should involve considerably less attention or focus (e.g. resting-state).
+
+Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
+and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
+(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
+these datasets, we highlight below only those aspects relevant to the current paper.
+
+\begin{table}[h!]
+\small
+\centering
+\begin{tabular}{ c c c c c c c }
+\hline
+\textbf{ID}    & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} \\
+\hline
+PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300  \\
+PARK      & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4  & 149  \\
+OSTEO     & 64 x 64 x 36   & 3.4 x 3.4 x 3.0 & 2.5  & 300  \\
+BILING    & 100 x 100 x 72 & 1.8 x 1.8 x 1.8 & 0.88 & 823  \\
+LEARN     & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0  & 195  \\
+DEPRESS   & 112 x 112 x 25 & 2.0 x 2.0 x 5.0 & 2.5 & 100   \\
+AGING     & 74 x 74 x 32   & 3.0 x 3.0 x 4.0 & 2.0 & 300   \\
+\hline
+\end{tabular}
+\caption{
+    ID = Identifier for paper. TR = Time of Repetition (seconds).
+    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
+    indicate P slices with dimensions M x N.
+}
+\label{table:1}
+\end{table}
+
+\begin{table}[h!]
+\small
+\centering
+\begin{tabular}{ l l c c c }
+\hline
+\textbf{ID}  & \textbf{Subgroup / Condition}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
+\hline
+PSYCH   &  high\_vigilance    & 12 / 11 & resting-state                    & 2 \\
+        &  low\_vigilance     & 10 / 11 & resting-state                    & 2 \\
+        &  trait\_attend      & 12 / 15 & resting-state                    & 2 \\
+        &  trait\_non-attend  & 10 / 7  & resting-state                    & 2 \\
+        &  task\_attend       & 13 / 15 & resting-state                    & 2 \\
+        &  task\_nonattend    &  9 / 7  & resting-state                    & 2 \\
+\hline
+LEARN   &  task              & 24      & learn image sketches & 16 \\
+        &  rest              & 24      & resting-state                    & 2 \\
+\hline
+REFLECT &  control (no pain) & 20      & resting-state                    & 1 \\
+        &  duloxetine        & 19      & resting-state                    & 1 \\
+        &  placebo           & 37      & resting-state                    & 1 \\
+        &  allpain (duloxetine + placebo) & 56         & resting-state    & 1 \\
+\hline
+PARK    &  Parkinson's       & 17      & ANT                              & 6 \\
+        &  control           & 17      & ANT                              & 6 \\
+\hline
+ECHO    &  summed/interleave & 31      & resting-state                    & 1 \\
+        &  summed/interleave & 31      & imagery/reflection               & 4 \\
+\hline
+\end{tabular}
+\caption{
+    ID = Identifier for paper. FOV = Field of View. TR = Time of Repetition (seconds).
+    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
+    indicate P slices with dimensions M x N.
+}
+\label{table:2}
+\end{table}
+
+\section{Methods}
 
 \subsection{Page Setup and Fonts}
 
