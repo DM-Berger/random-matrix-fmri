@@ -75,7 +75,8 @@ class RMTComputatable(Loadable):
             mask = np.var(arr2d, axis=1) > 0
             arr2d = arr2d[mask]
 
-            reduced: ndarray = kind.reducer(arr2d).ravel()
+            reducer = kind.reducer()
+            reduced: ndarray = reducer(arr2d).ravel()
             if len(reduced) != arr2d.shape[1]:
                 raise RuntimeError(
                     f"Shape mismatch for series type: {kind}. "
