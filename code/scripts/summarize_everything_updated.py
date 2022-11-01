@@ -1136,9 +1136,9 @@ if __name__ == "__main__":
     # print("\n" * 50)
 
     # get_overfit_scores()
-    summarize_performance_by_aggregation(metric="auroc", summarizer="median")
+    # summarize_performance_by_aggregation(metric="auroc", summarizer="median")
 
-    # generate_all_topk_plots()
+    generate_all_topk_plots()
     sys.exit()
 
     # df = load_all_renamed()
