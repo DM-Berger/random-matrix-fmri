@@ -153,7 +153,7 @@ def compute_eigs(path: Path) -> None:
 def compute_all_tseries(path: Path) -> None:
     try:
         rmt = RMTComputatable(path)
-        rmt.compute_timeseries(force=True)
+        rmt.compute_timeseries(force=False)
     except Exception as e:
         traceback.print_exc()
         print(f"Got error: {e}")
