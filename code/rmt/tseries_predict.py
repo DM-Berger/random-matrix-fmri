@@ -367,3 +367,26 @@ TSERIES_OUTFILES = {
     SeriesKind.Range: PROJECT / "tseries_range_predictions.json",
     SeriesKind.RobustRange: PROJECT / "tseries_robust-range_predictions.json",
 }
+
+if __name__ == "__main__":
+    # norms = [True, False]
+    # smoothing_degrees = [1, 2, 4, 8, 16]
+    total = (
+        len(UpdatedDataset)
+        * len(SeriesKind)
+        * len(PreprocLevel)
+    )
+    pbar = tqdm(desc="Checking...", total=total)
+    for source in UpdatedDataset:
+        for kind in SeriesKind:
+            for preproc in PreprocLevel:
+                feature = TimeSeriesFeature(
+                    source=source,
+                    kind=kind,
+                    preproc=preproc,
+                    norm=True,
+                    smoothing_degree=3,
+                )
+                info = feature.info
+                pbar.update()
+    pbar.close()

@@ -267,10 +267,15 @@ class UpdatedDataset(Enum):
             PreprocLevel.BrainExtract: f"*bold_extracted{tseries.suffix()}",
             PreprocLevel.SliceTimeAlign: f"*slicetime-corrected{tseries.suffix()}",
             PreprocLevel.MotionCorrect: f"*motion-corrected{tseries.suffix()}",
-            PreprocLevel.MNIRegister: f"*mni-reg_eigs{tseries.suffix()}",
+            PreprocLevel.MNIRegister: f"*mni-reg{tseries.suffix()}",
         }
         glob = globs[preproc_level]
         files = sorted(self.rmt_dir().rglob(glob))
+        if len(files) == 0:
+            raise FileNotFoundError(
+                f"No files found matching glob `{glob}` for dataset {self.name}, "
+                f"with preproc={preproc_level}, and for timeseries kind {tseries.name}"
+            )
         # filter out by session
         if "Ses" in self.name:
             session = self.name[-1]
