@@ -11,10 +11,12 @@ from rmt.tseries_predict import TSERIES_OUTFILES, summarize_all_tseries_predicti
 
 if __name__ == "__main__":
     for kind, fname in TSERIES_OUTFILES.items():
+        outfile = ROOT.parent / fname
+        if outfile.exists():
+            continue
         df = summarize_all_tseries_predictions(
             kind=kind,
             debug=False,
         )
-        outfile = ROOT.parent / fname
         df.to_json(outfile)
         print(f"Saved tseries predictions to {outfile}")
