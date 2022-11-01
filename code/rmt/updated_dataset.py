@@ -28,7 +28,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from typing_extensions import Literal
 
-from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.enumerables import PreprocLevel, SeriesKind, TrimMethod, UpdatedDataset
 from rmt.preprocess.unify_attention_data import get_comparison_df, median_split_labels
 
 CACHE_DIR = ROOT.parent / "__OBSERVABLES_CACHE__"
@@ -72,9 +72,12 @@ class UpdatedProcessedDataset:
         # self.path_info = data[self.source]
         self.id = f"{self.source.name}__preproc={self.preproc_level.name}"
 
-    def get_information_frame(self) -> DataFrame:
+    def get_information_frame(self, tseries: SeriesKind | None = None) -> DataFrame:
         """Get a DataFrame linking each path to all phenotypic info"""
-        files = self.source.eig_files(self.preproc_level)
+        if tseries is None:
+            files = self.source.eig_files(self.preproc_level)
+        else:
+            files = self.source.tseries_files(self.preproc_level, tseries)
         dfs = []
 
         if self.source is UpdatedDataset.Older:
@@ -603,7 +606,7 @@ def print_subgroup_counts() -> None:
         print(data.source.name)
         print(data.info.groupby(["label"]).count()["sid"])
         print(data.info.drop(columns=["session", "run"]).groupby(["sid"]).count())
-        print("="*80)
+        print("=" * 80)
 
 
 if __name__ == "__main__":

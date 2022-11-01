@@ -20,6 +20,55 @@ Rest_w_VigilanceAttention/
 """
 
 
+class SeriesKind(Enum):
+    # measures of location
+    Mean = "mean"
+    Max = "max"
+    Min = "min"
+    Median = "median"
+    Percentile95 = "p95"
+    Percentile05 = "p05"
+    # measures of scale
+    StdDev = "sd"
+    IQR = "iqr"
+    Range = "range"
+    RobustRange = "r90"
+
+    def suffix(self) -> str:
+        return {
+            SeriesKind.Mean: ".tseries.mean.npy",
+            SeriesKind.Max: ".tseries.max.npy",
+            SeriesKind.Min: ".tseries.min.npy",
+            SeriesKind.Median: ".tseries.median.npy",
+            SeriesKind.Percentile95: ".tseries.p95.npy",
+            SeriesKind.Percentile05: ".tseries.p05.npy",
+            SeriesKind.StdDev: ".tseries.sd.npy",
+            SeriesKind.IQR: ".tseries.iqr.npy",
+            SeriesKind.Range: ".tseries.range.npy",
+            SeriesKind.RobustRange: ".tseries.r90.npy",
+        }[self]
+
+    def reducer(self) -> Callable[[ndarray], ndarray]:
+        return {
+            # measures of location
+            SeriesKind.Mean: lambda x: np.mean(x, axis=0),
+            SeriesKind.Max: lambda x: np.max(x, axis=0),
+            SeriesKind.Min: lambda x: np.min(x, axis=0),
+            SeriesKind.Median: lambda x: np.median(x, axis=0),
+            SeriesKind.Percentile95: lambda x: np.percentile(x, 95, axis=0),
+            SeriesKind.Percentile05: lambda x: np.percentile(x, 5, axis=0),
+            # measures of scale
+            SeriesKind.StdDev: lambda x: np.std(x, ddof=1, axis=0),
+            SeriesKind.IQR: lambda x: np.abs(
+                np.diff(np.percentile(x, q=[25, 75], axis=0), axis=0)
+            ),
+            SeriesKind.Range: lambda x: np.max(x, axis=0) - np.min(x, axis=0),
+            SeriesKind.RobustRange: lambda x: np.abs(
+                np.diff(np.percentile(x, q=[5, 95], axis=0), axis=0)
+            ),
+        }[self]
+
+
 class PreprocLevel(Enum):
     BrainExtract = 0
     SliceTimeAlign = 1
@@ -211,6 +260,23 @@ class UpdatedDataset(Enum):
             files = sorted(filter(lambda p: f"ses-{session}" in p.name, files))
         return files
 
+    def tseries_files(
+        self, preproc_level: PreprocLevel, tseries: SeriesKind
+    ) -> List[Path]:
+        globs = {
+            PreprocLevel.BrainExtract: f"*bold_extracted{tseries.suffix()}",
+            PreprocLevel.SliceTimeAlign: f"*slicetime-corrected{tseries.suffix()}",
+            PreprocLevel.MotionCorrect: f"*motion-corrected{tseries.suffix()}",
+            PreprocLevel.MNIRegister: f"*mni-reg_eigs{tseries.suffix()}",
+        }
+        glob = globs[preproc_level]
+        files = sorted(self.rmt_dir().rglob(glob))
+        # filter out by session
+        if "Ses" in self.name:
+            session = self.name[-1]
+            files = sorted(filter(lambda p: f"ses-{session}" in p.name, files))
+        return files
+
 
 class TrimMethod(Enum):
     Largest = "largest"
@@ -220,55 +286,6 @@ class TrimMethod(Enum):
 
 class NormMethod(Enum):
     pass
-
-
-class SeriesKind(Enum):
-    # measures of location
-    Mean = "mean"
-    Max = "max"
-    Min = "min"
-    Median = "median"
-    Percentile95 = "p95"
-    Percentile05 = "p05"
-    # measures of scale
-    StdDev = "sd"
-    IQR = "iqr"
-    Range = "range"
-    RobustRange = "r90"
-
-    def suffix(self) -> str:
-        return {
-            SeriesKind.Mean: ".tseries.mean.npy",
-            SeriesKind.Max: ".tseries.max.npy",
-            SeriesKind.Min: ".tseries.min.npy",
-            SeriesKind.Median: ".tseries.median.npy",
-            SeriesKind.Percentile95: ".tseries.p95.npy",
-            SeriesKind.Percentile05: ".tseries.p05.npy",
-            SeriesKind.StdDev: ".tseries.sd.npy",
-            SeriesKind.IQR: ".tseries.iqr.npy",
-            SeriesKind.Range: ".tseries.range.npy",
-            SeriesKind.RobustRange: ".tseries.r90.npy",
-        }[self]
-
-    def reducer(self) -> Callable[[ndarray], ndarray]:
-        return {
-            # measures of location
-            SeriesKind.Mean: lambda x: np.mean(x, axis=0),
-            SeriesKind.Max: lambda x: np.max(x, axis=0),
-            SeriesKind.Min: lambda x: np.min(x, axis=0),
-            SeriesKind.Median: lambda x: np.median(x, axis=0),
-            SeriesKind.Percentile95: lambda x: np.percentile(x, 95, axis=0),
-            SeriesKind.Percentile05: lambda x: np.percentile(x, 5, axis=0),
-            # measures of scale
-            SeriesKind.StdDev: lambda x: np.std(x, ddof=1, axis=0),
-            SeriesKind.IQR: lambda x: np.abs(
-                np.diff(np.percentile(x, q=[25, 75], axis=0), axis=0)
-            ),
-            SeriesKind.Range: lambda x: np.max(x, axis=0) - np.min(x, axis=0),
-            SeriesKind.RobustRange: lambda x: np.abs(
-                np.diff(np.percentile(x, q=[5, 95], axis=0), axis=0)
-            ),
-        }[self]
 
 
 if __name__ == "__main__":
