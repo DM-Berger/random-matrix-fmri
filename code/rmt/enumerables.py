@@ -262,11 +262,11 @@ class SeriesKind(Enum):
             # measures of scale
             SeriesKind.StdDev: lambda x: np.std(x, ddof=1, axis=0),
             SeriesKind.IQR: lambda x: np.abs(
-                np.diff(np.percentile(x, q=[25, 75], axis=0))
+                np.diff(np.percentile(x, q=[25, 75], axis=0), axis=0)
             ),
             SeriesKind.Range: lambda x: np.max(x, axis=0) - np.min(x, axis=0),
             SeriesKind.RobustRange: lambda x: np.abs(
-                np.diff(np.percentile(x, q=[5, 95], axis=0))
+                np.diff(np.percentile(x, q=[5, 95], axis=0), axis=0)
             ),
         }[self]
 

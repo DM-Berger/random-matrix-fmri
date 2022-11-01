@@ -67,7 +67,7 @@ class RMTComputatable(Loadable):
             outfile = Path(re.sub(r"ds.*download/", "", long_outfile))
             if outfile.exists():
                 if not force:
-                    return np.load(outfile)  # type: ignore
+                    continue
                 os.remove(outfile)
             img = self.load()
             arr = img.get_fdata()
