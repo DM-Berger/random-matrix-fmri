@@ -167,5 +167,5 @@ if __name__ == "__main__":
         paths,
         desc="Computing timeseries",
         chunksize=1,
-        max_workers=40,
+        max_workers=12,
     )
