@@ -363,6 +363,7 @@ TSERIES_OUTFILES = {
     SeriesKind.Median: PROJECT / "tseries_median_predictions.json",
     SeriesKind.Percentile95: PROJECT / "tseries_p95_predictions.json",
     SeriesKind.Percentile05: PROJECT / "tseries_p05_predictions.json",
+    SeriesKind.StdDev: PROJECT / "tseries_sd_predictions.json",
     SeriesKind.IQR: PROJECT / "tseries_iqr_predictions.json",
     SeriesKind.Range: PROJECT / "tseries_range_predictions.json",
     SeriesKind.RobustRange: PROJECT / "tseries_robust-range_predictions.json",
@@ -371,11 +372,7 @@ TSERIES_OUTFILES = {
 if __name__ == "__main__":
     # norms = [True, False]
     # smoothing_degrees = [1, 2, 4, 8, 16]
-    total = (
-        len(UpdatedDataset)
-        * len(SeriesKind)
-        * len(PreprocLevel)
-    )
+    total = len(UpdatedDataset) * len(SeriesKind) * len(PreprocLevel)
     pbar = tqdm(desc="Checking...", total=total)
     for source in UpdatedDataset:
         for kind in SeriesKind:
