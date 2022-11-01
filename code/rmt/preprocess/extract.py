@@ -148,8 +148,22 @@ def compute_eigs(path: Path) -> None:
         print(f"Got error: {e}")
 
 
+def compute_all_tseries(path: Path) -> None:
+    try:
+        rmt = RMTComputatable(path)
+        rmt.compute_timeseries()
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Got error: {e}")
+
+
 if __name__ == "__main__":
     paths = get_paths()
     process_map(
-        compute_eigs, paths, desc="Computing eigenvalues", chunksize=1, max_workers=12
+        # compute_eigs, paths, desc="Computing eigenvalues", chunksize=1, max_workers=12
+        compute_all_tseries,
+        paths,
+        desc="Computing timeseries",
+        chunksize=1,
+        max_workers=12,
     )
