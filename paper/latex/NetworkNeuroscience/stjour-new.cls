@@ -518,11 +518,12 @@ This version is dated \currversion^^J^^J}
   \journalname{Open Mind: Discoveries in Cognitive Science}
 }
 
-%% Network Neuroscience
+% Network Neuroscience
 \newif\ifNETN
 \DeclareOption{NETN}{%
   \global\NETNtrue
-  \journalname{Network Neuroscience}
+  % \journalname{Network Neuroscience}
+  \journalname{}
 }
 
 \DeclareOption{linenumbers}{\global\numlinestrue}
@@ -677,7 +678,8 @@ This version is dated \currversion^^J^^J}
 %thereceived\endcsname\relax\else(Received \thereceived)\fi \ ==}
 %\vskip3pt
 \centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax
-           \else{\Large\bf{\large\bfseries\itshape Journal:} \titlejournalname}\fi}\vskip6pt
+          %  \else{\Large\bf{\large\bfseries\itshape Journal:} \titlejournalname}\fi}\vskip6pt
+           \else{\Large\bf{\large\bfseries\itshape } \titlejournalname}\fi}\vskip6pt
 \color{veryltgray}\hrule height 2pt
 \vskip14pt}
 \else
@@ -687,7 +689,8 @@ This version is dated \currversion^^J^^J}
 thereceived\endcsname\relax\else(Received \thereceived)\fi \ ==}
 \vskip5pt
 \centerline{\expandafter\ifx\csname titlejournalname\endcsname\relax
-           \else Journal: \titlejournalname\fi \qquad/\qquad {\expandafter\ifx\csname thetitle\endcsname\relax\else
+          %  \else Journal: \titlejournalname\fi \qquad/\qquad {\expandafter\ifx\csname thetitle\endcsname\relax\else
+           \else \titlejournalname\fi \qquad\qquad {\expandafter\ifx\csname thetitle\endcsname\relax\else
 {Title: \thetitle}\fi}}\vskip5pt
 \centerline{\expandafter\ifx\csname theauthorshortlist\endcsname\relax\else {Authors:}
 \theauthorshortlist\fi}%
