@@ -1129,6 +1129,9 @@ if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
+    df = load_all_renamed()
+    df.to_json(PROJECT / "EVERYTHING.json")
+    print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
     # pd.options.display.large_repr = "info"
 
     # print_correlations(by=["data", "classifier", "preproc", "feature"])
@@ -1138,7 +1141,7 @@ if __name__ == "__main__":
     # get_overfit_scores()
     # summarize_performance_by_aggregation(metric="auroc", summarizer="median")
 
-    generate_all_topk_plots()
+    # generate_all_topk_plots()
     sys.exit()
 
     # df = load_all_renamed()
