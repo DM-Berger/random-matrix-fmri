@@ -238,16 +238,16 @@ class SeriesKind(Enum):
 
     def suffix(self) -> str:
         return {
-            SeriesKind.Mean: "tseries.mean.npy",
-            SeriesKind.Max: "tseries.max.npy",
-            SeriesKind.Min: "tseries.min.npy",
-            SeriesKind.Median: "tseries.median.npy",
-            SeriesKind.Percentile95: "tseries.p95.npy",
-            SeriesKind.Percentile05: "tseries.p05.npy",
-            SeriesKind.StdDev: "tseries.sd.npy",
-            SeriesKind.IQR: "tseries.iqr.npy",
-            SeriesKind.Range: "tseries.range.npy",
-            SeriesKind.RobustRange: "tseries.r90.npy",
+            SeriesKind.Mean: ".tseries.mean.npy",
+            SeriesKind.Max: ".tseries.max.npy",
+            SeriesKind.Min: ".tseries.min.npy",
+            SeriesKind.Median: ".tseries.median.npy",
+            SeriesKind.Percentile95: ".tseries.p95.npy",
+            SeriesKind.Percentile05: ".tseries.p05.npy",
+            SeriesKind.StdDev: ".tseries.sd.npy",
+            SeriesKind.IQR: ".tseries.iqr.npy",
+            SeriesKind.Range: ".tseries.range.npy",
+            SeriesKind.RobustRange: ".tseries.r90.npy",
         }[self]
 
     def reducer(self) -> Callable[[ndarray], ndarray]:
