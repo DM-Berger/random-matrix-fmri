@@ -202,7 +202,7 @@ class TimeSeriesFeature:
 
     @property
     def data(self) -> DataFrame:
-        ...
+        return self.series_df()
 
 
 def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
