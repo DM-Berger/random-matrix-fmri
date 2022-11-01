@@ -26,24 +26,21 @@ from numpy import ndarray
 from tqdm.contrib.concurrent import process_map
 
 from rmt.constants import DATA_ROOT as DATA
-from rmt.constants import (
-    EIGS_SUFFIX,
-    EXTRACTED_SUFFIX,
-    MASK_SUFFIX,
-    MNI_REGISTERED_SUFFIX,
-    MOTION_CORRECTED_SUFFIX,
-    NII_SUFFIX,
-    RMT_DIR,
-    SLICETIME_SUFFIX,
-    UPDATED,
-)
+from rmt.constants import EIGS_SUFFIX, NII_SUFFIX, UPDATED
+from rmt.enumerables import SeriesKind
 
 if os.environ.get("CC_CLUSTER") == "niagara":
     ROOT = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri").resolve()
     DATA = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data").resolve()
-    UPDATED = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated").resolve()
-    RMT_DIR = Path("/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/rmt").resolve()
-    os.environ["MPLCONFIGDIR"] = str(Path("/gpfs/fs0/scratch/j/jlevman/dberger/.mplconfig"))
+    UPDATED = Path(
+        "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated"
+    ).resolve()
+    RMT_DIR = Path(
+        "/gpfs/fs0/scratch/j/jlevman/dberger/random-matrix-fmri/data/updated/rmt"
+    ).resolve()
+    os.environ["MPLCONFIGDIR"] = str(
+        Path("/gpfs/fs0/scratch/j/jlevman/dberger/.mplconfig")
+    )
 
 
 class Loadable(ABC):
@@ -58,6 +55,39 @@ class Loadable(ABC):
 class RMTComputatable(Loadable):
     def __init__(self, source: Path) -> None:
         super().__init__(source)
+
+    def compute_timeseries(self, force: bool = False) -> None:
+        for kind in SeriesKind:
+            long_outfile = (
+                str(self.source)
+                .replace(NII_SUFFIX, kind.suffix())
+                .replace("data/updated", "data/updated/rmt")
+                .replace("func/", "")
+            )
+            outfile = Path(re.sub(r"ds.*download/", "", long_outfile))
+            if outfile.exists():
+                if not force:
+                    return np.load(outfile)  # type: ignore
+                os.remove(outfile)
+            img = self.load()
+            arr = img.get_fdata()
+            arr2d = arr.reshape(-1, arr.shape[-1])
+            mask = np.var(arr2d, axis=1) > 0
+            arr2d = arr2d[mask]
+
+            reduced: ndarray = kind.reduce(arr2d).ravel()
+            if len(reduced) != arr2d.shape[1]:
+                raise RuntimeError(
+                    f"Shape mismatch for series type: {kind}. "
+                    f"Expected reduced series to have length {arr2d.shape[1]}, "
+                    f"but got length {len(reduced)} instead."
+                )
+
+            outdir = outfile.parent
+            if not outdir.exists():
+                outdir.mkdir(exist_ok=True, parents=True)
+            np.save(outfile, reduced, allow_pickle=False)
+            print(f"Saved {kind.name} time series from {self.source} to {outfile}")
 
     def compute_eigenvalues(self, force: bool = False) -> ndarray:
         from empyricalRMT.eigenvalues import Eigenvalues
@@ -83,7 +113,7 @@ class RMTComputatable(Loadable):
             arr2d, covariance=False, trim_zeros=False, time_axis=1
         )
         values = eigs.values
-        outdir = outfile.parent # two parents to skip past "func"
+        outdir = outfile.parent
         if not outdir.exists():
             outdir.mkdir(exist_ok=True, parents=True)
         np.save(outfile, values, allow_pickle=False)

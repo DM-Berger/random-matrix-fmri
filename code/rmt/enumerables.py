@@ -1,6 +1,9 @@
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
+
+import numpy as np
+from numpy import ndarray
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "data/updated"
@@ -217,6 +220,55 @@ class TrimMethod(Enum):
 
 class NormMethod(Enum):
     pass
+
+
+class SeriesKind(Enum):
+    # measures of location
+    Mean = "mean"
+    Max = "max"
+    Min = "min"
+    Median = "median"
+    Percentile95 = "p95"
+    Percentile05 = "p05"
+    # measures of scale
+    StdDev = "sd"
+    IQR = "iqr"
+    Range = "range"
+    RobustRange = "r90"
+
+    def suffix(self) -> str:
+        return {
+            SeriesKind.Mean: "tseries.mean.npy",
+            SeriesKind.Max: "tseries.max.npy",
+            SeriesKind.Min: "tseries.min.npy",
+            SeriesKind.Median: "tseries.median.npy",
+            SeriesKind.Percentile95: "tseries.p95.npy",
+            SeriesKind.Percentile05: "tseries.p05.npy",
+            SeriesKind.StdDev: "tseries.sd.npy",
+            SeriesKind.IQR: "tseries.iqr.npy",
+            SeriesKind.Range: "tseries.range.npy",
+            SeriesKind.RobustRange: "tseries.r90.npy",
+        }[self]
+
+    def reducer(self) -> Callable[[ndarray], ndarray]:
+        return {
+            # measures of location
+            SeriesKind.Mean: lambda x: np.mean(x, axis=0),
+            SeriesKind.Max: lambda x: np.max(x, axis=0),
+            SeriesKind.Min: lambda x: np.min(x, axis=0),
+            SeriesKind.Median: lambda x: np.median(x, axis=0),
+            SeriesKind.Percentile95: lambda x: np.percentile(x, 95, axis=0),
+            SeriesKind.Percentile05: lambda x: np.percentile(x, 5, axis=0),
+            # measures of scale
+            SeriesKind.StdDev: lambda x: np.std(x, ddof=1, axis=0),
+            SeriesKind.IQR: lambda x: np.abs(
+                np.diff(np.percentile(x, q=[25, 75], axis=0))
+            ),
+            SeriesKind.Range: lambda x: np.max(x, axis=0) - np.min(x, axis=0),
+            SeriesKind.RobustRange: lambda x: np.abs(
+                np.diff(np.percentile(x, q=[5, 95], axis=0))
+            ),
+        }[self]
 
 
 if __name__ == "__main__":
