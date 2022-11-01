@@ -57,6 +57,20 @@ class RMTComputatable(Loadable):
         super().__init__(source)
 
     def compute_timeseries(self, force: bool = False) -> None:
+        if not force:
+            existing = []
+            for kind in SeriesKind:
+                long_outfile = (
+                    str(self.source)
+                    .replace(NII_SUFFIX, kind.suffix())
+                    .replace("data/updated", "data/updated/rmt")
+                    .replace("func/", "")
+                )
+                outfile = Path(re.sub(r"ds.*download/", "", long_outfile))
+                existing.append(outfile.exists())
+            if all(existing):
+                return
+
         img = self.load()
         arr = img.get_fdata()
         arr2d = arr.reshape(-1, arr.shape[-1])
