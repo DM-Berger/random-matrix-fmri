@@ -57,6 +57,12 @@ class RMTComputatable(Loadable):
         super().__init__(source)
 
     def compute_timeseries(self, force: bool = False) -> None:
+        img = self.load()
+        arr = img.get_fdata()
+        arr2d = arr.reshape(-1, arr.shape[-1])
+        mask = np.var(arr2d, axis=1) > 0
+        arr2d = arr2d[mask]
+
         for kind in SeriesKind:
             long_outfile = (
                 str(self.source)
@@ -69,11 +75,6 @@ class RMTComputatable(Loadable):
                 if not force:
                     continue
                 os.remove(outfile)
-            img = self.load()
-            arr = img.get_fdata()
-            arr2d = arr.reshape(-1, arr.shape[-1])
-            mask = np.var(arr2d, axis=1) > 0
-            arr2d = arr2d[mask]
 
             reducer = kind.reducer()
             reduced: ndarray = reducer(arr2d).ravel()
