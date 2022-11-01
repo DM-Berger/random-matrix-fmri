@@ -37,6 +37,7 @@ import seaborn as sbn
 from matplotlib.axes import Axes
 from numpy import ndarray
 from pandas import DataFrame, Series
+from scipy.ndimage import uniform_filter1d
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 from sklearn.ensemble import RandomForestClassifier as RF
 from sklearn.model_selection import (
@@ -86,10 +87,9 @@ class KNN9(KNN):
         super().__init__(n_neighbors=9, **KNN_DEFAULTS)
 
 
-def log_normalize(df: DataFrame, norm: bool) -> DataFrame:
+def normalize(df: DataFrame, norm: bool) -> DataFrame:
     """Expects a `df` with final label column `y` and other columns predictors"""
     x = df.drop(columns="y")
-    x[x > 0] = x[x > 0].applymap(np.log)
     if norm:
         try:
             X = DataFrame(minmax_scale(x))
@@ -179,18 +179,22 @@ class TimeSeriesFeature:
         return list(map(lambda p: np.load(p), self.info.index))
 
     def series_df(self) -> DataFrame:
-        raw = self.eigs()
-        lengths = np.array([len(e) for e in raw])
+        raws = self.series()
+        if self.smoothing_degree > 1:
+            deg = self.smoothing_degree
+            smooth_args = dict(size=deg, axis=-1, mode="constant")
+            raws = [uniform_filter1d(series, **smooth_args) for series in raws]
+        lengths = np.array([len(s) for s in raws])
         if not np.all(lengths == lengths[0]):
             # front zero-pad
             length = np.max(lengths)
             resized = []
-            for eig in raw:
+            for series in raws:
                 padded = np.zeros(length)
-                padded[-len(eig) :] = eig
+                padded[-len(series) :] = series
                 resized.append(padded)
         else:
-            resized = raw
+            resized = raws
         vals = np.stack(resized, axis=0)
         df = DataFrame(vals, columns=range(vals.shape[1]))
         df["y"] = self.labels()
@@ -199,40 +203,6 @@ class TimeSeriesFeature:
     @property
     def data(self) -> DataFrame:
         ...
-
-
-def smooth_features(
-    feature: UpdatedFeature,
-    data: DataFrame,
-    degree: int | None,
-) -> DataFrame:
-    if degree is None:
-        return data
-
-    if not feature.is_combined:
-        length = len(data.columns) - 1
-        slicer = feature_slice.slicer(length)
-        df = data.drop(columns="y").iloc[:, slicer]
-        df["y"] = data["y"]
-        return df
-
-    # handle combined features
-    idxs = feature.feature_start_idxs
-    df = data.drop(columns="y")
-    sub_dfs = []
-    for i in range(len(idxs) - 1):
-        start = idxs[i]
-        stop = idxs[i + 1]
-        sub_dfs.append(df.iloc[:, start:stop])
-
-    selecteds = []
-    for sub_df in sub_dfs:
-        length = len(sub_df.columns)
-        slicer = feature_slice.slicer(length)
-        selecteds.append(sub_df.iloc[:, slicer])
-    selected = pd.concat(selecteds, axis=1, ignore_index=True)
-    selected["y"] = data["y"]
-    return selected
 
 
 def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
@@ -249,96 +219,13 @@ def is_dud_comparison(labels: list[str], i: int, j: int) -> bool:
     return False
 
 
-# def predict_updated_feature(
-#     feature: UpdatedFeature,
-#     feature_slice: FeatureSlice,
-#     logarithm: bool = True,
-#     debug: bool = False,
-# ) -> DataFrame | None:
-#     data = feature.data
-#     norm = feature.norm
-#     if logarithm:
-#         data = log_normalize(data, norm)
-#     labels = data.y.unique().tolist()
-
-#     results = []
-#     for i in range(len(labels)):
-#         for j in range(i + 1, len(labels)):
-#             df = select_features(feature, data, feature_slice)
-#             if len(df.columns) - 1 == 0:
-#                 info = "\n".join(
-#                     [
-#                         f"Feature: {feature}",
-#                         f"Dataset: {feature.source}",
-#                         f"norm: {feature.norm}",
-#                         f"preproc: {feature.preproc.name}",
-#                         f"feature_slice: {feature_slice.name}",
-#                         f"data shape before selection: {data.shape}",
-#                         f"data before selection:\n{data}",
-#                         f"data shape after selection: {df.shape}",
-#                         f"data after selection:\n{df}",
-#                     ]
-#                 )
-#                 raise IndexError(f"Some bullshit.\n{info}")
-#             if is_dud_comparison(labels, i, j):
-#                 continue
-#             if debug:
-#                 continue  # just make sure no shape errors
-#             title = f"{labels[i]} v {labels[j]}"
-#             idx = (df.y == labels[i]) | (df.y == labels[j])
-#             df = df.loc[idx]
-#             X = df.drop(columns="y").to_numpy()
-#             y: ndarray = LabelEncoder().fit_transform(df.y.to_numpy())  # type: ignore
-#             result_dfs = [
-#                 # LR never converges, pointless
-#                 kfold_eval(X, y, SVC, norm=norm, title=title),
-#                 kfold_eval(X, y, RF, norm=norm, title=title),
-#                 kfold_eval(X, y, GBC, norm=norm, title=title),
-#                 kfold_eval(X, y, KNN3, norm=norm, title=title),
-#                 kfold_eval(X, y, KNN5, norm=norm, title=title),
-#                 kfold_eval(X, y, KNN9, norm=norm, title=title),
-#             ]
-#             results.append(pd.concat(result_dfs, axis=0, ignore_index=True))
-#     if debug:
-#         return None
-
-#     result = pd.concat(results, axis=0, ignore_index=True)
-#     result["data"] = feature.source.name
-#     result["feature"] = feature.name
-#     result["preproc"] = feature.preproc.name
-#     result["slice"] = feature_slice.value
-#     result["deg"] = str(feature.degree)
-#     result["trim"] = feature.trim.value if feature.trim else "none"
-#     return result.loc[
-#         :,
-#         [
-#             "data",
-#             "feature",
-#             "preproc",
-#             "deg",
-#             "trim",
-#             "norm",
-#             "slice",
-#             "comparison",
-#             "classifier",
-#             "acc+",
-#             "auroc",
-#             "acc",
-#             "f1",
-#         ],
-#     ]
-
-
-def predict_updated_feature(
-    feature: UpdatedFeature,
-    feature_slice: FeatureSlice,
-    logarithm: bool = True,
+def predict_tseries(
+    feature: TimeSeriesFeature,
     debug: bool = False,
 ) -> DataFrame | None:
     data = feature.data
     norm = feature.norm
-    if logarithm:
-        data = log_normalize(data, norm)
+    data = normalize(data, norm)
     labels = data.y.unique().tolist()
     if len(labels) == 1:
         raise ValueError("Bad labeling!")
@@ -346,7 +233,7 @@ def predict_updated_feature(
     results = []
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            df = smooth_features(feature, data, feature_slice)
+            df = data.copy()
             if len(df.columns) - 1 == 0:
                 info = "\n".join(
                     [
@@ -354,7 +241,7 @@ def predict_updated_feature(
                         f"Dataset: {feature.source}",
                         f"norm: {feature.norm}",
                         f"preproc: {feature.preproc.name}",
-                        f"feature_slice: {feature_slice.name}",
+                        f"smooth_deg: {feature.smoothing_degree}",
                         f"data shape before selection: {data.shape}",
                         f"data before selection:\n{data}",
                         f"data shape after selection: {df.shape}",
@@ -396,21 +283,17 @@ current df.shape: {df.shape}
             )
 
     result["data"] = feature.source.name
-    result["feature"] = feature.name
+    result["feature"] = feature.kind.name
     result["preproc"] = feature.preproc.name
-    result["slice"] = feature_slice.value
-    result["deg"] = str(feature.degree)
-    result["trim"] = feature.trim.value if feature.trim else "none"
+    result["smooth"] = str(feature.smoothing_degree)
     return result.loc[
         :,
         [
             "data",
             "feature",
             "preproc",
-            "deg",
-            "trim",
+            "smooth",
             "norm",
-            "slice",
             "comparison",
             "classifier",
             "acc+",
@@ -422,19 +305,16 @@ current df.shape: {df.shape}
 
 
 def predict_all_tseries(args: Namespace) -> DataFrame | None:
-    cls: Type[UpdatedFeature] = args.cls
     try:
-        feature = cls(
+        feature = TimeSeriesFeature(
             source=args.source,
+            kind=args.kind,
             preproc=args.preproc,
             norm=args.norm,
-            degree=args.degree,
-            trim=args.trim_method,
+            smoothing_degree=args.smoothing_degree,
         )
-        return predict_updated_feature(
+        return predict_tseries(
             feature=feature,
-            feature_slice=args.feature_idx,
-            logarithm=True,
             debug=args.debug,
         )
     except Exception as e:
@@ -445,7 +325,7 @@ def predict_all_tseries(args: Namespace) -> DataFrame | None:
 
 
 def summarize_all_tseries_predictions(
-    feature_cls: Type[UpdatedFeature],
+    kind: SeriesKind,
     sources: Optional[list[UpdatedDataset]] = None,
     smoothing_degrees: Optional[list[int]] = None,
     preprocs: Optional[list[PreprocLevel]] = None,
@@ -461,7 +341,7 @@ def summarize_all_tseries_predictions(
         Namespace(**p)
         for p in ParameterGrid(
             dict(
-                cls=[feature_cls],
+                kind=[kind],
                 source=sources,
                 smoothing_degree=smoothing_degrees,
                 preproc=preprocs,
@@ -474,3 +354,16 @@ def summarize_all_tseries_predictions(
     dfs = [df_ for df_ in dfs if df_ is not None]
     df = pd.concat(dfs, axis=0, ignore_index=True).sort_values(by="acc+", ascending=False)
     return df
+
+
+TSERIES_OUTFILES = {
+    SeriesKind.Mean: PROJECT / "tseries_mean_predictions.json",
+    SeriesKind.Max: PROJECT / "tseries_max_predictions.json",
+    SeriesKind.Min: PROJECT / "tseries_min_predictions.json",
+    SeriesKind.Median: PROJECT / "tseries_median_predictions.json",
+    SeriesKind.Percentile95: PROJECT / "tseries_p95_predictions.json",
+    SeriesKind.Percentile05: PROJECT / "tseries_p05_predictions.json",
+    SeriesKind.IQR: PROJECT / "tseries_iqr_predictions.json",
+    SeriesKind.Range: PROJECT / "tseries_range_predictions.json",
+    SeriesKind.RobustRange: PROJECT / "tseries_robust-range_predictions.json",
+}
