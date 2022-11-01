@@ -88,7 +88,7 @@ class RMTComputatable(Loadable):
             if not outdir.exists():
                 outdir.mkdir(exist_ok=True, parents=True)
             np.save(outfile, reduced, allow_pickle=False)
-            print(f"Saved {kind.name} time series from {self.source} to {outfile}")
+            # print(f"Saved {kind.name} time series from {self.source} to {outfile}")
 
     def compute_eigenvalues(self, force: bool = False) -> ndarray:
         from empyricalRMT.eigenvalues import Eigenvalues
