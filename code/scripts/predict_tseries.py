@@ -13,6 +13,7 @@ if __name__ == "__main__":
     for kind, fname in TSERIES_OUTFILES.items():
         outfile = ROOT.parent / fname
         if outfile.exists():
+            print(f"Skipping for tseries {kind.name}, because {outfile} exists")
             continue
         df = summarize_all_tseries_predictions(
             kind=kind,
