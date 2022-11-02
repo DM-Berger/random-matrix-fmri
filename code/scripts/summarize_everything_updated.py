@@ -108,20 +108,22 @@ SUBGROUP_ORDER = [
     "Osteo - pain v duloxetine",
     "Parkinsons - ctrl v park",
     "TaskAttention - task_attend v task_nonattend",
-    "TaskAttentionSes1 - task_attend v task_nonattend",
-    "TaskAttentionSes2 - task_attend v task_nonattend",
+    # "TaskAttentionSes1 - task_attend v task_nonattend",
+    # "TaskAttentionSes2 - task_attend v task_nonattend",
     "Vigilance - vigilant v nonvigilant",
-    "VigilanceSes1 - vigilant v nonvigilant",
-    "VigilanceSes2 - vigilant v nonvigilant",
+    # "VigilanceSes1 - vigilant v nonvigilant",
+    # "VigilanceSes2 - vigilant v nonvigilant",
     "WeeklyAttention - trait_nonattend v trait_attend",
-    "WeeklyAttentionSes1 - trait_nonattend v trait_attend",
-    "WeeklyAttentionSes2 - trait_attend v trait_nonattend",
+    # "WeeklyAttentionSes1 - trait_nonattend v trait_attend",
+    # "WeeklyAttentionSes2 - trait_attend v trait_nonattend",
 ]
 
 
 CLASSIFIER_ORDER = [
-    "RandomForestClassifier",
-    "GradientBoostingClassifier",
+    # "RandomForestClassifier",
+    # "GradientBoostingClassifier",
+    "RF",
+    "GBDT",
     "KNN3",
     "KNN5",
     "KNN9",
@@ -183,6 +185,12 @@ def load_all_renamed() -> DataFrame:
     )
     df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
+    df.loc[:, "classifier"] = (
+        df["classifier"].str.replace("GradientBoostingClassifier", "GBDT").copy()
+    )
+    df.loc[:, "classifier"] = (
+        df["classifier"].str.replace("RandomForestClassifier", "RF").copy()
+    )
     dupes = (df.data == "TaskAttentionSes2") & (
         df.comparison == "task_nonattend v task_attend"
     )
@@ -214,7 +222,6 @@ def load_tseries() -> DataFrame:
     return df
 
 
-@MEMORY.cache
 def load_combined() -> DataFrame:
     df = load_all_renamed()
     ts = load_tseries()
@@ -1217,12 +1224,16 @@ def print_correlations(by: list[str]) -> None:
     # print(corrs)
 
 
-def clean_titles(grid: FacetGrid, text: str = "subgroup = ", split: bool = False) -> None:
+def clean_titles(
+    grid: FacetGrid, text: str = "subgroup = ", split_at: Literal["-", "|"] | None = None
+) -> None:
     fig: Figure = grid.fig
     for ax in fig.axes:
         axtitle = ax.get_title()
-        if split:
-            ax.set_title(axtitle.replace(text, "").replace(" - ", "\n"), fontsize=8)
+        if split_at is not None:
+            ax.set_title(
+                axtitle.replace(text, "").replace(f" {split_at} ", "\n"), fontsize=8
+            )
         else:
             ax.set_title(axtitle.replace(text, ""), fontsize=8)
 
@@ -1326,7 +1337,7 @@ def make_kde_plots() -> None:
             facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
         )
         add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, split=True)
+        clean_titles(grid, split_at="-")
         fig = grid.fig
         fig.tight_layout()
         fig.subplots_adjust(
@@ -1338,41 +1349,136 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.87, 0.07))
         plt.show()
 
-    def plot_by_gross_feature2() -> None:
+    def plot_largest_by_gross_feature() -> None:
         """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
         worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
         """
-        dfc = df.loc[df.classifier == "RandomForestClassifier"]
+        # dfc = df.loc[df.classifier == "RandomForestClassifier"]
+        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+            lambda grp: grp.nlargest(500, "auroc")
+        )
+        # dfg = df.groupby(["subgroup", "feature_group"]).apply(
+        #     lambda grp: grp.nlargest(500, "auroc")
+        # )
         grid = sbn.displot(
-            data=dfc,
+            data=dfg,
             x="auroc",
             kind="kde",
-            row="gross_feature",
-            row_order=list(GROSS_FEATURE_PALETTE.keys()),
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            # hue="feature_group",
+            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            # palette=FEATURE_GROUP_PALETTE,
             fill=False,
             common_norm=False,
-            palette=GROSS_FEATURE_PALETTE,
-            # row="preproc",
-            # row_order=CLASSIFIER_ORDER,
+            row="classifier",
+            row_order=CLASSIFIER_ORDER,
             # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
             col="subgroup",
             col_order=SUBGROUP_ORDER,
             # col_wrap=5,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
+            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
         )
         add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, split=True)
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
         fig = grid.fig
+        fig.suptitle(
+            "Overall Distribution of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset, and Classifier"
+        )
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.92, bottom=0.058, left=0.031, right=0.992, hspace=0.227, wspace=0.086
+            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
         )
+        sbn.move_legend(grid, loc=(0.942, 0.08))
+        plt.show()
+
+    def plot_largest_by_gross_feature2() -> None:
+        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
+        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
+        """
+        # dfc = df.loc[df.classifier == "RandomForestClassifier"]
+        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+            lambda grp: grp.nlargest(500, "auroc")
+        )
+        # dfg = df.groupby(["subgroup", "feature_group"]).apply(
+        #     lambda grp: grp.nlargest(500, "auroc")
+        # )
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            # hue="feature_group",
+            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            # palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            # row="classifier",
+            # row_order=CLASSIFIER_ORDER,
+            # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
+        )
+        add_auroc_lines(grid, kind="vline")
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        fig = grid.fig
         fig.suptitle(
-            "Overall Distribution of AUROCs by Feature Group and Preprocessing Level"
+            "Overall Distribution of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset"
         )
-        sbn.move_legend(grid, loc=(0.87, 0.07))
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+        )
+        sbn.move_legend(grid, loc=(0.942, 0.08))
+        plt.show()
+
+    def plot_largest_by_feature_groups() -> None:
+        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
+        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
+        """
+        # dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+        #     lambda grp: grp.nlargest(500, "auroc")
+        # )
+        dfg = df.groupby(["subgroup", "feature_group"]).apply(
+            lambda grp: grp.nlargest(500, "auroc")
+        )
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="feature_group",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
+        )
+        add_auroc_lines(grid, kind="vline")
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        fig = grid.fig
+        fig.suptitle("Overall Distribution of Largest 500 AUROCs for each Feature Group")
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+        )
+        sbn.move_legend(grid, loc=(0.942, 0.08))
         plt.show()
 
     # plot_overall()
