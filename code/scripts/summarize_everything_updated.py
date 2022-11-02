@@ -41,6 +41,8 @@ GREEN = "#01f91e"
 GREY = "#5c5c5c"
 BLCK = "#000000"
 PURP = "#8e02c5"
+RED = "#de0202"
+PINK = "#ff6bd8"
 
 ALL_GROUPERS = [
     "data",
@@ -67,12 +69,20 @@ SUBGROUPERS = [
 ]
 
 FEATURE_GROUP_PALETTE = {
+    "tseries loc": RED,
+    "tseries scale": PINK,
     "eigs": BLCK,
     "eigs max": ORNG,
     "eigs smooth": GREEN,
     "eigs middle": GREY,
     "rmt + eigs": PURP,
     "rmt only": BLUE,
+}
+
+GROSS_FEATURE_PALETTE = {
+    "tseries": ORNG,
+    "eigs": BLCK,
+    "rmt": PURP,
 }
 
 SLICE_ORDER = [
@@ -89,19 +99,25 @@ SLICE_ORDER = [
 ]
 
 SUBGROUP_ORDER = [
-    "Vigilance - high v low",
-    "TaskAttention - high v low",
-    "WeeklyAttention - high v low",
-    "Osteo - allpain v nopain",
-    "Osteo - allpain v pain",
-    "Osteo - allpain v duloxetine",
+    "Bilinguality - monolingual v bilingual",
+    "Depression - depress v control",
+    "Learning - rest v task",
+    "Aging - younger v older",
     "Osteo - nopain v duloxetine",
-    "Osteo - duloxetine v pain",
     "Osteo - nopain v pain",
-    "Parkinsons - control v parkinsons",
-    "Parkinsons - control_pre v park_pre",
-    "Learning - task v rest",
+    "Osteo - pain v duloxetine",
+    "Parkinsons - ctrl v park",
+    "TaskAttention - task_attend v task_nonattend",
+    "TaskAttentionSes1 - task_attend v task_nonattend",
+    "TaskAttentionSes2 - task_attend v task_nonattend",
+    "Vigilance - vigilant v nonvigilant",
+    "VigilanceSes1 - vigilant v nonvigilant",
+    "VigilanceSes2 - vigilant v nonvigilant",
+    "WeeklyAttention - trait_nonattend v trait_attend",
+    "WeeklyAttentionSes1 - trait_nonattend v trait_attend",
+    "WeeklyAttentionSes2 - trait_attend v trait_nonattend",
 ]
+
 
 CLASSIFIER_ORDER = [
     "RandomForestClassifier",
@@ -143,7 +159,7 @@ def corr_renamer(s: str) -> str:
 
 
 @MEMORY.cache
-def load_all_renamed(remove_reflect: bool = False) -> DataFrame:
+def load_all_renamed() -> DataFrame:
     df = pd.concat(
         [
             pd.read_json(path)
@@ -153,10 +169,7 @@ def load_all_renamed(remove_reflect: bool = False) -> DataFrame:
         axis=0,
         ignore_index=True,
     )
-    if remove_reflect:
-        print("\n\nRemoving meaningless 'REFLECT' data:\n")
-        non_reflects = df.data.apply(lambda s: "Reflect" not in s)
-        df = df.loc[non_reflects]
+    df.loc[:, "data"] = df["data"].str.replace("Older", "Aging")
     df.loc[:, "feature"] = df["feature"].str.replace("plus", " + ").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("eig ", "eigs ").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("eigenvalues", "eigs").copy()
@@ -170,7 +183,42 @@ def load_all_renamed(remove_reflect: bool = False) -> DataFrame:
     )
     df.loc[:, "feature"] = df["feature"].str.replace("rigidities", "rigidity").copy()
     df.loc[:, "feature"] = df["feature"].str.replace("levelvars", "levelvar").copy()
+    dupes = (df.data == "TaskAttentionSes2") & (
+        df.comparison == "task_nonattend v task_attend"
+    )
+    df = df.loc[~dupes]
+    dupes = (df.data == "WeeklyAttentionSes2") & (
+        df.comparison == "trait_nonattend v trait_attend"
+    )
+    df = df.loc[~dupes]
     return df
+
+
+@MEMORY.cache
+def load_tseries() -> DataFrame:
+    renames = {
+        "Percentile05": "p05",
+        "Percentile95": "p95",
+        "Median": "med",
+        "Range": "rng",
+        "RobustRange": "rrng",
+        "StdDev": "std",
+    }
+    df = pd.concat([pd.read_json(path) for path in sorted(PROJECT.glob("tseries*.json"))])
+    df.rename(columns={"smooth": "deg"}, inplace=True)
+    df["feature"] = df.feature.apply(lambda s: renames[s] if s in renames else s)
+    df["feature"] = df.feature.apply(lambda s: f"T-{s.lower()}")
+    df["slice"] = "all"
+    df["trim"] = "none"
+    df.loc[:, "data"] = df["data"].str.replace("Older", "Aging")
+    return df
+
+
+@MEMORY.cache
+def load_combined() -> DataFrame:
+    df = load_all_renamed()
+    ts = load_tseries()
+    return pd.concat([df, ts], axis=0)
 
 
 @MEMORY.cache
@@ -207,6 +255,20 @@ def print_correlations(df: DataFrame, sorter: str) -> None:
     )
 
 
+def is_tseries(s: str) -> bool:
+    return "T-" in s
+
+
+def is_ts_loc(s: str) -> bool:
+    locs = ["T-max", "T-mean", "T-med", "T-min", "T-p05", "T-p95"]
+    return s in locs
+
+
+def is_ts_scale(s: str) -> bool:
+    scales = ["T-iqr", "T-rng", "T-rrng", "T-std"]
+    return s in scales
+
+
 def is_rmt(s: str) -> bool:
     return ("rig" in s) or ("level" in s) or ("unf" in s)
 
@@ -220,7 +282,7 @@ def is_rmt_only(s: str) -> bool:
 
 
 def is_max(s: str) -> bool:
-    return "max" in s
+    return ("max" in s) and (not is_tseries(s))
 
 
 def is_smoothed(s: str) -> bool:
@@ -232,6 +294,10 @@ def is_eigs_only(s: str) -> bool:
 
 
 def feature_grouping(s: str) -> str:
+    if is_ts_loc(s):
+        return "tseries loc"
+    if is_ts_scale(s):
+        return "tseries scale"
     if is_smoothed(s):
         return "eigs smooth"
     if is_max(s):
@@ -244,6 +310,14 @@ def feature_grouping(s: str) -> str:
         return "rmt only"
     if is_rmt_plus(s):
         return "rmt + eigs"
+
+
+def gross_feature_grouping(s: str) -> str:
+    if is_ts_loc(s) or is_ts_scale(s):
+        return "tseries"
+    if is_rmt_only(s) or is_rmt_plus(s):
+        return "rmt"
+    return "eigs"
 
 
 def slice_grouping(s: str) -> str:
@@ -261,6 +335,10 @@ def make_palette(features: list[str]) -> dict[str, str]:
     for feature in np.unique(features):
         if is_rmt_plus(feature):
             palette[feature] = PURP
+        elif is_ts_loc(feature):
+            palette[feature] = RED
+        elif is_ts_scale(feature):
+            palette[feature] = PINK
         elif is_rmt_only(feature):
             palette[feature] = BLUE
         elif is_max(feature):
@@ -273,17 +351,23 @@ def make_palette(features: list[str]) -> dict[str, str]:
 
 
 def get_feature_ordering(features: list[str]) -> list[str]:
+    ts_loc = sorted(filter(is_ts_loc, features))
+    ts_scale = sorted(filter(is_ts_scale, features))
     rmt_only = sorted(filter(is_rmt_only, features))
     rmt_plus = sorted(filter(is_rmt_plus, features))
     eigs_smooth = sorted(filter(lambda s: is_smoothed(s), features))
-    eigs_max = sorted(filter(lambda s: "max" in s, features))
+    eigs_max = sorted(filter(is_max, features))
     eigs_only = sorted(filter(lambda s: is_eigs_only(s), features))
-    ordering = eigs_smooth + eigs_max + eigs_only + rmt_only + rmt_plus
+    ordering = (
+        ts_loc + ts_scale + eigs_smooth + eigs_max + eigs_only + rmt_only + rmt_plus
+    )
     return ordering
 
 
 def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right") -> None:
     patches = [
+        Patch(facecolor=RED, edgecolor="white", label="timeseries location feature"),
+        Patch(facecolor=PINK, edgecolor="white", label="timeseries scale feature"),
         Patch(facecolor=GREY, edgecolor="white", label="smoothed eigenvalues feature"),
         Patch(facecolor=ORNG, edgecolor="white", label="max eigenvalues feature"),
         Patch(facecolor=BLCK, edgecolor="white", label="eigenvalues only feature"),
@@ -293,19 +377,21 @@ def make_legend(fig: Figure, position: str | tuple[float, float] = "upper right"
     fig.legend(handles=patches, loc=position)
 
 
+def resize_fig() -> None:
+    fig = plt.gcf()
+    fig.set_size_inches(w=40, h=26)
+    fig.subplots_adjust(left=0.05, right=0.95, wspace=0.1, hspace=0.2)
+
+
 def summarize_performance_by_aggregation(
     metric: Literal["auroc", "f1", "acc+"], summarizer: Literal["median", "best"]
 ) -> None:
     ax: Axes
     fig: Figure
 
-    def resize_fig() -> None:
-        fig = plt.gcf()
-        fig.set_size_inches(w=40, h=26)
-        fig.subplots_adjust(left=0.05, right=0.95, wspace=0.1, hspace=0.2)
-
     sbn.set_style("darkgrid")
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
     df["feature_group"] = df["feature"].apply(feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
@@ -572,7 +658,8 @@ def summarize_performance_by_aggregation(
 
 
 def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
     # The more levels we include, the less we "generalize" our claims
     for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
         min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
@@ -622,7 +709,8 @@ def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
 
 
 def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
     # The more levels we include, the less we "generalize" our claims
     groupers = [grouper for grouper in SUBGROUPERS if "preproc" not in grouper]
     aggregates = get_aggregates(groupers)
@@ -744,7 +832,8 @@ def plot_topk_features_by_grouping(
     by: Literal["data", "classifier"],
     position: str | tuple[float, float],
 ) -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
 
     fine_grouper = ["data", "comparison", "classifier", "preproc", "deg", "norm"]
     if sorter == "best":
@@ -796,7 +885,8 @@ def plot_topk_features_by_grouping(
 def plot_feature_counts_grouped(
     bests3: DataFrame, sorter: str, by: Literal["data", "classifier"]
 ) -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
 
     df = bests3.reset_index()
     order = df["feature"].unique()
@@ -1047,7 +1137,8 @@ def generate_all_topk_plots() -> None:
 
 
 def get_overfit_scores() -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
     df["feature_group"] = df["feature"].apply(feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
@@ -1107,7 +1198,8 @@ def get_overfit_scores() -> None:
 
 
 def print_correlations(by: list[str]) -> None:
-    df = load_all_renamed()
+    # df = load_all_renamed()
+    df = load_combined()
     df.drop(columns=["acc+", "acc", "f1"], inplace=True)
     corrs = df.groupby(by).apply(
         lambda grp: pd.get_dummies(grp.drop(columns=["auroc"] + by)).corrwith(
@@ -1125,14 +1217,182 @@ def print_correlations(by: list[str]) -> None:
     # print(corrs)
 
 
+def clean_titles(grid: FacetGrid, text: str = "subgroup = ", split: bool = False) -> None:
+    fig: Figure = grid.fig
+    for ax in fig.axes:
+        axtitle = ax.get_title()
+        if split:
+            ax.set_title(axtitle.replace(text, "").replace(" - ", "\n"), fontsize=8)
+        else:
+            ax.set_title(axtitle.replace(text, ""), fontsize=8)
+
+
+def rotate_labels(grid: FacetGrid, axis: Literal["x", "y"] = "x") -> None:
+    fig: Figure = grid.fig
+    for ax in fig.axes:
+        if axis == "x":
+            plt.setp(ax.get_xticklabels(), rotation=40, ha="right")
+        else:
+            plt.setp(ax.get_yticklabels(), rotation=40, ha="right")
+
+
+def add_auroc_lines(grid: FacetGrid, kind: Literal["vline", "hline"]) -> None:
+    fig: Figure
+    fig = grid.fig
+    for i, ax in enumerate(fig.axes):
+        ymin, ymax = ax.get_ylim()
+        xmin, xmax = ax.get_xlim()
+        if kind == "vline":
+            ax.vlines(
+                x=0.5,
+                ymin=ymin,
+                ymax=ymax,
+                colors=["black"],
+                linestyles="dashed",
+                alpha=0.7,
+                label="guess" if i == 0 else None,
+            )
+        else:
+            ax.hlines(
+                y=0.5,
+                xmin=xmin,
+                xmax=xmax,
+                colors=["black"],
+                linestyles="dashed",
+                alpha=0.7,
+                label="guess" if i == 0 else None,
+            )
+
+
+def make_kde_plots() -> None:
+    ax: Axes
+    fig: Figure
+    sbn.set_style("darkgrid")
+
+    df = load_combined()
+    df["subgroup"] = df["data"] + " - " + df["comparison"]
+    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["slice_group"] = df["slice"].apply(slice_grouping)
+    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
+    # df = df.loc[~df.data.str.contains("Ses")]
+    def plot_overall() -> None:
+        grid = sbn.displot(
+            data=df,
+            x="auroc",
+            kind="kde",
+            hue="feature_group",
+            cut=0,
+            fill=False,
+            common_norm=False,
+            palette=FEATURE_GROUP_PALETTE,
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            col="subgroup",
+            col_wrap=6,
+            col_order=SUBGROUP_ORDER,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
+        )
+        add_auroc_lines(grid, kind="vline")
+        clean_titles(grid, split=True)
+        fig = grid.fig
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.92, bottom=0.058, left=0.031, right=0.992, hspace=0.227, wspace=0.086
+        )
+        fig.suptitle("Overall Distribution of AUROCs by Feature Group and Subgroup")
+        sbn.move_legend(grid, loc=(0.87, 0.07))
+        plt.show()
+
+    def plot_by_gross_feature() -> None:
+        grid = sbn.displot(
+            data=df,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            # cut=0,
+            fill=False,
+            common_norm=False,
+            palette=GROSS_FEATURE_PALETTE,
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            # row="preproc",
+            # row_order=CLASSIFIER_ORDER,
+            # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=6,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
+        )
+        add_auroc_lines(grid, kind="vline")
+        clean_titles(grid, split=True)
+        fig = grid.fig
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.92, bottom=0.058, left=0.031, right=0.992, hspace=0.227, wspace=0.086
+        )
+        fig.suptitle(
+            "Overall Distribution of AUROCs by Feature Group and Preprocessing Level"
+        )
+        sbn.move_legend(grid, loc=(0.87, 0.07))
+        plt.show()
+
+    def plot_by_gross_feature2() -> None:
+        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
+        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
+        """
+        dfc = df.loc[df.classifier == "RandomForestClassifier"]
+        grid = sbn.displot(
+            data=dfc,
+            x="auroc",
+            kind="kde",
+            row="gross_feature",
+            row_order=list(GROSS_FEATURE_PALETTE.keys()),
+            fill=False,
+            common_norm=False,
+            palette=GROSS_FEATURE_PALETTE,
+            # row="preproc",
+            # row_order=CLASSIFIER_ORDER,
+            # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            # col_wrap=5,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
+        )
+        add_auroc_lines(grid, kind="vline")
+        clean_titles(grid, split=True)
+        fig = grid.fig
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.92, bottom=0.058, left=0.031, right=0.992, hspace=0.227, wspace=0.086
+        )
+        fig.suptitle(
+            "Overall Distribution of AUROCs by Feature Group and Preprocessing Level"
+        )
+        sbn.move_legend(grid, loc=(0.87, 0.07))
+        plt.show()
+
+    # plot_overall()
+    plot_by_gross_feature()
+    print("")
+    return
+
+
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
-    df = load_all_renamed()
-    df.to_json(PROJECT / "EVERYTHING.json")
-    print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
-    # pd.options.display.large_repr = "info"
+    # df = load_all_renamed()
+    # df.to_json(PROJECT / "EVERYTHING.json")
+    # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
+
+    make_kde_plots()
+
+    # ts = load_tseries()
+    # df = load_combined()
 
     # print_correlations(by=["data", "classifier", "preproc", "feature"])
 
