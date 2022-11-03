@@ -93,6 +93,15 @@ GROSS_FEATURE_PALETTE = {
     "rmt": BLUE,
 }
 
+TRIM_PALETTE = {
+    "none": BLCK,
+    "precision": PURP,
+    "largest": BLUE,
+    "middle": ORNG,
+}
+
+TRIM_ORDER = list(TRIM_PALETTE.keys())
+
 SLICE_ORDER = [
     "all",
     "max-25",
@@ -1297,61 +1306,73 @@ def dashify_gross(grid: FacetGrid) -> None:
     for ax in fig.axes:
         for line in ax.get_lines():
             line.set_linewidth(1.0)
-        ax.get_lines()[0].set_linestyle("solid")
-        ax.get_lines()[1].set_linestyle("-.")
-        ax.get_lines()[2].set_linestyle("--")
+        try:
+            ax.get_lines()[0].set_linestyle("solid")
+            ax.get_lines()[1].set_linestyle("-.")
+            ax.get_lines()[2].set_linestyle("--")
+        except IndexError:
+            pass
 
     for line in grid.legend.legendHandles:
         line.set_linewidth(1.0)
-    grid.legend.legendHandles[0].set_linestyle("--")
-    grid.legend.legendHandles[1].set_linestyle("-.")
-    grid.legend.legendHandles[2].set_linestyle("solid")
+    try:
+        grid.legend.legendHandles[0].set_linestyle("--")
+        grid.legend.legendHandles[1].set_linestyle("-.")
+        grid.legend.legendHandles[2].set_linestyle("solid")
+    except IndexError:
+        pass
+
+
+def dashify_trims(grid: FacetGrid) -> None:
+    fig: Figure = grid.fig
+    for ax in fig.axes:
+        for line in ax.get_lines():
+            line.set_linewidth(1.0)
+        try:
+            ax.get_lines()[0].set_linestyle("solid")
+            ax.get_lines()[1].set_linestyle("-.")
+            ax.get_lines()[2].set_linestyle("--")
+            ax.get_lines()[3].set_linestyle(":")
+        except IndexError:
+            pass
+
+    for line in grid.legend.legendHandles:
+        line.set_linewidth(1.0)
+    try:
+        grid.legend.legendHandles[0].set_linestyle(":")
+        grid.legend.legendHandles[1].set_linestyle("--")
+        grid.legend.legendHandles[2].set_linestyle("-.")
+        grid.legend.legendHandles[3].set_linestyle("solid")
+    except IndexError:
+        pass
+
+
+def savefig(fig: Figure, filename: str) -> None:
+    print("Saving...", end="", flush=True)
+    outfile = SPIE_OUTDIR / filename
+    fig.savefig(outfile, dpi=600)
+    print(f" saved figure to {outfile}")
+    plt.close()
 
 
 def make_kde_plots() -> None:
     ax: Axes
     fig: Figure
-    sbn.set_style("darkgrid")
+    sbn.set_style("ticks")
 
+    print("Loading data...", end="", flush=True)
+    print(" done")
     df = load_combined()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
     df["feature_group"] = df["feature"].apply(feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
     df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
-    # df = df.loc[~df.data.str.contains("Ses")]
-    def plot_overall() -> None:
-        grid = sbn.displot(
-            data=df,
-            x="auroc",
-            kind="kde",
-            hue="feature_group",
-            cut=0,
-            fill=False,
-            common_norm=False,
-            palette=FEATURE_GROUP_PALETTE,
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            col="subgroup",
-            col_wrap=6,
-            col_order=SUBGROUP_ORDER,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
-        )
-        add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, split=True)
-        fig = grid.fig
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.92, bottom=0.058, left=0.031, right=0.992, hspace=0.227, wspace=0.086
-        )
-        fig.suptitle("Overall Distribution of AUROCs by Feature Group and Subgroup")
-        sbn.move_legend(grid, loc=(0.87, 0.07))
-        plt.show()
+    df = df.loc[~df.data.str.contains("Ses")]
 
     def plot_by_gross_feature() -> None:
         ax: Axes
         fig: Figure
-        sbn.set_style("ticks")
+        print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=df,
             x="auroc",
@@ -1372,7 +1393,8 @@ def make_kde_plots() -> None:
         clean_titles(grid, split_at="-")
         fig = grid.fig
         fig.suptitle(
-            "Overall Distribution of AUROCs by Feature Group and Preprocessing Level"
+            "Distribution of AUROCs by Feature Group",
+            fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
         fig.tight_layout()
@@ -1382,23 +1404,14 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.79, 0.09))
         despine(grid)
         dashify_gross(grid)
-        outfile = SPIE_OUTDIR / "gross_feature_overall_by_subgroup.png"
-        fig.savefig(outfile, dpi=600)
-        print(f"Saved figure to {outfile}")
-        plt.close()
-        # plt.show()
+        savefig(fig, "gross_feature_overall_by_subgroup.png")
 
     def plot_largest_by_gross_feature() -> None:
-        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
-        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
-        """
-        # dfc = df.loc[df.classifier == "RandomForestClassifier"]
+        """Too big / complicated"""
         dfg = df.groupby(["subgroup", "gross_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
-        # dfg = df.groupby(["subgroup", "feature_group"]).apply(
-        #     lambda grp: grp.nlargest(500, "auroc")
-        # )
+        print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfg,
             x="auroc",
@@ -1424,28 +1437,29 @@ def make_kde_plots() -> None:
         add_auroc_lines(grid, kind="vline")
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Overall Distribution of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset, and Classifier"
+            "Distributions of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset, and Classifier",
+            fontsize=10,
         )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+            top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
         )
-        sbn.move_legend(grid, loc=(0.942, 0.08))
-        plt.show()
+        sbn.move_legend(grid, loc=(0.79, 0.09))
+        savefig(fig, "gross_feature_largest_by_subgroup_data.png")
 
-    def plot_largest_by_gross_feature2() -> None:
+    def plot_largest_by_gross_feature_subgroup() -> None:
         """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
         worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
         """
-        # dfc = df.loc[df.classifier == "RandomForestClassifier"]
         dfg = df.groupby(["subgroup", "gross_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
-        # dfg = df.groupby(["subgroup", "feature_group"]).apply(
-        #     lambda grp: grp.nlargest(500, "auroc")
-        # )
+        print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfg,
             x="auroc",
@@ -1453,42 +1467,75 @@ def make_kde_plots() -> None:
             hue="gross_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
-            # hue="feature_group",
-            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            # palette=FEATURE_GROUP_PALETTE,
             fill=False,
             common_norm=False,
-            # row="classifier",
-            # row_order=CLASSIFIER_ORDER,
-            # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
             col="subgroup",
             col_order=SUBGROUP_ORDER,
             col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
+            # facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0), sharey=False),
+            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
         )
-        add_auroc_lines(grid, kind="vline")
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Overall Distribution of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset"
+            "Distributions of Largest 500 AUROCs for each Combination of Gross Feature Group and Dataset",
+            fontsize=10,
         )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
         )
-        sbn.move_legend(grid, loc=(0.942, 0.08))
-        plt.show()
+        sbn.move_legend(grid, loc=(0.79, 0.09))
+        savefig(fig, "gross_feature_largest_by_subgroup.png")
+
+    def plot_smallest_by_gross_feature_subgroup() -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+            lambda grp: grp.nsmallest(500, "auroc")
+        )
+        print("done")
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.1, 0.6), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        dashify_gross(grid)
+        fig = grid.fig
+        fig.suptitle(
+            "Distributions of Smallest 500 AUROCs for each Combination of Gross Feature Group and Dataset",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.79, 0.09))
+        savefig(fig, "gross_feature_smallest_by_subgroup.png")
 
     def plot_largest_by_feature_groups() -> None:
-        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
-        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
-        """
-        # dfg = df.groupby(["subgroup", "gross_feature"]).apply(
-        #     lambda grp: grp.nlargest(500, "auroc")
-        # )
         dfg = df.groupby(["subgroup", "feature_group"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
@@ -1506,27 +1553,24 @@ def make_kde_plots() -> None:
             col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
+            facet_kws=dict(sharey=False, xlim=(0.2, 1.0)),
         )
         add_auroc_lines(grid, kind="vline")
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        # dashify_gross(grid)
         fig = grid.fig
-        fig.suptitle("Overall Distribution of Largest 500 AUROCs for each Feature Group")
+        fig.suptitle("Distribution of Largest 500 AUROCs for each Feature Group")
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+            top=0.92, bottom=0.05, left=0.03, right=0.985, hspace=0.3, wspace=0.091
         )
-        sbn.move_legend(grid, loc=(0.942, 0.08))
-        plt.show()
+        sbn.move_legend(grid, loc=(0.72, 0.08))
+        savefig(fig, "feature_group_largests_by_subgroup.png")
 
     def plot_smallest_by_feature_groups() -> None:
-        """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
-        worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
-        """
-        # dfg = df.groupby(["subgroup", "gross_feature"]).apply(
-        #     lambda grp: grp.nlargest(500, "auroc")
-        # )
         dfg = df.groupby(["subgroup", "feature_group"]).apply(
             lambda grp: grp.nsmallest(500, "auroc")
         )
@@ -1549,14 +1593,17 @@ def make_kde_plots() -> None:
         add_auroc_lines(grid, kind="vline")
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        # dashify_gross(grid)
         fig = grid.fig
-        fig.suptitle("Overall Distribution of Smallest 500 AUROCs for each Feature Group")
+        fig.suptitle("Distribution of Smallest 500 AUROCs for each Feature Group")
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+            top=0.92, bottom=0.05, left=0.05, right=0.985, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.76, 0.11))
-        plt.show()
+        savefig(fig, "feature_group_smallest_by_subgroup.png")
 
     def plot_all_by_feature_groups() -> None:
         grid = sbn.displot(
@@ -1573,9 +1620,10 @@ def make_kde_plots() -> None:
             col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.1, 0.9)),
+            facet_kws=dict(sharey=False, xlim=(0.1, 0.9)),
         )
         add_auroc_lines(grid, kind="vline")
+        despine(grid)
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
         fig = grid.fig
@@ -1585,11 +1633,199 @@ def make_kde_plots() -> None:
             top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.76, 0.11))
-        plt.show()
+        savefig(fig, "all_by_feature_groups.png")
 
+    def plot_largest_by_gross_feature_preproc() -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["preproc", "gross_feature"]).apply(
+            lambda grp: grp.nlargest(500, "auroc")
+        )
+        print("done")
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            # col="subgroup",
+            # col_order=SUBGROUP_ORDER,
+            row="preproc",
+            row_order=PREPROC_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "preproc = ")
+        despine(grid)
+        dashify_gross(grid)
+        for ax in fig.axes:
+            ax.set_ylabel("")
+        fig = grid.fig
+        fig.suptitle(
+            "Largest 500 AUROCs by Preprocessing Degree",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.05, 0.75))
+        savefig(fig, "gross_feature_largest_by_preproc.png")
+
+    def plot_smallest_by_gross_feature_preproc() -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["preproc", "gross_feature"]).apply(
+            lambda grp: grp.nsmallest(500, "auroc")
+        )
+        print("done")
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            # col="subgroup",
+            # col_order=SUBGROUP_ORDER,
+            row="preproc",
+            row_order=PREPROC_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 0.5), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "preproc = ")
+        despine(grid)
+        dashify_gross(grid)
+        fig = grid.fig
+        fig.suptitle(
+            "Smallest 500 AUROCs by Preprocessing Degree",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.05, 0.75))
+        for ax in fig.axes:
+            ax.set_ylabel("")
+        savefig(fig, "gross_feature_smallest_by_preproc.png")
+
+    def plot_by_gross_feature_preproc() -> None:
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=df,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            row="preproc",
+            row_order=PREPROC_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "preproc = ", split_at="|")
+        clean_titles(grid, "subgroup = ")
+        despine(grid)
+        dashify_gross(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Preprocessing Degree",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.05, 0.75))
+        for ax in fig.axes:
+            ax.set_ylabel("")
+        savefig(fig, "gross_feature_smallest_by_preproc.png")
+
+    def plot_rmt_by_trim() -> None:
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=df.loc[
+                df.feature.apply(
+                    lambda s: (("rigid" in s) or ("levelvar" in s)) and ("eigs" not in s)
+                )
+            ],
+            x="auroc",
+            kind="kde",
+            hue="trim",
+            hue_order=TRIM_ORDER,
+            palette=TRIM_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            # row="feature",
+            # row_order=FEATUR,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        # clean_titles(grid, " = ", split_at="|")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "feature = ", split_at="|")
+        despine(grid)
+        dashify_trims(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "Eigenfeature AUROCs by Trimming",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
+        )
+        sbn.move_legend(grid, loc=(0.77, 0.07))
+        for ax in fig.axes:
+            ax.set_ylabel("")
+        savefig(fig, "eigenfeature_auroc_by_trim.png")
+
+    # these are not great
     # plot_overall()
-    plot_by_gross_feature()
-    print("")
+    # plot_largest_by_gross_feature()
+
+    # plot_by_gross_feature()
+    # plot_largest_by_gross_feature_subgroup()
+    # plot_smallest_by_gross_feature_subgroup()
+    # plot_largest_by_feature_groups()
+    # plot_smallest_by_feature_groups()
+    # plot_all_by_feature_groups()
+
+    plot_by_gross_feature_preproc()
+    plot_largest_by_gross_feature_preproc()
+    plot_rmt_by_trim()
+
+
     return
 
 
