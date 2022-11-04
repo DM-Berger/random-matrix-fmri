@@ -364,11 +364,34 @@ original authors analytic / statistical approaches and intentions have very
 limited relevance to our whole-brain, voxelwise, multiverse predictive
 approach.}, we refer the reader to the original publications and/or data
 releases when greater detail is needed, and highlight only the most basic
-aspects of each dataset here.
+aspects of each dataset here.  Dataset scan parameters and acquisition details
+are summarized in Table \ref{table:1}, and sample and subgroup sizes are
+summarized in Table \ref{table:2}.
 
-Dataset scan parameters and acquisition details are summarized in Table
-\ref{table:1}, and sample and subgroup sizes are summarized in Table
-\ref{table:2}.
+\begin{table}[h!]
+\caption{
+    ID = Identifier for paper. TR = Time of Repetition (seconds).
+    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
+    indicate P horizontal / axial slices each with dimensions M x N.
+}
+\label{table:1}
+\small
+\centering
+\begin{tabular}{ l c c c c c c }
+\hline
+\textbf{Name}    & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} & \textbf{n\_scans} \\
+\hline
+Aging     & 74 × 74 × 32   & 3.0 × 3.0 × 4.0 & 2.0  & 300 & 62  \\
+Bilingual    & 100 × 100 × 72 & 1.8 × 1.8 × 1.8 & 0.88 & 823 & 90  \\
+Depress   & 112 × 112 × 25 & 2.0 × 2.0 × 5.0 & 2.5  & 100 & 72  \\
+Learn     & 64 × 64 × 36   & 3.0 × 3.0 × 3.0 & 2.0  & 195 & 432 \\
+Osteo     & 64 × 64 × 36   & 3.4 × 3.4 × 3.0 & 2.5  & 300 & 74  \\
+Park      & 80 × 80 × 43   & 3.0 × 3.0 × 3.0 & 2.4  & 149 & 552 \\
+Attention & 128 × 128 × 70 & 1.5 × 1.5 × 1.5 & 3.0  & 300 & 90  \\
+\hline
+\end{tabular}
+\end{table}
+
 
 \subsection{Datasets and Classification Tasks}
 
@@ -415,6 +438,22 @@ bilingual}.
 % parallel to the long axis of the hippocampus.
 
 \subsubsection{Depression Dataset}
+
+The \textit{Depression} dataset\cite{bezmaternykhddRestingStateClosed2021,
+bezmaternykhBrainNetworksConnectivity2021} includes rs-fMRI scans frmo
+non-depressed controls and mildy- or moderately-depressed subjects. The our analysis,
+the binary classification task is \code{depress v control}.
+
+% The intergroup study involved 21 healthy volunteers received a compensation
+% for a participation and 51 participants featuring mild depression (F32.0),
+% moderate depression (F32.1), or dysthymia (F34.1, single patient) (see Table
+% 1). The fMRI study was carried out in the International Tomography Center,
+% Novosibirsk, using a 3 T Ingenia scanner (Philips). Functional T2∗-weighted
+% Ssh echo planar imaging scans were acquired using the following parameters:
+% voxel size 2×2×5mm, repetition time/echo time = 2500/35 ms, and fat
+% suppression mode. The reference anatomical image was obtained by the T1W 3D
+% turbo field echo method with a voxel size of 1×1×1mm. The instruction for
+% participants was to lie still with eyes closed for 6 minutes.
 
 \subsubsection{Learning Dataset}
 
@@ -475,28 +514,6 @@ The classification task for this dataset is Parkinson's versus controls, i.e.
 
 
 
-\begin{table}[h!]
-\caption{
-    ID = Identifier for paper. TR = Time of Repetition (seconds).
-    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
-    indicate P horizontal / axial slices each with dimensions M x N.
-}
-\label{table:1}
-\small
-\centering
-\begin{tabular}{ c c c c c c c }
-\hline
-\textbf{ID}    & \textbf{Dimensions}  & \textbf{Voxel size (mm)} & \textbf{TR} & \textbf{Volumes} & \textbf{n\_scans} \\
-\hline
-AGING     & 74 x 74 x 32   & 3.0 x 3.0 x 4.0 & 2.0  & 300 & 62  \\
-BILING    & 100 x 100 x 72 & 1.8 x 1.8 x 1.8 & 0.88 & 823 & 90  \\
-DEPRESS   & 112 x 112 x 25 & 2.0 x 2.0 x 5.0 & 2.5  & 100 & 72  \\
-LEARN     & 64 x 64 x 36   & 3.0 x 3.0 x 3.0 & 2.0  & 195 & 432 \\
-OSTEO     & 64 x 64 x 36   & 3.4 x 3.4 x 3.0 & 2.5  & 300 & 74  \\
-PARK      & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4  & 149 & 552 \\
-PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300 & 90  \\
-\hline
-\end{tabular}
 
 \subsection{Classification Task Subgroups}
 
@@ -505,7 +522,6 @@ data, or for the \textit{Attention} dataset, from psychological measures availab
 from the data.
 
 
-\end{table}
 
 \begin{table}[h!]
 \caption{
@@ -521,23 +537,23 @@ from the data.
 \hline
 AGING   &  older             & 28      & resting-state         & 1 \\
         &  younger           & 34      & resting-state         & 1 \\
-\hline
+        &                    &         &                       &   \\
 BILING  &  bilingual          & 59      & resting-state        & 1 \\
         &  monolingual        & 33      & resting-state        & 1 \\
-\hline
+        &                    &         &                       &   \\
 DEPRESS &  depression         & 51      & resting-state        & 1 \\
         &  control            & 21      & resting-state        & 1 \\
-\hline
+        &                    &         &                       &   \\
 LEARN   &  task              & 24      & learn image sketches  & 16 \\
         &  rest              & 24      & resting-state         & 2 \\
-\hline
-OSTEO   &  duloxetine        & 19      & taking duloxetine     & 1 \\
-        &  pain              & 37      & placebo               & 1 \\
-        &  nopain            & 20      & control               & 1 \\
-\hline
+        &                    &         &                       &   \\
+OSTEO   &  duloxetine        & 19      & resting-state         & 1 \\
+        &  pain              & 37      & resting-state         & 1 \\
+        &  nopain            & 20      & resting-state         & 1 \\
+        &                    &         &                       &   \\
 PARK    &  Parkinson's       & 25      & ANT                   & 12 \\
         &  control           & 21      & ANT                   & 12 \\
-\hline
+        &                    &         &                       &   \\
 PSYCH   &  vigilant           & 11     & resting-state        & 3 \\
         &  nonigilant         & 11     & resting-state        & 3 \\
         &  trait-attentive     & 11    & resting-state        & 3 \\
