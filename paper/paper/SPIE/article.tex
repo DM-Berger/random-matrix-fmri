@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{setspace}
 \usepackage{tocloft}
+\usepackage{doi}
 
 \title{Random Matrix Theory Tools for the Analysis of Functional Magnetic Resonance Imaging Examinations}
 
@@ -104,6 +105,8 @@ features like the spectral rigidity and level number variance have considerable 
 feature-engineering for fMRI. On median, we find ... However, we also find the utility of the
 extracted eigenfeatures to depend strongly and complexly on various analytic decisions.
 
+Also
+
 \section*{Conclusions}
 Consider using RMT.
 
@@ -137,7 +140,7 @@ Consider using RMT.
 % professionally typeset in XML according to the layout and design of the journal.
 
 \textbf{NOTE}: Forget academia for a moment, and write like its a blog. Then go back and add
-the citations and ajust the tone.
+the citations and adjust the tone.
 
 Random Matrix Theory (RMT) has obvious potential. It has helped to understand the generalization
 behaviour of neural networks [add citation], can be used to guide any principal components analysis
@@ -147,10 +150,9 @@ and can provide insights wherever there is a system of components interacting wi
 independence [cite Cambridge RMT handbook, others].
 
 At its most rudimentary, RMT simply describes the statistically-expected behaviour of the
-eigenvalues of certain classes—or \textit{ensembles}—of random matrices under certain assumptions or
+eigenvalues of some classes—or \textit{ensembles}—of random matrices under certain assumptions or
 conditions. A random matrix is, generally, a matrix in which the entries can be considered to be
-independently and identically distributed (iid), and where the iid distribution is a classic
-mathemtical distribution. For example, one of the simplest ensembles [cite handbook] is the Gaussian
+independently and identically distributed (\textit{iid}). For example, one of the simplest ensembles [cite handbook] is the Gaussian
 Unitary Ensemble (GUE), wherein [desc of ensemble properties] and which appears to be useful in
 describing [real-world examples].
 
@@ -216,7 +218,7 @@ interpretable manner across psychological processes. If this is the case, RMT co
 in understanding the functioning of the human brain.
 
 
-\subsection{Eigenfeatures}
+\subsection{Motivating Eigenfeatures}
 
 The basic insight of RMT is thus that the \textit{eigenvalues alone} may provide interesting
 information about highly complex Neurobiological systems. However, in practice, the eigenvalues computed from
@@ -232,6 +234,31 @@ However, from a predictive standpoint, these summary statistics may eliminate pr
 information. If the basic RMT insight is that the eigenvalues are useful features to understand a
 system, then those eigenvalues alone (or other simple transformations of them) ought also to be
 predictively useful. We examine a number of such \textit{eigenfeatures} in this study.
+
+In addition, the functional connectivity - the matrix of correlations of various collections of
+voxels of an fMRI scan - is a priori a useful representation of the fMRI data. However, the full
+correlation matrix between all voxels is itself often computationally infeasible to work with, and
+thus is reduced in various ways prior to being used in analyses.
+
+Typical reductions include the use of a ``seed'' voxel or collection of voxels (i.e. ROI): the mean
+signal over that ROI is correlated with all other N ROIs of interest to generate a reduced functional
+connectivity matrix (or image) with one correlation value at each non-seed ROI. This sort of reduction reduces the functional connectivity to N values. This approach strongly
+biases the analysis to the seed ROI.
+
+Likewise, one can work with ROI mean signals, and work with the \(N \times N\) matrix of
+these ROI correlations. This analysis [maybe cite Poldrack book for this?] is, \textit{a priori},
+sensitive to the choice of ROIs, and, in the case of anatomical atlases / parcellations, may also
+lack theoretical justification.
+
+A major disadvantage of both the above approaches, besides requiring parcellation into ROIs, is
+that most such parcellation methods are atlas-based, and thus require image registration, and,
+general, an entire preprocessing pipeline to ensure that registration is successful.
+
+RMT suggests a potentially useful reduction in the form of the eigenvalues of the voxelwise
+functional connectivity. An \(N \times t\) matrix \(\bf{A}\) of \(N\) time series of length \(t\),
+and where \(t \ll N\) will have a symmetric correlation (or covariance) matrix with \(t - 1\)
+non-zero, positive real-valued eigenvalues \(\Lambda\). These eigenvalues can be computed highly
+efficiently via transposition of the voxelwise correlation or covariance matrix.
 
 
 \subsection{Limitations of Previous Work}
@@ -262,20 +289,69 @@ The current study aims to do just this.
 
 \section{Datasets}
 
-To examine the potential utility of RMT-derived features across a wide
-variety of data, and not to decisively put forward or refute any specific hypotheses relating RMT to
-psychological processes, we examine a wide selection of fMRI datasets available on the
-\href{https://openneuro.org/}{OpenNeuro} platform (36).  This allows for a broad assessment of the
-potential of voxelwise RMT features.
+\subsection{Overview}
 
-However, since previous studies employing RMT for feature extraction have partially interpreted
-their findings with respect to attentional processes
-\cite{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we have also elected to use
-datasets that involve attention in some way. This includes measures of attention or vigilance, or
-comparisons between a condition involving more attention and focus (e.g. a task state) or conditions
-which should involve less attention or focus (e.g. resting-state, pain medication vs. none).
+In order not to inundate readers with dataset details, and because this is an exploratory
+investigation of RMT which is not committed to any specific theory, we refer the reader
+to the original publications and/or data releases when greater detail is needed, and
+highlight only the most basic aspects of each here.
 
-\subsection{Dataset: PSYCH}
+We selected fMRI data publicly available on the \href{https://openneuro.org/}{OpenNeuro} platform
+(36). Selection criteria was somewhat subjective, but we required (1), that all scans have the same
+spatial and temporal resolutions, (2), the the dataset comprise 10+ human subjects, and (3), that it
+was reasonable to classify at the level of an entire scan, i.e. neither task nor event timings were
+needed to determine class membership. This yielded seven datasets comprising XX total subjects, and
+over 5000 total fMRI volumes.
+
+Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
+and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
+(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
+these datasets, we highlight below only those aspects relevant to the current paper.
+
+\subsubsection{Aging}
+This dataset\cite{wahlheimIntrinsicFunctionalConnectivity2021} included 34 subjects with a mean age
+of 22 years (range: 18-32 years), and 28 subjects with a mean age of 70 years (range: 61-80 years).
+
+% The final sample included 34 younger adults (1832 years old, Mage = 22.21, SD = 3.65; 20 female)
+% and 28 older adults (61-80 years old, Mage = 69.82, SD = 5.64; 20 female). Table 1 shows that
+% younger and older adults had comparable education and working memory capacity, the latter measured
+% by forward and backward digit span (48). Older adults had higher vocabulary scores (49) and slower
+% processing speed (50) than younger adults.
+% Resting-state data comprised 300 measurements collected over one 10-minute run. This scan duration
+% produces reliable functional connectivity estimates within and across participants (57).
+% Participants were instructed to remain still and awake with their eyes open. No stimuli appeared
+% during this scan, and the display was black. Functional scans were collected using an echo-planar
+% image sequence sensitive to blood-oxygen-level-dependent (BOLD) contrast (T2*; 32 slices with 4.0
+% mm thickness and no skip, TE = 30 ms, TR = 2000 ms, flip angle = 70, FOV = 220 mm, matrix size =
+% 74 × 74 × 32 voxels, A/P phase encoding direction). Slices were collected in a descending order
+% that covered the entire cortex and partial cerebellum. At the beginning of the resting-state scan,
+% the scanner acquired and discarded two dummy scans.
+
+\subsubsection{Bilinguality}
+
+This dataset\cite{ds001747:1.0.0, goldcarrieelizabethExploringRestingState2018} examined English and
+Spanish-speaking monolinguals and multilinguals during a prolonged resting state. The original study
+grouped participants into three classes: early vs late bilinguals vs monolingual controls, and found
+connectivity differences only between the early and late
+bilinguals\cite{goldcarrieelizabethExploringRestingState2018}. We compared for our two classes just
+"bilingual" vs "monolingual". The data is most notable for the short TR (875ms) combined with long
+acquisition time (12 minutes).
+
+% Resting state fMRI scans were performed using a T2*-weighted EPI sequence with the following
+% parameters: TR=875ms; TE=43.6ms; slice thickness=1.8mm; acquisition matrix=100 × 100; flip
+% angle=55°; number of slices=72; field of view=180 × 180mm; voxel size=1.8 × 1.8 × 1.8mm;
+% multi-band factor=8; volumes per run=823 (total scan time=12min). EPI scans were oriented
+% parallel to the long axis of the hippocampus.
+
+\subsubsection{Learning}
+
+This dataset\cite{schapiroHumanHippocampalReplay2018, schapiroHumanHippocampalReplay2020}. In this study, both rs-fMRI and task fMRI scans
+were available for all subjects, allowing for within-subject comparisons. The task is complex and difficult to summarize here adequately, but involved
+multiple phases where subjects were presented with various related abstract images, and then later tested for their memory of certain aspects of the learned images. For our study, we simply note that these task scans ought to be broadly more attentionally  and cognitively demanding than the resting state, and instead simply try to classify task vs. test scans using eigenfeatures.
+
+
+
+\subsubsection{Dataset: PSYCH}
 The PSYCH Dataset  is detailed in \cite{gorgolewskiHighResolution7Tesla2015}. Subjects completed a
 battery of psychological measurements, and various resting-state fMRI (rs-fMRI) whole-brain 7-Tesla
 scans were obtained. For the purpose of keeping with the ``attention'' theme of the analyses in this
@@ -315,27 +391,6 @@ subgroup comparisons. All subjects were imaged with whole-brain rs-fMRI. Scan pa
 documented in Table \ref{table:1}. The use of rs-fMRI and RMT for examining pain makes this dataset
 complementary to \cite{matharooSpontaneousBackpainAlters2020}.
 
-\subsubsection{Dataset 3}
-Dataset 3  (referred to here with the label ``REFLECT'', due to the ``reflective” nature of the
-cognitive tasks) is described in full detail by \cite{dupreMultiechoFMRIReplication2016}. Both
-multi-echo rs- and task-fMRI scans were conducted with scan parameters summarized in Table \ref{table:2}. Tasks
-involved viewing various affective images (see \cite{sprengPatternsBrainActivity2010} for details)
-and performing tasks related to autobiographical memory, prospection, or theory-of-mind reasoning.
-Continuing with the theme of broadly comparing high versus low attention throughout this paper, the
-different tasks were simply treated generically as ``attending'', in contrast to the non-attentive
-resting-state scans. This resulted in four task state scans and one resting-state scan per subject.
-
-In order to combine the multi-echo data into a single, usable matrix, two methods were employed. In
-the ``summed'' condition, echoes were combined via summation, a method which has value in providing an
-image with overall increased contrast \cite{kunduMultiechoFMRIReview2017}. In the ``interleave''
-condition, echoes were interleaved at each voxel: that is, if we denote the voxel's \(i\)th signal value
-from echo \(j\) as \(t_{j,i}\), then the interleaved voxel of the new image has the time-series \([t_{1,1},
-t_{2,1}, t_{3,1}, \dots, t_{1,i}, t_{2,i}, t_{3,i}, \dots, t_{1,n}, t_{2,n}, t_{3,n}]\).
-
-This creates a physically-meaningful 4D image that contains the full, original multi-echo fMRI
-time-series data without any alterations. It should be noted that the purpose of these combination
-methods is not to create a 4D volume that allows optimal detection of the purely task-linked BOLD
-signal, but to ensure all scan information was used with minimal additional analytic assumptions.
 
 \subsubsection{Dataset 4}
 Dataset 4 (referred to in figures and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
@@ -351,20 +406,6 @@ This dataset also included extensively preprocessed scans, which were included i
 examine the effects of preprocessing on the extracted RMT features.
 
 \subsubsection{Dataset 5}
-Dataset 5 (referred to in figures and tables with the label ``LEARN'') is documented and described in
-detail in \cite{schapiroHumanHippocampalReplay2018}. In this study, both rs-fMRI and task fMRI scans
-were available for all subjects, allowing for within-subject comparisons. The complex task involved
-multiple phases, wherein subjects were exposed to named, black-and-white outlined satellite images
-related by family-resemblance of the components see figure 1 of \cite{schapiroHumanHippocampalReplay2018}. After this learning task, subjects were tested on their
-memory of the various learned features. Scans corresponding to both the initial learning and
-subsequent testing phase were included in the high-attention ``task'' subgroup for the purposes of
-the analysis of this paper. Resting state scans were included in the low-attention ``rest''
-subgroup.
-
-Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
-and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
-(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
-these datasets, we highlight below only those aspects relevant to the current paper.
 
 \begin{table}[h!]
 \caption{
@@ -459,6 +500,25 @@ number variance, \(\Sigma^2(L)\), is closely related to the spectral rigidity
 where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and where \(c\), \(L\),
 and \(\langle \cdot \rangle_c\) are as above \cite{guhrRandommatrixTheoriesQuantum1998a}. Both the
 spectral rigidity and level number variance are also computed and investigated in this study.
+
+\section{Results}
+\label{sect:results}
+
+First not non-predictable data, and then no longer discuss it in subsequent features.
+
+\subsection{Normalization}
+NO meaningful effect of normalization on AUROC distributions at level of gross feature, or feature
+group, so can safely ignore this.
+NO meaningful effect of normalization for any feature group by classifier either, so
+normalization doesn't seem to matter here.
+Maybe add table of correlations by groupings here
+
+\subsection{Classifier}
+When the data is predictable, timeseries features almost all have the mode / max <= 0.5 for all
+classifiers and subgroups, whereas eigenfeatures (RMT, eigenvalue only, eigenvalue + RMT) more often
+than not have mode greater than 0.5, and bulk of the distribution > 0.5.
+
+KNN3 consistently has least favourable AUROC distributions across subgroups and features
 
 \subsection{Page Setup and Fonts}
 

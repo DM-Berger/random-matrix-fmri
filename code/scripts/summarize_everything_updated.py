@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
+import re
 from typing import Literal
 from warnings import simplefilter
 
@@ -19,7 +20,9 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from pandas import DataFrame
 from pandas.errors import PerformanceWarning
+from scipy.optimize import NonlinearConstraint, minimize, minimize_scalar
 from seaborn import FacetGrid
+from statsmodels.distributions.empirical_distribution import ECDF
 from tqdm import tqdm
 
 from rmt.updated_features import FEATURE_OUTFILES as PATHS
@@ -135,6 +138,20 @@ SUBGROUP_ORDER = [
     # "WeeklyAttentionSes2 - trait_attend v trait_nonattend",
 ]
 
+"""Defined as comparisons where bulk (>50%) of AUROC distribution is right of
+0.5 under at least one preproc regime
+"""
+OVERALL_PREDICTIVE_GROUP_ORDER = [
+    "Learning - rest v task",
+    "Aging - younger v older",
+    "Osteo - nopain v duloxetine",
+    "Osteo - nopain v pain",
+    "Osteo - pain v duloxetine",
+    "Parkinsons - ctrl v park",  # questionable, only tseries seem predictive
+    "TaskAttention - task_attend v task_nonattend",
+    "Vigilance - vigilant v nonvigilant",
+]
+
 
 CLASSIFIER_ORDER = [
     # "RandomForestClassifier",
@@ -151,6 +168,10 @@ PREPROC_ORDER = [
     "SliceTimeAlign",
     "MotionCorrect",
     "MNIRegister",
+]
+NORM_ORDER = [
+    False,
+    True,
 ]
 
 
@@ -236,6 +257,12 @@ def load_tseries() -> DataFrame:
     df["slice"] = "all"
     df["trim"] = "none"
     df.loc[:, "data"] = df["data"].str.replace("Older", "Aging")
+    df.loc[:, "classifier"] = (
+        df["classifier"].str.replace("GradientBoostingClassifier", "GBDT").copy()
+    )
+    df.loc[:, "classifier"] = (
+        df["classifier"].str.replace("RandomForestClassifier", "RF").copy()
+    )
     return df
 
 
@@ -1243,17 +1270,20 @@ def print_correlations(by: list[str]) -> None:
 
 
 def clean_titles(
-    grid: FacetGrid, text: str = "subgroup = ", split_at: Literal["-", "|"] | None = None
+    grid: FacetGrid,
+    text: str = "subgroup = ",
+    replace: str = "",
+    split_at: Literal["-", "|"] | None = None,
 ) -> None:
     fig: Figure = grid.fig
     for ax in fig.axes:
         axtitle = ax.get_title()
         if split_at is not None:
             ax.set_title(
-                axtitle.replace(text, "").replace(f" {split_at} ", "\n"), fontsize=8
+                re.sub(text, replace, axtitle).replace(f" {split_at} ", "\n"), fontsize=8
             )
         else:
-            ax.set_title(axtitle.replace(text, ""), fontsize=8)
+            ax.set_title(re.sub(text, replace, axtitle), fontsize=8)
 
 
 def rotate_labels(grid: FacetGrid, axis: Literal["x", "y"] = "x") -> None:
@@ -1345,6 +1375,20 @@ def dashify_trims(grid: FacetGrid) -> None:
         grid.legend.legendHandles[3].set_linestyle("solid")
     except IndexError:
         pass
+
+
+def make_row_labels(grid: FacetGrid, col_order: list[str], row_order: list[str]) -> None:
+    ncols = len(col_order)
+    row = 0
+    for i, ax in enumerate(grid.fig.axes):
+        if i == 0:
+            ax.set_ylabel(row_order[row])
+            row += 1
+        elif i % ncols == 0 and i >= ncols:
+            ax.set_ylabel(row_order[row])
+            row += 1
+        else:
+            ax.set_ylabel("")
 
 
 def savefig(fig: Figure, filename: str) -> None:
@@ -1664,8 +1708,6 @@ def make_kde_plots() -> None:
         clean_titles(grid, "preproc = ")
         despine(grid)
         dashify_gross(grid)
-        for ax in fig.axes:
-            ax.set_ylabel("")
         fig = grid.fig
         fig.suptitle(
             "Largest 500 AUROCs by Preprocessing Degree",
@@ -1677,6 +1719,8 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.05, 0.75))
+        for ax in fig.axes:
+            ax.set_ylabel("")
         savefig(fig, "gross_feature_largest_by_preproc.png")
 
     def plot_smallest_by_gross_feature_preproc() -> None:
@@ -1713,7 +1757,7 @@ def make_kde_plots() -> None:
             "Smallest 500 AUROCs by Preprocessing Degree",
             fontsize=10,
         )
-        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
@@ -1723,7 +1767,7 @@ def make_kde_plots() -> None:
             ax.set_ylabel("")
         savefig(fig, "gross_feature_smallest_by_preproc.png")
 
-    def plot_by_gross_feature_preproc() -> None:
+    def plot_by_gross_feature_preproc_subgroup() -> None:
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=df,
@@ -1739,7 +1783,7 @@ def make_kde_plots() -> None:
             row="preproc",
             row_order=PREPROC_ORDER,
             # col_wrap=4,
-            bw_adjust=1.2,
+            bw_adjust=2.0,
             alpha=0.8,
             facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
         )
@@ -1754,7 +1798,7 @@ def make_kde_plots() -> None:
             "AUROCs by Preprocessing Degree",
             fontsize=10,
         )
-        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
+        fig.set_size_inches(w=11, h=8.5)
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
@@ -1762,7 +1806,182 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.05, 0.75))
         for ax in fig.axes:
             ax.set_ylabel("")
-        savefig(fig, "gross_feature_smallest_by_preproc.png")
+        plt.show()
+        savefig(fig, "gross_feature_by_preproc_subgroup.png")
+
+    def plot_by_gross_predictive_feature_preproc_subgroup() -> None:
+        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfp,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="preproc",
+            row_order=PREPROC_ORDER,
+            # col_wrap=4,
+            bw_adjust=2.0,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "preproc = ", split_at="|")
+        clean_titles(grid, ".*\n")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "task_attend", "high")
+        clean_titles(grid, "task_nonattend", "low")
+        clean_titles(grid, "nonvigilant", "low")
+        clean_titles(grid, "vigilant", "high")
+        clean_titles(grid, "younger", "young")
+        clean_titles(grid, "duloxetine", "dlxtn")
+        despine(grid)
+        dashify_gross(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Preprocessing for Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.88))
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=PREPROC_ORDER
+        )
+        for i, ax in enumerate(fig.axes):
+            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
+                ax.set_title("")
+        savefig(fig, "gross_feature_by_preproc_predictive_subgroup.png")
+
+    def plot_by_feature_group_predictive_norm_subgroup() -> None:
+        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfp,
+            x="auroc",
+            kind="kde",
+            # hue="gross_feature",
+            # hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            # palette=GROSS_FEATURE_PALETTE,
+            hue="feature_group",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="norm",
+            row_order=NORM_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.5,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "norm = ", split_at="|")
+        clean_titles(grid, ".*\n")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "task_attend", "high")
+        clean_titles(grid, "task_nonattend", "low")
+        clean_titles(grid, "nonvigilant", "low")
+        clean_titles(grid, "vigilant", "high")
+        clean_titles(grid, "younger", "young")
+        clean_titles(grid, "duloxetine", "dlxtn")
+        make_row_labels(
+            grid, col_order=list(FEATURE_GROUP_PALETTE.keys()), row_order=NORM_ORDER
+        )
+        despine(grid)
+        dashify_gross(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Normalization for Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.88))
+        for i, ax in enumerate(fig.axes):
+            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
+                ax.set_title("")
+        savefig(fig, "feature_group_by_norm_predictive_subgroup.png")
+
+    def plot_by_feature_group_predictive_classifier_subgroup() -> None:
+        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfp,
+            x="auroc",
+            kind="kde",
+            hue="gross_feature",
+            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
+            palette=GROSS_FEATURE_PALETTE,
+            # hue="feature_group",
+            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            # palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            row="classifier",
+            row_order=CLASSIFIER_ORDER,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.5,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "norm = ", split_at="|")
+        clean_titles(grid, ".*\n")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "task_attend", "high")
+        clean_titles(grid, "task_nonattend", "low")
+        clean_titles(grid, "nonvigilant", "low")
+        clean_titles(grid, "vigilant", "high")
+        clean_titles(grid, "younger", "young")
+        clean_titles(grid, "duloxetine", "dlxtn")
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=CLASSIFIER_ORDER
+        )
+        despine(grid)
+        dashify_gross(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Normalization for Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=20, h=15)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.88))
+        for i, ax in enumerate(fig.axes):
+            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
+                ax.set_title("")
+        savefig(fig, "feature_group_by_predictive_subgroup_classifier.png")
+
+        bulks = dfp.groupby(["subgroup", "classifier", "gross_feature"]).apply(
+            lambda grp: grp.auroc.quantile([0.25, 0.50, 0.75]).T
+        )
+        bulks = bulks.reset_index()
+        predictive = bulks[0.5] > 0.5
 
     def plot_rmt_by_trim() -> None:
         print("Plotting...", end="", flush=True)
@@ -1780,7 +1999,7 @@ def make_kde_plots() -> None:
             fill=False,
             common_norm=False,
             col="subgroup",
-            col_order=SUBGROUP_ORDER,
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
             # row="feature",
             # row_order=FEATUR,
             col_wrap=4,
@@ -1797,7 +2016,7 @@ def make_kde_plots() -> None:
         add_auroc_lines(grid, "vline")
         fig = grid.fig
         fig.suptitle(
-            "Eigenfeature AUROCs by Trimming",
+            "RMT Feature AUROCs by Trimming on Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1805,10 +2024,10 @@ def make_kde_plots() -> None:
         fig.subplots_adjust(
             top=0.87, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
         )
-        sbn.move_legend(grid, loc=(0.77, 0.07))
+        sbn.move_legend(grid, loc=(0.685, 0.15))
         for ax in fig.axes:
             ax.set_ylabel("")
-        savefig(fig, "eigenfeature_auroc_by_trim.png")
+        savefig(fig, "rmt_feature_auroc_by_trim.png")
 
     # these are not great
     # plot_overall()
@@ -1821,12 +2040,14 @@ def make_kde_plots() -> None:
     # plot_smallest_by_feature_groups()
     # plot_all_by_feature_groups()
 
-    plot_by_gross_feature_preproc()
-    plot_largest_by_gross_feature_preproc()
+    # plot_by_gross_feature_preproc()
+    # plot_largest_by_gross_feature_preproc()
+    # plot_smallest_by_gross_feature_preproc()
+    # plot_by_gross_feature_preproc_subgroup()
+    # plot_by_gross_predictive_feature_preproc_subgroup()
+    # plot_by_feature_group_predictive_norm_subgroup()
+    plot_by_feature_group_predictive_classifier_subgroup()
     plot_rmt_by_trim()
-
-
-    return
 
 
 if __name__ == "__main__":
