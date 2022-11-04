@@ -86,29 +86,44 @@
 \begin{abstract}
 
 \section*{Purpose}
-Random matrix theory (RMT) is an increasingly useful tool for understanding large, complex systems.
-Prior studies have examined functional Magnetic Resonance Imaging (fMRI) scans using tools from
-RMT, with some success. However, RMT computations are complex, and sensitive to numerous analytic
-choices, and previous investigations have been mostly explanatory / descriptive. We systematically
-investigate the usefulness of RMT in a variety of fMRI datasets in a predictive framework.
+Random matrix theory (RMT) is an increasingly useful tool for understanding
+large, complex systems. Prior studies have examined functional Magnetic
+Resonance Imaging (fMRI) scans using tools from RMT, with some success.
+However, RMT computations are highly sensitive to a number of analytic choices,
+and the robustness of findings involving RMT remain in question. We
+systematically investigate the usefulness of RMT on a wide variety of fMRI
+datasets using a rigorous predictive framework.
 
 \section*{Approach}
-We develop open-source software to efficiently compute RMT features from fMRI images, and examine
-the cross-validated predictive potential of eigenvalue and RMT-based features (``eigenfeatures'') used
-with typical classificatory machine-learning algorithms. We systematically vary pre-processing extent,
-normalization procedure, RMT unfolding procedure, and classifiers to examine the utility of these
-eigenfeatures across various datasets.
+We develop open-source software to efficiently compute RMT features from fMRI
+images, and examine the cross-validated predictive potential of eigenvalue and
+RMT-based features (``eigenfeatures'') with classic machine-learning
+classifiers. We systematically vary pre-processing extent, normalization
+procedures, RMT unfolding procedures, and feature selection, and compare the
+impact of these analytic choices on the distributions of cross-validated
+prediction performance for each combination of dataset binary classification
+task, classifier, and feature. To deal with class imbalance, we use the
+area under the receiver operating characteristic (AUROC) as the main
+performance metric.
 
 \section*{Results}
-We find eiegenfeatures to be broadly predictive in a wide variety of contexts, and that RMT-specific
-features like the spectral rigidity and level number variance have considerable potential in
-feature-engineering for fMRI. On median, we find ... However, we also find the utility of the
-extracted eigenfeatures to depend strongly and complexly on various analytic decisions.
+% df.groupby(["subgroup", "gross_feature"])["auroc"].median()
+Across all classification tasks and analytic choices, we find eiegenfeatures to
+more often have predictive utility than not (82.4\% of median AUROCs > 0.5;
+median AUROC range across classification tasks 0.47 - 0.64). Simple baseline
+reductions on source timeseries, by contrast, were less useful (58.8\% of
+median AUROCs > 0.5, median AUROC range across classification tasks 0.42 -
+0.62). Additionally, eigenfeature AUROC distributions were overall much more
+right-tailed than baseline features suggesting greater predictive potential.
+However, performance distributions were wide, and often significantly affected by
+analytic choices.
 
-Also
 
 \section*{Conclusions}
-Consider using RMT.
+Eigenfeatures clearly have potential for understanding and reducing fMRI
+functional connectivity. However, the utility of these features is strongly
+dependent on analytic decisions, suggesting considerable caution when
+interprting past and future studies applying RMT.
 
 % This document shows the required format and appearance of a manuscript prepared for SPIE journals.
 % It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the

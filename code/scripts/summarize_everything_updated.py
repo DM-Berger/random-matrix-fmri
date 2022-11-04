@@ -237,6 +237,10 @@ def load_all_renamed() -> DataFrame:
         df.comparison == "trait_nonattend v trait_attend"
     )
     df = df.loc[~dupes]
+    df["subgroup"] = df["data"] + " - " + df["comparison"]
+    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["slice_group"] = df["slice"].apply(slice_grouping)
+    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
     return df
 
 
@@ -263,13 +267,28 @@ def load_tseries() -> DataFrame:
     df.loc[:, "classifier"] = (
         df["classifier"].str.replace("RandomForestClassifier", "RF").copy()
     )
+    dupes = (df.data == "TaskAttentionSes2") & (
+        df.comparison == "task_nonattend v task_attend"
+    )
+    df = df.loc[~dupes]
+    dupes = (df.data == "WeeklyAttentionSes2") & (
+        df.comparison == "trait_nonattend v trait_attend"
+    )
+    df = df.loc[~dupes]
+    df["subgroup"] = df["data"] + " - " + df["comparison"]
+    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["slice_group"] = df["slice"].apply(slice_grouping)
+    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
     return df
 
 
-def load_combined() -> DataFrame:
+def load_combined(drop_ses: bool = True) -> DataFrame:
     df = load_all_renamed()
     ts = load_tseries()
-    return pd.concat([df, ts], axis=0)
+    df = pd.concat([df, ts], axis=0)
+    if drop_ses:
+        df = df.loc[~df.data.str.contains("Ses")]
+    return df
 
 
 @MEMORY.cache
@@ -1405,13 +1424,8 @@ def make_kde_plots() -> None:
     sbn.set_style("ticks")
 
     print("Loading data...", end="", flush=True)
-    print(" done")
     df = load_combined()
-    df["subgroup"] = df["data"] + " - " + df["comparison"]
-    df["feature_group"] = df["feature"].apply(feature_grouping)
-    df["slice_group"] = df["slice"].apply(slice_grouping)
-    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
-    df = df.loc[~df.data.str.contains("Ses")]
+    print(" done")
 
     def plot_by_gross_feature() -> None:
         ax: Axes
@@ -2050,11 +2064,64 @@ def make_kde_plots() -> None:
     plot_rmt_by_trim()
 
 
+def summary_stats_and_tables() -> None:
+    df = load_combined()
+    df_ses = load_combined(drop_ses=False)
+    df["mega_feature"] = df["gross_feature"].apply(
+        lambda s: "eigs_all" if s != "tseries" else "tseries"
+    )
+    df_ses["mega_feature"] = df_ses["gross_feature"].apply(
+        lambda s: "eigs_all" if s != "tseries" else "tseries"
+    )
+    meds = df.groupby(["subgroup", "mega_feature"])["auroc"].median().unstack()
+    meds_ses = df_ses.groupby(["subgroup", "mega_feature"])["auroc"].median().unstack()
+
+    print(f"Medians excluding Ses- subgroups:")
+    print(meds.round(3))
+    print(f"Medians including Ses- subgroups:")
+    print(meds_ses.round(3))
+
+    print(f"Medians > 0.5 for Ses- subgroups:")
+    print((meds > 0.5).mean(axis=0).round(3))
+    print(f"Range:")
+    print(meds.quantile([0, 1]).round(2).T)
+    print(f"Medians > 0.5 including Ses- subgroups:")
+    print((meds_ses > 0.5).mean(axis=0).round(3))
+    print(f"Range:")
+    print(meds_ses.quantile([0, 1]).round(2).T)
+
+    print("Proportion of AUROCs greater than 0.5 (Excluding Ses)")
+    g05 = (
+        df.groupby(["subgroup", "mega_feature"])["auroc"]
+        .apply(lambda grp: (grp > 0.5).mean())
+        .unstack()
+    )
+    print(g05)
+    print("Proportion of AUROCs greater than 0.5 (Incuding Ses)")
+    g05_ses = (
+        df_ses.groupby(["subgroup", "mega_feature"])["auroc"]
+        .apply(lambda grp: (grp > 0.5).mean())
+        .unstack()
+    )
+    print(g05_ses)
+
+    print("Proportion of AUROCs greater than 0.5 (Excluding Ses)")
+    print(g05.describe().T)
+    print("Proportion of AUROCs greater than 0.5 (Including Ses)")
+    print(g05_ses.describe().T)
+
+    p90 = df.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
+    p90_ses = (
+        df_ses.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
+    )
+
+
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
-    # df = load_all_renamed()
+    df = load_combined()
+    df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
 
