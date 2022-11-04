@@ -6,6 +6,8 @@
 \usepackage{tocloft}
 \usepackage{doi}
 
+\newcommand{\code}[1]{\small \texttt{#1} \normalsize}
+
 \title{Random Matrix Theory Tools for the Analysis of Functional Magnetic Resonance Imaging Examinations}
 
 \author[a]{Derek Berger}
@@ -27,62 +29,67 @@
 \begin{document}
 \maketitle
 
-% \begin{abstract}
-% This document shows the required format and appearance of a manuscript prepared for SPIE journals.
-% It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the
-% following journals require the use of structured abstracts in manuscript submissions:
-% \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the \textit{Journal of
-% Medical Imaging}. Structured abstracts are encouraged for the \textit{Journal of
-% Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the journal website. Whether
-% structured or single-paragraph, the abstract should be a summary of the paper and not an
-% introduction. Because the abstract may be used in abstracting and indexing databases, it should be
-% self-contained (i.e., no numerical references) and substantive in nature, presenting concisely the
-% objectives, methodology used, results obtained, and their significance. A list of up to six
-% keywords should immediately follow.
-% \end{abstract}
+% \begin{abstract} This document shows the required format and appearance of a
+% manuscript prepared for SPIE journals. It is prepared using LaTeX2e with the
+% class file \texttt{spieman.cls}. Please note that the following journals
+% require the use of structured abstracts in manuscript submissions:
+% \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the
+% \textit{Journal of Medical Imaging}. Structured abstracts are encouraged for
+% the \textit{Journal of Micro/Nanolithography, MEMS, and MOEMS}. Guidelines
+% are available on the journal website. Whether structured or single-paragraph,
+% the abstract should be a summary of the paper and not an introduction.
+% Because the abstract may be used in abstracting and indexing databases, it
+% should be self-contained (i.e., no numerical references) and substantive in
+% nature, presenting concisely the objectives, methodology used, results
+% obtained, and their significance. A list of up to six keywords should
+% immediately follow. \end{abstract}
 
-% See https://www.spiedigitallibrary.org/journals/journal-of-medical-imaging/volume-7/issue-01/010101/Integrating-structured-abstracts-in-the-Journal-of-Medical-Imaging/10.1117/1.JMI.7.1.010101.full
+% See
+% https://www.spiedigitallibrary.org/journals/journal-of-medical-imaging/volume-7/issue-01/010101/Integrating-structured-abstracts-in-the-Journal-of-Medical-Imaging/10.1117/1.JMI.7.1.010101.full
 % for info on the structured abstract
 %
-% Purpose: This section presents the significance and aims, stating the broad impact and the
-% rationale or motivation of the work, including potentially some background.
+% Purpose: This section presents the significance and aims, stating the broad
+% impact and the rationale or motivation of the work, including potentially
+% some background.
 %
-% Approach: This section briefly describes the materials and methods, including the statistical
-% analyses, used in the research.
+% Approach: This section briefly describes the materials and methods, including
+% the statistical analyses, used in the research.
 %
-% Results: This section provides a core summary of the findings from the work, including study
-% numbers, quantitative analyses, or discoveries.
+% Results: This section provides a core summary of the findings from the work,
+% including study numbers, quantitative analyses, or discoveries.
 %
-% Conclusions: This section summarizes and interprets the approach and findings from the work,
-% stating also the importance or impact of the findings.
+% Conclusions: This section summarizes and interprets the approach and findings
+% from the work, stating also the importance or impact of the findings.
 
-% Purpose:
-% Data-intensive modeling could provide insight on the broad variability in outcomes in
-% spine surgery. Previous studies were limited to analysis of demographic and clinical
-% characteristics. We report an analytic framework called “SpineCloud” that incorporates
-% quantitative features extracted from perioperative images to predict spine surgery outcome.
+% Purpose: Data-intensive modeling could provide insight on the broad
+% variability in outcomes in spine surgery. Previous studies were limited to
+% analysis of demographic and clinical characteristics. We report an analytic
+% framework called “SpineCloud” that incorporates quantitative features
+% extracted from perioperative images to predict spine surgery outcome.
 
-% Approach:
-% A retrospective study was conducted in which patient demographics, imaging, and outcome
-% data were collected. Image features were automatically computed from perioperative CT.
-% Postoperative 3- and 12-month functional and pain outcomes were analyzed in terms of improvement
-% relative to the preoperative state. A boosted decision tree classifier was trained to predict
-% outcome using demographic and image features as predictor variables. Predictions were computed
-% based on SpineCloud and conventional demographic models, and features associated with poor outcome
-% were identified from weighting terms evident in the boosted tree.
+% Approach: A retrospective study was conducted in which patient demographics,
+% imaging, and outcome data were collected. Image features were automatically
+% computed from perioperative CT. Postoperative 3- and 12-month functional and
+% pain outcomes were analyzed in terms of improvement relative to the
+% preoperative state. A boosted decision tree classifier was trained to predict
+% outcome using demographic and image features as predictor variables.
+% Predictions were computed based on SpineCloud and conventional demographic
+% models, and features associated with poor outcome were identified from
+% weighting terms evident in the boosted tree.
 
-% Results
-% Neither approach was predictive of 3- or 12-month outcomes based on preoperative data
-% alone in the current, preliminary study. However, SpineCloud predictions incorporating image
-% features obtained during and immediately following surgery (i.e., intraoperative and immediate
-% postoperative images) exhibited significant improvement in area under the receiver operating
-% characteristic (AUC): AUC=0.72 (CI95=0.59 to 0.83) at 3 months and AUC=0.69 (CI95=0.55
-% to 0.82) at 12 months.
+% Results Neither approach was predictive of 3- or 12-month outcomes based on
+% preoperative data alone in the current, preliminary study. However,
+% SpineCloud predictions incorporating image features obtained during and
+% immediately following surgery (i.e., intraoperative and immediate
+% postoperative images) exhibited significant improvement in area under the
+% receiver operating characteristic (AUC): AUC=0.72 (CI95=0.59 to 0.83) at 3
+% months and AUC=0.69 (CI95=0.55 to 0.82) at 12 months.
 
-% Conclusions Predictive modeling of lumbar spine surgery outcomes was improved by incorporation of
-% image-based features compared to analysis based on conventional demographic data. The SpineCloud
-% framework could improve understanding of factors underlying outcome variability and warrants
-% further investigation and validation in a larger patient cohort.
+% Conclusions Predictive modeling of lumbar spine surgery outcomes was improved
+% by incorporation of image-based features compared to analysis based on
+% conventional demographic data. The SpineCloud framework could improve
+% understanding of factors underlying outcome variability and warrants further
+% investigation and validation in a larger patient cohort.
 \begin{abstract}
 
 \section*{Purpose}
@@ -109,10 +116,10 @@ performance metric.
 \section*{Results}
 % df.groupby(["subgroup", "gross_feature"])["auroc"].median()
 Across all classification tasks and analytic choices, we find eiegenfeatures to
-more often have predictive utility than not (82.4\% of median AUROCs > 0.5;
+more often have predictive utility than not (82.4\% of median AUROCs \(>\) 0.5;
 median AUROC range across classification tasks 0.47 - 0.64). Simple baseline
 reductions on source timeseries, by contrast, were less useful (58.8\% of
-median AUROCs > 0.5, median AUROC range across classification tasks 0.42 -
+median AUROCs \(>\) 0.5, median AUROC range across classification tasks 0.42 -
 0.62). Additionally, eigenfeature AUROC distributions were overall much more
 right-tailed than baseline features suggesting greater predictive potential.
 However, performance distributions were wide, and often significantly affected by
@@ -125,17 +132,19 @@ functional connectivity. However, the utility of these features is strongly
 dependent on analytic decisions, suggesting considerable caution when
 interprting past and future studies applying RMT.
 
-% This document shows the required format and appearance of a manuscript prepared for SPIE journals.
-% It is prepared using LaTeX2e with the class file \texttt{spieman.cls}. Please note that the
-% following journals require the use of structured abstracts in manuscript submissions:
-% \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the \textit{Journal of
-% Medical Imaging}. Structured abstracts are encouraged for the \textit{Journal of
-% Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the journal website. Whether
-% structured or single-paragraph, the abstract should be a summary of the paper and not an
-% introduction. Because the abstract may be used in abstracting and indexing databases, it should be
-% self-contained (i.e., no numerical references) and substantive in nature, presenting concisely the
-% objectives, methodology used, results obtained, and their significance. A list of up to six keywords
-% should immediately follow.
+% This document shows the required format and appearance of a manuscript
+% prepared for SPIE journals. It is prepared using LaTeX2e with the class file
+% \texttt{spieman.cls}. Please note that the following journals require the use
+% of structured abstracts in manuscript submissions: \textit{Neurophotonics},
+% the \textit{Journal of Biomedical Optics}, and the \textit{Journal of Medical
+% Imaging}. Structured abstracts are encouraged for the \textit{Journal of
+% Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the
+% journal website. Whether structured or single-paragraph, the abstract should
+% be a summary of the paper and not an introduction. Because the abstract may
+% be used in abstracting and indexing databases, it should be self-contained
+% (i.e., no numerical references) and substantive in nature, presenting
+% concisely the objectives, methodology used, results obtained, and their
+% significance. A list of up to six keywords should immediately follow.
 \end{abstract}
 
 % Include a list of up to six keywords after the abstract
@@ -148,209 +157,256 @@ interprting past and future studies applying RMT.
 
 \section{Introduction}
 \label{sect:intro}  % \label{} allows reference to this section
-% This document shows the format and appearance of a manuscript prepared for submission to an SPIE
-% journal. Note that this template is only intended to be used as a guideline for author convenience.
-% It is designed for optimum clarity and ease of reading for editors and reviewers, but the template
-% does not reflect the final page layout of a published journal paper. Accepted papers are
-% professionally typeset in XML according to the layout and design of the journal.
+% This document shows the format and appearance of a manuscript prepared for
+% submission to an SPIE journal. Note that this template is only intended to be
+% used as a guideline for author convenience. It is designed for optimum
+% clarity and ease of reading for editors and reviewers, but the template does
+% not reflect the final page layout of a published journal paper. Accepted
+% papers are professionally typeset in XML according to the layout and design
+% of the journal.
 
-\textbf{NOTE}: Forget academia for a moment, and write like its a blog. Then go back and add
-the citations and adjust the tone.
+\textbf{NOTE}: Forget academia for a moment, and write like its a blog. Then go
+back and add the citations and adjust the tone.
 
-Random Matrix Theory (RMT) has obvious potential. It has helped to understand the generalization
-behaviour of neural networks [add citation], can be used to guide any principal components analysis
-reduction [cite: Google search: "random matrix" "principal components"], has been used to help
-understand phenomena as diverse as [include the usual citations to buses, traffic, physics, etc],
-and can provide insights wherever there is a system of components interacting with some
-independence [cite Cambridge RMT handbook, others].
+Random Matrix Theory (RMT) has obvious potential. It has helped to understand
+the generalization behaviour of neural networks [add citation], can be used to
+guide any principal components analysis reduction [cite: Google search: "random
+matrix" "principal components"], has been used to help understand phenomena as
+diverse as [include the usual citations to buses, traffic, physics, etc], and
+can provide insights wherever there is a system of components interacting with
+some independence [cite Cambridge RMT handbook, others].
 
-At its most rudimentary, RMT simply describes the statistically-expected behaviour of the
-eigenvalues of some classes—or \textit{ensembles}—of random matrices under certain assumptions or
-conditions. A random matrix is, generally, a matrix in which the entries can be considered to be
-independently and identically distributed (\textit{iid}). For example, one of the simplest ensembles [cite handbook] is the Gaussian
-Unitary Ensemble (GUE), wherein [desc of ensemble properties] and which appears to be useful in
-describing [real-world examples].
+At its most rudimentary, RMT simply describes the statistically-expected
+behaviour of the eigenvalues of some classes—or \textit{ensembles}—of random
+matrices under certain assumptions or conditions. A random matrix is,
+generally, a matrix in which the entries can be considered to be independently
+and identically distributed (\textit{iid}). For example, one of the simplest
+ensembles [cite handbook] is the Gaussian Unitary Ensemble (GUE), wherein [desc
+of ensemble properties] and which appears to be useful in describing
+[real-world examples].
 
-This means that if we examine a system and find that the distribution of eigenvalues of that system
-resemble some RMT predicted spectrum, we potentially gain insight into the nature of that system.
-If, in addition, we find a large deviance from the spectrum predicted by RMT, we find contrapositive
-evidence that the system is \textit{not} like those described by RMT. Roughly, complex systems
-well-described by RMT are highly random and independent, whereas systems that are not so
-well-described are either highly dependent, non-random, or both.
+This means that if we examine a system and find that the distribution of
+eigenvalues of that system resemble some RMT predicted spectrum, we potentially
+gain insight into the nature of that system. If, in addition, we find a large
+deviance from the spectrum predicted by RMT, we find contrapositive evidence
+that the system is \textit{not} like those described by RMT. Roughly, complex
+systems well-described by RMT are highly random and independent, whereas
+systems that are not so well-described are either highly dependent, non-random,
+or both.
 
-In this sense, RMT might have real \textit{explanatory} and \textit{statistical} value: the more we
-see that a system resembles an RMT system, the less we can distinguish it from one of random,
-non-interacting components, and the less the system resembles an RMT system, the more
+In this sense, RMT might have real \textit{explanatory} and
+\textit{statistical} value: the more we see that a system resembles an RMT
+system, the less we can distinguish it from one of random, non-interacting
+components, and the less the system resembles an RMT system, the more
 fundamentally complex and interactive the interactions.
 
-For a system as complex as the human brain, RMT is thus tantalizing. It would be quite something
-if we could extract some matrix reduction of brain activity, and if the RMT description of this
-matrix either aligned nicely with RMT theory, or otherwise was broadly predictively useful.
+For a system as complex as the human brain, RMT is thus tantalizing. It would
+be quite something if we could extract some matrix reduction of brain activity,
+and if the RMT description of this matrix either aligned nicely with RMT
+theory, or otherwise was broadly predictively useful.
 
 [Transition to fMRI now...]
 
 
-In functional magnetic resonance imaging (fMRI), changes in the blood-oxygenation-level-dependent
-(BOLD) signals are related to neural activity. It is common to investigate statistical relationships
-between the BOLD signals through \textbf{functional connectivity} analyses, where correlations between
-collections of these signals are examined to infer connections between different voxels or regions
-of interest (ROIs) within the brain.
+In functional magnetic resonance imaging (fMRI), changes in the
+blood-oxygenation-level-dependent (BOLD) signals are related to neural
+activity. It is common to investigate statistical relationships between the
+BOLD signals through \textbf{functional connectivity} analyses, where
+correlations between collections of these signals are examined to infer
+connections between different voxels or regions of interest (ROIs) within the
+brain.
 
-Whether in the presence of experimental stimuli, or the relative absence, as in resting state fMRI (rs-fMRI),
-complex patterns in functional connectivity networks are ubiquitous
+Whether in the presence of experimental stimuli, or the relative absence, as in
+resting state fMRI (rs-fMRI), complex patterns in functional connectivity
+networks are ubiquitous
 \cite{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
-This complexity suggests fMRI is a candidate to be studied using \textbf{Random Matrix Theory} (RMT), a set
-of mathematical tools originally developed some 50 years ago to solve complex problems in nuclear
-physics \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}
+This complexity suggests fMRI is a candidate to be studied using \textbf{Random
+Matrix Theory} (RMT), a set of mathematical tools originally developed some 50
+years ago to solve complex problems in nuclear physics
+\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}
 
-In various
-physical systems where nuclei can have different possible states, precisely modeling the entirety of
-the interactions between nuclei is often intractable. For such large, complex systems, the
-eigenvalues (or spectra) efficiently summarize the totality of the interactions between components
-of the system, and RMT describes the expected behaviour of such eigenvalues. By analysing the
-spectrum statistically, complex systems can be investigated by comparison to the universal
-properties predicted by RMT.
+In various physical systems where nuclei can have different possible states,
+precisely modeling the entirety of the interactions between nuclei is often
+intractable. For such large, complex systems, the eigenvalues (or spectra)
+efficiently summarize the totality of the interactions between components of
+the system, and RMT describes the expected behaviour of such eigenvalues. By
+analysing the spectrum statistically, complex systems can be investigated by
+comparison to the universal properties predicted by RMT.
 
 \subsection{RMT and Neurobiological Signals}
 
 Recently, RMT has been applied to study brain functioning. The earliest study
-demonstrated that spectra of the correlations between electroencephalographic (EEG) signals closely
-resemble those of the Gaussian Orthogonal Ensemble (GOE) \cite{sebaRandomMatrixAnalysis2003}.
-Somewhat more recently, RMT was used to evaluate the quality of whole brain features extracted from
-fMRI data \cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has also
-been used in diffusion MRI to aid in the selection of the number of components to employ in
-principal-component reduction analysis and denoising
+demonstrated that spectra of the correlations between electroencephalographic
+(EEG) signals closely resemble those of the Gaussian Orthogonal Ensemble (GOE)
+\cite{sebaRandomMatrixAnalysis2003}. Somewhat more recently, RMT was used to
+evaluate the quality of whole brain features extracted from fMRI data
+\cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has
+also been used in diffusion MRI to aid in the selection of the number of
+components to employ in principal-component reduction analysis and denoising
 \cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
 
-Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to investigate
-differences between rest and task states \cite{wangSpectralPropertiesTemporal2015}, between
-subjects with and without ADHD \cite{wangRandomMatrixTheory2016}, and between pain and non-pain
-states \cite{matharooSpontaneousBackpainAlters2020}. Across these three studies, the spectra of
-resting or low-attention states exhibited properties closest to the GOE. These findings suggest that
-certain aspects of psychological processes might be characterized, in part, by features computed
-from the eigenvalues of fMRI correlation matrices, and that these features might vary in an
-interpretable manner across psychological processes. If this is the case, RMT could aid
-in understanding the functioning of the human brain.
+Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to
+investigate differences between rest and task states
+\cite{wangSpectralPropertiesTemporal2015}, between subjects with and without
+ADHD \cite{wangRandomMatrixTheory2016}, and between pain and non-pain states
+\cite{matharooSpontaneousBackpainAlters2020}. Across these three studies, the
+spectra of resting or low-attention states exhibited properties closest to the
+GOE. These findings suggest that certain aspects of psychological processes
+might be characterized, in part, by features computed from the eigenvalues of
+fMRI correlation matrices, and that these features might vary in an
+interpretable manner across psychological processes. If this is the case, RMT
+could aid in understanding the functioning of the human brain.
 
 
 \subsection{Motivating Eigenfeatures}
 
-The basic insight of RMT is thus that the \textit{eigenvalues alone} may provide interesting
-information about highly complex Neurobiological systems. However, in practice, the eigenvalues computed from
-empirically observed data are noisy. RMT is statistical in nature, describing only the
-\textit{expected} behaviour of the system spectra. To this end, a number of summary statistics or
-``spectral observables'' \cite{mehtaRandomMatrices2004} can be computed from empirically observed
-spectra, with these spectral observables sometimes being better suited for further analysis or
-comparison to theory. Two such summary statistics that have been somewhat popular are the
-\textit{spectral rigidity} and \textit{level number variance} (``rigidity'' and ``level variance''
-for short; details in Section \ref{sect:methods}).
+The basic insight of RMT is thus that the \textit{eigenvalues alone} may
+provide interesting information about highly complex Neurobiological systems.
+However, in practice, the eigenvalues computed from empirically observed data
+are noisy. RMT is statistical in nature, describing only the \textit{expected}
+behaviour of the system spectra. To this end, a number of summary statistics or
+``spectral observables'' \cite{mehtaRandomMatrices2004} can be computed from
+empirically observed spectra, with these spectral observables sometimes being
+better suited for further analysis or comparison to theory. Two such summary
+statistics that have been somewhat popular are the \textit{spectral rigidity}
+and \textit{level number variance} (``rigidity'' and ``level variance'' for
+short; details in Section \ref{sect:methods}).
 
-However, from a predictive standpoint, these summary statistics may eliminate predictively-useful
-information. If the basic RMT insight is that the eigenvalues are useful features to understand a
-system, then those eigenvalues alone (or other simple transformations of them) ought also to be
-predictively useful. We examine a number of such \textit{eigenfeatures} in this study.
+However, from a predictive standpoint, these summary statistics may eliminate
+predictively-useful information. If the basic RMT insight is that the
+eigenvalues are useful features to understand a system, then those eigenvalues
+alone (or other simple transformations of them) ought also to be predictively
+useful. We examine a number of such \textit{eigenfeatures} in this study.
 
-In addition, the functional connectivity - the matrix of correlations of various collections of
-voxels of an fMRI scan - is a priori a useful representation of the fMRI data. However, the full
-correlation matrix between all voxels is itself often computationally infeasible to work with, and
-thus is reduced in various ways prior to being used in analyses.
+In addition, the functional connectivity - the matrix of correlations of
+various collections of voxels of an fMRI scan - is a priori a useful
+representation of the fMRI data. However, the full correlation matrix between
+all voxels is itself often computationally infeasible to work with, and thus is
+reduced in various ways prior to being used in analyses.
 
-Typical reductions include the use of a ``seed'' voxel or collection of voxels (i.e. ROI): the mean
-signal over that ROI is correlated with all other N ROIs of interest to generate a reduced functional
-connectivity matrix (or image) with one correlation value at each non-seed ROI. This sort of reduction reduces the functional connectivity to N values. This approach strongly
-biases the analysis to the seed ROI.
+Typical reductions include the use of a ``seed'' voxel or collection of voxels
+(i.e. ROI): the mean signal over that ROI is correlated with all other N ROIs
+of interest to generate a reduced functional connectivity matrix (or image)
+with one correlation value at each non-seed ROI. This sort of reduction reduces
+the functional connectivity to N values. This approach strongly biases the
+analysis to the seed ROI.
 
-Likewise, one can work with ROI mean signals, and work with the \(N \times N\) matrix of
-these ROI correlations. This analysis [maybe cite Poldrack book for this?] is, \textit{a priori},
-sensitive to the choice of ROIs, and, in the case of anatomical atlases / parcellations, may also
-lack theoretical justification.
+Likewise, one can work with ROI mean signals, and work with the \(N \times N\)
+matrix of these ROI correlations. This analysis [maybe cite Poldrack book for
+this?] is, \textit{a priori}, sensitive to the choice of ROIs, and, in the case
+of anatomical atlases / parcellations, may also lack theoretical justification.
 
-A major disadvantage of both the above approaches, besides requiring parcellation into ROIs, is
-that most such parcellation methods are atlas-based, and thus require image registration, and,
-general, an entire preprocessing pipeline to ensure that registration is successful.
+A major disadvantage of both the above approaches, besides requiring
+parcellation into ROIs, is that most such parcellation methods are atlas-based,
+and thus require image registration, and, general, an entire preprocessing
+pipeline to ensure that registration is successful.
 
-RMT suggests a potentially useful reduction in the form of the eigenvalues of the voxelwise
-functional connectivity. An \(N \times t\) matrix \(\bf{A}\) of \(N\) time series of length \(t\),
-and where \(t \ll N\) will have a symmetric correlation (or covariance) matrix with \(t - 1\)
-non-zero, positive real-valued eigenvalues \(\Lambda\). These eigenvalues can be computed highly
-efficiently via transposition of the voxelwise correlation or covariance matrix.
+RMT suggests a potentially useful reduction in the form of the eigenvalues of
+the voxelwise functional connectivity. An \(N \times t\) matrix \(\bf{A}\) of
+\(N\) time series of length \(t\), and where \(t \ll N\) will have a symmetric
+correlation (or covariance) matrix with \(t - 1\) non-zero, positive
+real-valued eigenvalues \(\Lambda\). These eigenvalues can be computed highly
+efficiently via transposition of the voxelwise correlation or covariance
+matrix.
 
 
 \subsection{Limitations of Previous Work}
 
-However, these previous studies took largely descriptive / explanatory approaches, noting only
-differences in RMT across subgroups and/or conditions, in many cases, with no formal statistical
-model nor formal testing of the significance and robustness of these differences. No code was provided to
-allow the reproduction of the results, and the extraction of the spectral rigidity and level
-variance is non-trivial, and computationally demanding. Computation of these spectral observables
-requires an \textit{unfolding}
-procedure\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}, which is,
-unfortunately, a poorly-documented fitting procedure that requires making a number of
-difficult-to-justify decisions, and these decisions can dramatically impact RMT conclusions
+However, these previous studies took largely descriptive / explanatory
+approaches, noting only differences in RMT across subgroups and/or conditions,
+in many cases, with no formal statistical model nor formal testing of the
+significance and robustness of these differences. No code was provided to allow
+the reproduction of the results, and the extraction of the spectral rigidity
+and level variance is non-trivial, and computationally demanding. Computation
+of these spectral observables requires an \textit{unfolding}
+procedure\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004},
+which is, unfortunately, a poorly-documented fitting procedure that requires
+making a number of difficult-to-justify decisions, and these decisions can
+dramatically impact RMT conclusions
 \cite{abul-magdUnfoldingSpectrumChaotic2014,abueleninSpectralUnfoldingChaotic2018,fossionRandommatrixSpectraTime2013,abueleninEffectUnfoldingSpectral2012,moralesImprovedUnfoldingDetrending2011}.
-On top of the flexibility in the implementation and application of RMT to empirical data, there
-is also the flexibility introduced by the choices in the complex preprocessing pipelines of fMRI\cite{parkerBenefitSliceTiming2019}.
+On top of the flexibility in the implementation and application of RMT to
+empirical data, there is also the flexibility introduced by the choices in the
+complex preprocessing pipelines of fMRI\cite{parkerBenefitSliceTiming2019}.
 
-In addition these issues stemming from ``research degrees of freedom'' (cite Gelman), there is also
-a basic baseline comparison issue: RMT is mathematically non-trivial, the extraction of RMT
-spectral statistics is computationally demanding, and eigenvalues, while easy to understand
-mathematically, are difficult to interpret relative to simpler potential reductions of fMRI data.
+In addition these issues stemming from ``research degrees of freedom'' (cite
+Gelman), there is also a basic baseline comparison issue: RMT is mathematically
+non-trivial, the extraction of RMT spectral statistics is computationally
+demanding, and eigenvalues, while easy to understand mathematically, are
+difficult to interpret relative to simpler potential reductions of fMRI data.
 
-What is missing is a rigorous, systematic, reproducible investigation of the *predictice* value of
-RMT metrics across a wide variety of data, RMT analytic choices, choice of eigenfeature, and choice
-of preprocessing, and for these RMT eigenfeatures to be compared to simpler alternative baselines.
-The current study aims to do just this.
+What is missing is a rigorous, systematic, reproducible investigation of the
+*predictice* value of RMT metrics across a wide variety of data, RMT analytic
+choices, choice of eigenfeature, and choice of preprocessing, and for these RMT
+eigenfeatures to be compared to simpler alternative baselines. The current
+study aims to do just this.
 
 
 \section{Datasets}
+\label{sec:datasets}
 
 \subsection{Overview}
 
-In order not to inundate readers with dataset details, and because this is an exploratory
-investigation of RMT which is not committed to any specific theory, we refer the reader
-to the original publications and/or data releases when greater detail is needed, and
-highlight only the most basic aspects of each here.
+We selected fMRI data publicly available on the
+\href{https://openneuro.org/}{OpenNeuro} platform (36). Selection criteria was
+somewhat subjective, but we required (1), that all scans have the same spatial
+and temporal resolutions, (2), the the dataset comprise 10+ human subjects, and
+(3), that it was reasonable to classify at the level of an entire scan, i.e.
+neither task nor event timings were needed to determine class membership. This
+yielded seven datasets comprising XX total subjects, and over 5000 total fMRI
+volumes.
 
-We selected fMRI data publicly available on the \href{https://openneuro.org/}{OpenNeuro} platform
-(36). Selection criteria was somewhat subjective, but we required (1), that all scans have the same
-spatial and temporal resolutions, (2), the the dataset comprise 10+ human subjects, and (3), that it
-was reasonable to classify at the level of an entire scan, i.e. neither task nor event timings were
-needed to determine class membership. This yielded seven datasets comprising XX total subjects, and
-over 5000 total fMRI volumes.
+In order not to inundate readers with dataset details, and because this is an
+exploratory investigation of RMT which is not committed to any specific
+theory\footnote{In fact, datasets and, later, the classification tasks, were
+chosen without investigation into any findings or publications associated with
+the data, both in order to reduce bias in our decisions, and because the
+original authors analytic / statistical approaches and intentions have very
+limited relevance to our whole-brain, voxelwise, multiverse predictive
+approach.}, we refer the reader to the original publications and/or data
+releases when greater detail is needed, and highlight only the most basic
+aspects of each dataset here.
 
-Dataset scan parameters and acquisition details are summarized in Table \ref{table:1}, and sample
-and subgroup sizes are summarized in Table \ref{table:2}. For all datasets, we use the raw
-(unpreprocessed) scans, and perform our own preprocessing (detailed later). Given the complexity of
-these datasets, we highlight below only those aspects relevant to the current paper.
+Dataset scan parameters and acquisition details are summarized in Table
+\ref{table:1}, and sample and subgroup sizes are summarized in Table
+\ref{table:2}.
 
-\subsubsection{Aging}
-This dataset\cite{wahlheimIntrinsicFunctionalConnectivity2021} included 34 subjects with a mean age
-of 22 years (range: 18-32 years), and 28 subjects with a mean age of 70 years (range: 61-80 years).
+\subsection{Datasets and Classification Tasks}
 
-% The final sample included 34 younger adults (1832 years old, Mage = 22.21, SD = 3.65; 20 female)
-% and 28 older adults (61-80 years old, Mage = 69.82, SD = 5.64; 20 female). Table 1 shows that
-% younger and older adults had comparable education and working memory capacity, the latter measured
-% by forward and backward digit span (48). Older adults had higher vocabulary scores (49) and slower
-% processing speed (50) than younger adults.
-% Resting-state data comprised 300 measurements collected over one 10-minute run. This scan duration
-% produces reliable functional connectivity estimates within and across participants (57).
-% Participants were instructed to remain still and awake with their eyes open. No stimuli appeared
-% during this scan, and the display was black. Functional scans were collected using an echo-planar
-% image sequence sensitive to blood-oxygen-level-dependent (BOLD) contrast (T2*; 32 slices with 4.0
-% mm thickness and no skip, TE = 30 ms, TR = 2000 ms, flip angle = 70, FOV = 220 mm, matrix size =
-% 74 × 74 × 32 voxels, A/P phase encoding direction). Slices were collected in a descending order
-% that covered the entire cortex and partial cerebellum. At the beginning of the resting-state scan,
-% the scanner acquired and discarded two dummy scans.
 
-\subsubsection{Bilinguality}
+The \textit{Aging} dataset\cite{wahlheimIntrinsicFunctionalConnectivity2021}
+included rs-fMRI data for 34 subjects with a mean age of 22 years (range: 18-32
+years), and 28 subjects with a mean age of 70 years (range: 61-80 years). For
+our analysis, we make the binary classification task the prediction of subject
+age-group membership, i.e. \code{younger v older}.
 
-This dataset\cite{ds001747:1.0.0, goldcarrieelizabethExploringRestingState2018} examined English and
-Spanish-speaking monolinguals and multilinguals during a prolonged resting state. The original study
-grouped participants into three classes: early vs late bilinguals vs monolingual controls, and found
-connectivity differences only between the early and late
-bilinguals\cite{goldcarrieelizabethExploringRestingState2018}. We compared for our two classes just
-"bilingual" vs "monolingual". The data is most notable for the short TR (875ms) combined with long
-acquisition time (12 minutes).
+% The final sample included 34 younger adults (1832 years old, Mage = 22.21, SD
+% = 3.65; 20 female) and 28 older adults (61-80 years old, Mage = 69.82, SD =
+% 5.64; 20 female). Table 1 shows that younger and older adults had comparable
+% education and working memory capacity, the latter measured by forward and
+% backward digit span (48). Older adults had higher vocabulary scores (49) and
+% slower processing speed (50) than younger adults. Resting-state data
+% comprised 300 measurements collected over one 10-minute run. This scan
+% duration produces reliable functional connectivity estimates within and
+% across participants (57). Participants were instructed to remain still and
+% awake with their eyes open. No stimuli appeared during this scan, and the
+% display was black. Functional scans were collected using an echo-planar image
+% sequence sensitive to blood-oxygen-level-dependent (BOLD) contrast (T2*; 32
+% slices with 4.0 mm thickness and no skip, TE = 30 ms, TR = 2000 ms, flip
+% angle = 70, FOV = 220 mm, matrix size = 74 × 74 × 32 voxels, A/P phase
+% encoding direction). Slices were collected in a descending order that covered
+% the entire cortex and partial cerebellum. At the beginning of the
+% resting-state scan, the scanner acquired and discarded two dummy scans.
+
+\subsubsection{Bilinguality Dataset}
+
+The \textit{Bilinguality} dataset\cite{ds001747:1.0.0,
+goldcarrieelizabethExploringRestingState2018} examined English and
+Spanish-speaking monolinguals and multilinguals during a prolonged resting
+state. The original study grouped participants into three subgroups: early vs
+late bilinguals vs monolingual
+controls\cite{goldcarrieelizabethExploringRestingState2018}. For our analysis,
+we make the binary classification task be to classify \code{monolingual v
+bilingual}.
 
 % Resting state fMRI scans were performed using a T2*-weighted EPI sequence with the following
 % parameters: TR=875ms; TE=43.6ms; slice thickness=1.8mm; acquisition matrix=100 × 100; flip
@@ -358,69 +414,66 @@ acquisition time (12 minutes).
 % multi-band factor=8; volumes per run=823 (total scan time=12min). EPI scans were oriented
 % parallel to the long axis of the hippocampus.
 
-\subsubsection{Learning}
+\subsubsection{Depression Dataset}
 
-This dataset\cite{schapiroHumanHippocampalReplay2018, schapiroHumanHippocampalReplay2020}. In this study, both rs-fMRI and task fMRI scans
-were available for all subjects, allowing for within-subject comparisons. The task is complex and difficult to summarize here adequately, but involved
-multiple phases where subjects were presented with various related abstract images, and then later tested for their memory of certain aspects of the learned images. For our study, we simply note that these task scans ought to be broadly more attentionally  and cognitively demanding than the resting state, and instead simply try to classify task vs. test scans using eigenfeatures.
+\subsubsection{Learning Dataset}
 
+The \textit{Learning} dataset\cite{schapiroHumanHippocampalReplay2018,
+schapiroHumanHippocampalReplay2020} has both rs-fMRI and task fMRI scans were
+available for all subjects, and \code{task v rest} is chosen as the binary
+classification task for our analysis.  The task is complex and difficult to
+summarize here adequately, but involved multiple phases where subjects were
+presented with various related abstract images, and then later tested for their
+memory of certain aspects of the learned images. Thus the classification task
+might also be considered learning vs. rest.
 
+\subsubsection{Attention Dataset}
 
-\subsubsection{Dataset: PSYCH}
-The PSYCH Dataset  is detailed in \cite{gorgolewskiHighResolution7Tesla2015}. Subjects completed a
-battery of psychological measurements, and various resting-state fMRI (rs-fMRI) whole-brain 7-Tesla
-scans were obtained. For the purpose of keeping with the ``attention'' theme of the analyses in this
-paper, three pairings of subgroups were constructed via z-score splits of the various sum-scores of
-scale items involving concepts closely related to attention.
+The \textit{Attention} dataset\cite{gorgolewskiHighResolution7Tesla2015} is a
+high-resolution rs-fMRI dataset including a battery of psychological measures
+for each subject. Since previous studies employing RMT sometimes interpreted
+their findings with respect to attentional processes
+\cite{wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}, we
+divided subjects into various high vs. low attention binary classification
+tasks based on median splits of subsets of the metrics available in this study.
 
-\emph{Trait Attention}.
-The PANAS-X \cite{watsonPANASXManualPositive1994} is a 9-point Likert-type self-report measure that
-queries the extent to which subjects agree particular affective terms have applied to them over a
-recent time period (e.g. a few weeks). An ad hoc (i.e. face-valid) scale was constructed from the
-scale items: ``attentive'', ``alert'', ``interested'', ``concentrating'', and reverse-scored items
-``sluggish'', ``tired'', ``sleepy'', ``drowsy''. Subjects were then placed in the high / low ``trait
-attention'' category based on a median split of the average z-score across items.
-
-\emph{Task Attention}.
-The Conjunctive Continuous Performance Task \cite{shalevConjunctiveContinuousPerformance2011} (CCPT)
- is a behavioural measure of sustained attention
-where subjects must react only if they see a red square among other different coloured figures. For
-this paper, a sum score was constructed by subtracting the number of false positive and false
-negative responses from the number of success responses, and subjects with a z-score greater / less
-than zero on this scale were placed in high / low ``task attention'' category.
-
-\emph{Vigilance}.
-The Mini New York cognition questionnaire assesses various elements of the subject's cognitive
-state, e.g. ``my thoughts involved other people'', ``I thought about something positive'' (translated
-from German; \cite{gorgolewskiCorrespondenceIndividualDifferences2014}. One question assesses
-alertness (``I was fully awake'' / ``war ich vollkommen wach'') and was used to create high / low
-``vigilance'' conditions in the same manner as the previous two splits.
-
-\subsubsection{Dataset 2}
-Dataset 2 (referred to in figures and tables with the label ``OSTEO'') is detailed in
-\cite{tetreaultBrainConnectivityPredicts2016}. Subjects included healthy controls (``nopain''
-condition) and individuals with knee osteoarthritis (``pain'' condition) treated for 2 weeks with
-either placebo (``pain'' condition) or duloxetine (``duloxetine'' condition). An additional grouping was
-also created with both the placebo and duloxetine data (``allpain'' condition), allowing for six
-subgroup comparisons. All subjects were imaged with whole-brain rs-fMRI. Scan parameters are
-documented in Table \ref{table:1}. The use of rs-fMRI and RMT for examining pain makes this dataset
-complementary to \cite{matharooSpontaneousBackpainAlters2020}.
+The \code{viglant v nonvigilant} task was formed based on self-report
+questionnaire items involving
+"vigilance"\cite{gorgolewskiCorrespondenceIndividualDifferences2014}. The
+\code{trait\_attend v trait\_nonattend} task was formed using PANAS-X
+\cite{watsonPANASXManualPositive1994} items related to self-reported
+wakefulness and attention over the past weeks. Finally, the
+\code{task\_attend v tas\_nonattent} classification task was constructed
+using the scores of The Conjunctive Continuous Performance Task
+(CCPT\cite{shalevConjunctiveContinuousPerformance2011}). This is a behavioural
+performance task which requires the subject to quickly and selectively respond
+to only certain visual stimuli. Details allowing exact reproduction of these
+splits are available in this paper's
+\href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/preprocess/unify\_attention\_data.py}{source
+code}.
 
 
-\subsubsection{Dataset 4}
-Dataset 4 (referred to in figures and tables with the label ``PARK'' or ``PARKINSONS'') is documented and
-described in detail in \cite{madhyasthaDynamicConnectivityRest2015}. Scan parameters are documented
-in Table \ref{table:1}. Subjects with non-demented Parkinson's Disease (PD) and healthy controls performed a
-number of repetitions of the Attention Network Task
-(ANT; \cite{fanActivationAttentionalNetworks2005} ). Subgroup details are available in Table \ref{table:1}. As the ANT
-task demands high attention, it is not as straightforward to create ``high'' or ``low'' attention
-groups. Instead, since attention presumably is high and varies little in this dataset, and subgroups
-instead differ by virtue of the presence or absence of PD, any results here serve as a useful
-comparison point for the results from studies that should clearly involve attentional differences.
-This dataset also included extensively preprocessed scans, which were included in analyses to
-examine the effects of preprocessing on the extracted RMT features.
 
-\subsubsection{Dataset 5}
+\subsubsection{Osteoarthritis Dataset}
+The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
+includes whiole-brain rs-fMRI scans of healthy, pain-free controls
+(\code{nopain} condition), and individuals with knee osteoarthritis.
+Osteoarthritic patients were treated for 2 weeks with either placebo
+(\code{pain} condition) or duloxetine (\code{duloxetine} condition).
+We use the three binary classification tasks \code{nopain v duloxetine},
+\code{nopain v pain}, and \code{pain v duloxetine} for our analysis.
+
+
+
+\subsubsection{Parkinson's Dataset}
+The \textit{Park} dataset\cite{madhyasthaDynamicConnectivityRest2015} includes
+subjects with non-demented Parkinson's Disease (PD) and
+healthy controls performed a number of repetitions of the Attention Network
+Task (ANT; \cite{fanActivationAttentionalNetworks2005}) during scans.
+The classification task for this dataset is Parkinson's versus controls, i.e.
+\code{park v ctrl}.
+
+
 
 \begin{table}[h!]
 \caption{
@@ -444,6 +497,12 @@ PARK      & 80 x 80 x 43   & 3.0 x 3.0 x 3.0 & 2.4  & 149 & 552 \\
 PSYCH     & 128 x 128 x 70 & 1.5 x 1.5 x 1.5 & 3.0  & 300 & 90  \\
 \hline
 \end{tabular}
+
+\subsection{Classification Task Subgroups}
+
+For each dataset, we construct subgroups based either on existing labels in the
+data, or for the \textit{Attention} dataset, from psychological measures available
+from the data.
 
 
 \end{table}
