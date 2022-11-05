@@ -355,18 +355,6 @@ neither task nor event timings were needed to determine class membership. This
 yielded seven datasets comprising XX total subjects, and over 5000 total fMRI
 volumes.
 
-In order not to inundate readers with dataset details, and because this is an
-exploratory investigation of RMT which is not committed to any specific
-theory\footnote{In fact, datasets and, later, the classification tasks, were
-chosen without investigation into any findings or publications associated with
-the data, both in order to reduce bias in our decisions, and because the
-original authors analytic / statistical approaches and intentions have very
-limited relevance to our whole-brain, voxelwise, multiverse predictive
-approach.}, we refer the reader to the original publications and/or data
-releases when greater detail is needed, and highlight only the most basic
-aspects of each dataset here.  Dataset scan parameters and acquisition details
-are summarized in Table \ref{table:1}, and sample and subgroup sizes are
-summarized in Table \ref{table:2}.
 
 \begin{table}[h!]
 \caption{
@@ -391,6 +379,61 @@ Attention & 128 × 128 × 70 & 1.5 × 1.5 × 1.5 & 3.0  & 300 & 90  \\
 \hline
 \end{tabular}
 \end{table}
+
+In order not to inundate readers with dataset details, and because this is an
+exploratory investigation of RMT which is not committed to any specific
+theory\footnote{In fact, datasets and, later, the classification tasks, were
+chosen without investigation into any findings or publications associated with
+the data, both in order to reduce bias in our decisions, and because the
+original authors analytic / statistical approaches and intentions have very
+limited relevance to our whole-brain, voxelwise, multiverse predictive
+approach.}, we refer the reader to the original publications and/or data
+releases when greater detail is needed, and highlight only the most basic
+aspects of each dataset here.  Dataset scan parameters and acquisition details
+are summarized in Table \ref{table:1}, and sample and subgroup sizes are
+summarized in Table \ref{table:2}.
+
+\begin{table}[h!]
+\caption{
+    ID = Identifier for paper. Subgroup = name of subgroup. Subjects = Number of subjects.
+    Task = fMRI task. ANT = Attention Network Task \cite{fanActivationAttentionalNetworks2005}
+}
+\label{table:2}
+\small
+\centering
+\begin{tabular}{ l r c c c }
+\hline
+\textbf{ID}  & \textbf{Subgroup}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
+\hline
+Aging   &  older             & 28      & resting-state        & 1 \\
+        &  younger           & 34      & resting-state        & 1 \\
+        &                    &         &                      &   \\
+Bilingual  &  bilingual          & 59      & resting-state    & 1 \\
+        &  monolingual        & 33      & resting-state       & 1 \\
+        &                    &         &                      &   \\
+Depress &  depression         & 51      & resting-state       & 1 \\
+        &  control            & 21      & resting-state       & 1 \\
+        &                    &         &                      &   \\
+Learn   &  task              & 24      & learn image sketches & 16\\
+        &  rest              & 24      & resting-state        & 2 \\
+        &                    &         &                      &   \\
+Osteo   &  duloxetine        & 19      & resting-state        & 1 \\
+        &  pain              & 37      & resting-state        & 1 \\
+        &  nopain            & 20      & resting-state        & 1 \\
+        &                    &         &                      &   \\
+Park    &  Parkinson's       & 25      & ANT                  & 12\\
+        &  control           & 21      & ANT                  & 12\\
+        &                    &         &                      &   \\
+Attention&  vigilant           & 11     & resting-state       & 2 \\
+        &  nonigilant         & 11     & resting-state        & 2 \\
+        &  trait-attentive     & 11    & resting-state        & 2 \\
+        &  trait-non-attentive & 11    & resting-state        & 2 \\
+        &  task-attentive     & 11     & resting-state        & 2 \\
+        &  task-nonattentive  & 11     & resting-state        & 2 \\
+\hline
+\end{tabular}
+\end{table}
+
 
 
 \subsection{Datasets and Classification Tasks}
@@ -420,7 +463,7 @@ age-group membership, i.e. \code{younger v older}.
 % the entire cortex and partial cerebellum. At the beginning of the
 % resting-state scan, the scanner acquired and discarded two dummy scans.
 
-\subsubsection{Bilinguality Dataset}
+% \subsubsection{Bilinguality Dataset}
 
 The \textit{Bilinguality} dataset\cite{ds001747:1.0.0,
 goldcarrieelizabethExploringRestingState2018} examined English and
@@ -437,7 +480,7 @@ bilingual}.
 % multi-band factor=8; volumes per run=823 (total scan time=12min). EPI scans were oriented
 % parallel to the long axis of the hippocampus.
 
-\subsubsection{Depression Dataset}
+% \subsubsection{Depression Dataset}
 
 The \textit{Depression} dataset\cite{bezmaternykhddRestingStateClosed2021,
 bezmaternykhBrainNetworksConnectivity2021} includes rs-fMRI scans frmo
@@ -455,7 +498,7 @@ the binary classification task is \code{depress v control}.
 % turbo field echo method with a voxel size of 1×1×1mm. The instruction for
 % participants was to lie still with eyes closed for 6 minutes.
 
-\subsubsection{Learning Dataset}
+% \subsubsection{Learning Dataset}
 
 The \textit{Learning} dataset\cite{schapiroHumanHippocampalReplay2018,
 schapiroHumanHippocampalReplay2020} has both rs-fMRI and task fMRI scans were
@@ -466,7 +509,28 @@ presented with various related abstract images, and then later tested for their
 memory of certain aspects of the learned images. Thus the classification task
 might also be considered learning vs. rest.
 
-\subsubsection{Attention Dataset}
+
+
+% \subsubsection{Osteoarthritis Dataset}
+The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
+includes whiole-brain rs-fMRI scans of healthy, pain-free controls
+(\code{nopain} condition), and individuals with knee osteoarthritis.
+Osteoarthritic patients were treated for 2 weeks with either placebo
+(\code{pain} condition) or duloxetine (\code{duloxetine} condition).
+We use the three binary classification tasks \code{nopain v duloxetine},
+\code{nopain v pain}, and \code{pain v duloxetine} for our analysis.
+
+
+
+% \subsubsection{Parkinson's Dataset}
+The \textit{Park} dataset\cite{madhyasthaDynamicConnectivityRest2015} includes
+subjects with non-demented Parkinson's Disease (PD) and
+healthy controls performed a number of repetitions of the Attention Network
+Task (ANT; \cite{fanActivationAttentionalNetworks2005}) during scans.
+The classification task for this dataset is Parkinson's versus controls, i.e.
+\code{park v ctrl}.
+
+% \subsubsection{Attention Dataset}
 
 The \textit{Attention} dataset\cite{gorgolewskiHighResolution7Tesla2015} is a
 high-resolution rs-fMRI dataset including a battery of psychological measures
@@ -493,80 +557,80 @@ code}.
 
 
 
-\subsubsection{Osteoarthritis Dataset}
-The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
-includes whiole-brain rs-fMRI scans of healthy, pain-free controls
-(\code{nopain} condition), and individuals with knee osteoarthritis.
-Osteoarthritic patients were treated for 2 weeks with either placebo
-(\code{pain} condition) or duloxetine (\code{duloxetine} condition).
-We use the three binary classification tasks \code{nopain v duloxetine},
-\code{nopain v pain}, and \code{pain v duloxetine} for our analysis.
-
-
-
-\subsubsection{Parkinson's Dataset}
-The \textit{Park} dataset\cite{madhyasthaDynamicConnectivityRest2015} includes
-subjects with non-demented Parkinson's Disease (PD) and
-healthy controls performed a number of repetitions of the Attention Network
-Task (ANT; \cite{fanActivationAttentionalNetworks2005}) during scans.
-The classification task for this dataset is Parkinson's versus controls, i.e.
-\code{park v ctrl}.
-
-
-
-
-\subsection{Classification Task Subgroups}
-
-For each dataset, we construct subgroups based either on existing labels in the
-data, or for the \textit{Attention} dataset, from psychological measures available
-from the data.
-
-
-
-\begin{table}[h!]
-\caption{
-    ID = Identifier for paper. Subgroup = name of subgroup. Subjects = Number of subjects.
-    Task = fMRI task. ANT = Attention Network Task \cite{fanActivationAttentionalNetworks2005}
-}
-\label{table:2}
-\small
-\centering
-\begin{tabular}{ l l c c c }
-\hline
-\textbf{ID}  & \textbf{Subgroup}  & \textbf{Subjects}  & \textbf{Task} & \textbf{Scans per Subject} \\
-\hline
-AGING   &  older             & 28      & resting-state         & 1 \\
-        &  younger           & 34      & resting-state         & 1 \\
-        &                    &         &                       &   \\
-BILING  &  bilingual          & 59      & resting-state        & 1 \\
-        &  monolingual        & 33      & resting-state        & 1 \\
-        &                    &         &                       &   \\
-DEPRESS &  depression         & 51      & resting-state        & 1 \\
-        &  control            & 21      & resting-state        & 1 \\
-        &                    &         &                       &   \\
-LEARN   &  task              & 24      & learn image sketches  & 16 \\
-        &  rest              & 24      & resting-state         & 2 \\
-        &                    &         &                       &   \\
-OSTEO   &  duloxetine        & 19      & resting-state         & 1 \\
-        &  pain              & 37      & resting-state         & 1 \\
-        &  nopain            & 20      & resting-state         & 1 \\
-        &                    &         &                       &   \\
-PARK    &  Parkinson's       & 25      & ANT                   & 12 \\
-        &  control           & 21      & ANT                   & 12 \\
-        &                    &         &                       &   \\
-PSYCH   &  vigilant           & 11     & resting-state        & 3 \\
-        &  nonigilant         & 11     & resting-state        & 3 \\
-        &  trait-attentive     & 11    & resting-state        & 3 \\
-        &  trait-non-attentive & 11    & resting-state        & 3 \\
-        &  task-attentive     & 11     & resting-state        & 3 \\
-        &  task-nonattentive  & 11     & resting-state        & 3 \\
-\hline
-\end{tabular}
-\end{table}
-
 \section{Methods}
 \label{sect:methods}
 
+\subsection{fMRI Preprocessing}
+
+
+We limited preprocessing to a simple pipeline of, in order, (1) brain
+extraction, (2) slice timing correction, (3), motion correction, and (4),
+registration to the MNI152
+\cite{fonovUnbiasedAverageAgeappropriate2011,fonovUnbiasedNonlinearAverage2009}
+2mm isotropic, asymmetric template version C made available through
+\href{https://www.templateflow.org/}{TemplateFlow}
+\cite{ciricTemplateFlowFAIRsharingMultiscale2021}.
+
+We limited preprocessing methods to these steps sometimes because data required
+for other typical preprocessing steps (e.g. field intensity maps, physiological
+measurements), but also because we saved all pipelined intermediates to later
+compare the effect of increasing degrees of pre-processing (see Section
+\ref{sec:multiverse}), and it was important to limit the number of
+preprocessing degrees to prevent excessive computational costs.
+
+Brain extraction was performed first with BET
+\cite{smithFastRobustAutomated2002}, and then with with
+ANTs\cite{avantsReproducibleEvaluationANTs2011} to clean up residue left behind
+by BET. BET results were visually inspected for each image in each dataset, and
+BET fractional anisotropy values were modified to ensure brain extraction was
+acceptable. Motion-correction was performed with FSL's MCFLIRT
+\cite{jenkinsonImprovedOptimizationRobust2002}, and slicetime correction also
+with FSL's \code{slicetimer}\cite{jenkinsonFSL2012} tool. Finally, functional
+images were registered directly to the MNI152 template via
+ANTs\cite{avantsReproducibleEvaluationANTs2011}.
+
+
+\subsection{Feature Extraction}
+
+
+For each preprocessing degree and fMRI image, features were extracted from all
+\(N\) non-constant brain voxels, where \(N\) may differ for each image. After
+this process, each scan yields an \(N \times T\) matrix \(\mathbf{M}\), where
+\(T\) is the number of volumes acquired. All features summarize this matrix
+of brain voxels \(\mathbf{M}\) in some manner.
+
+
+\subsubsection{Baseline Features}
+
+If RMT- or eigenvalue-based features fail to outperform simple reductions of
+the fMRI data in predictive utility, it is difficult to justify the greater
+computational and interpretational complexities of the former. These simple
+statistical reductions help assess the relative value of RMT features.
+
+Baseline reductions compute either a robust measure of location (mean, max,
+min) or non-robust measure of location (median, \(95^{\text{th}}\) percentile,
+\(5^{\text{th}}\) percentile), or a non-robust (standard deviation, range) or
+robust (interquartile range, difference between \(95^{\text{th}}\) percentile
+and \(5^{\text{th}}\) percentile) measure of scale summarizing across the voxel
+dimension, yielding a feature of \(T\) dimensions. Exact details can be found
+in the
+\href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
+source code}.
+
+
+\subsubsection{Baseline Features}
+MAYBE MOVE THIS SECTION AFTER RMT AND EIGEN FEATURES?
+
+
+fMRI global mean signal is
+
+\subsubsection{Non-RMT Eigenfeatures}
+
+Eigenfeatures summarize \(\mathbf{M}\) via some
+transformation of the eigenvalues of the correlation matrix of \(\mathbf{M}\),
+and thus yield a feature of  \(T - 1\) dimensions.
+
+\subsubsection{RMT Features}
 Given empirically observed eigenvalues \(\Lambda\), the spectral rigidity, \(\Delta_3(L)\), is
 calculated for any positive real value \(L < \max(\Lambda)\) as:
 \[
@@ -591,8 +655,11 @@ where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and
 and \(\langle \cdot \rangle_c\) are as above \cite{guhrRandommatrixTheoriesQuantum1998a}. Both the
 spectral rigidity and level number variance are also computed and investigated in this study.
 
+\subsection{Multiverse Analysis}
+\label{sec:multiverse}
+
 \section{Results}
-\label{sect:results}
+\label{sec:results}
 
 First not non-predictable data, and then no longer discuss it in subsequent features.
 
