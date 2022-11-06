@@ -165,22 +165,34 @@ interprting past and future studies applying RMT.
 % papers are professionally typeset in XML according to the layout and design
 % of the journal.
 
-\textbf{NOTE}: Forget academia for a moment, and write like its a blog. Then go
-back and add the citations and adjust the tone.
 
-Random Matrix Theory (RMT) has obvious potential. It has helped to understand
-the generalization behaviour of neural networks [add citation], can be used to
-guide any principal components analysis reduction [cite: Google search: "random
-matrix" "principal components"], has been used to help understand phenomena as
-diverse as [include the usual citations to buses, traffic, physics, etc], and
-can provide insights wherever there is a system of components interacting with
-some independence [cite Cambridge RMT handbook, others].
+Random Matrix Theory (RMT) has obvious potential.  In small-scale physical
+systems, RMT universalities have been observed in quantum chaotic systems,
+complex nuclei, atoms, molecules and disordered mesoscopic systems
+\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001},
+and at larger scales, RMT has been applied to atmospheric physics
+\cite{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations
+\cite{plerouRandomMatrixApproach2002} , social networks
+\cite{jalanUncoveringRandomnessSuccess2014}, random networks
+\cite{bandyopadhyayUniversalityComplexNetworks2007}, network-formation in
+liquids
+\cite{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009}
+and amorphous clusters
+\cite{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}.
+
+Within biological systems, RMT has also been used to successfully model aspects
+of  amino acid functional relationships
+\cite{bhadolaTargetingFunctionalMotifs2016}, synchrony in epileptic seizures
+\cite{osorioPhasesynchronizationRandommatrixBased2011}, and in protein-protein
+interactions both in different species
+\cite{agrawalQuantifyingRandomnessProtein2014} and breast cancer
+\cite{raiRandomnessPreservedPatterns2015}.
 
 At its most rudimentary, RMT simply describes the statistically-expected
 behaviour of the eigenvalues of some classes—or \textit{ensembles}—of random
 matrices under certain assumptions or conditions. A random matrix is,
-generally, a matrix in which the entries can be considered to be independently
-and identically distributed (\textit{iid}). For example, one of the simplest
+generally, a matrix in which the entries are drawn from independently
+and identically distributed (\textit{iid}) distributions. For example, one of the simplest
 ensembles [cite handbook] is the Gaussian Unitary Ensemble (GUE), wherein [desc
 of ensemble properties] and which appears to be useful in describing
 [real-world examples].
@@ -200,10 +212,10 @@ system, the less we can distinguish it from one of random, non-interacting
 components, and the less the system resembles an RMT system, the more
 fundamentally complex and interactive the interactions.
 
-For a system as complex as the human brain, RMT is thus tantalizing. It would
-be quite something if we could extract some matrix reduction of brain activity,
-and if the RMT description of this matrix either aligned nicely with RMT
-theory, or otherwise was broadly predictively useful.
+For a system as complex as the human brain, RMT is thus tantalizing. If some
+matrix representation of brain activity can be described, even partially, by
+aspects of RMT theory, this would mean  description of this matrix either aligned nicely with
+RMT theory, or otherwise was broadly predictively useful.
 
 [Transition to fMRI now...]
 
@@ -599,61 +611,90 @@ this process, each scan yields an \(N \times T\) matrix \(\mathbf{M}\), where
 \(T\) is the number of volumes acquired. All features summarize this matrix
 of brain voxels \(\mathbf{M}\) in some manner.
 
+\subsubsection{RMT Features}
+\label{sec:rmt-features}
+
+
+To compare the observed eigenvalue distribution to some RMT theoretical
+predictions, the eigenvalues must be unfolded
+\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. The
+details and motivation behind the unfolding procedure are well documented in
+\cite{guhrRandommatrixTheoriesQuantum1998a}. Practically, the unfolding process
+can be viewed as a smoothing and rescaling procedure where the originally
+observed spectrum \(\lambda_1 \le \dots \le \lambda_n\) is smoothly mapped to
+an unfolded spectrum \(e_1, \dots, e_n\), such that \(\sum d_i/n \approx 1\),
+if \(d_i = e_{i+1} - e_i \). For most empirical data, the true smoothing
+function is not known, and so must be approximated
+\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. Typically,
+a polynomial is chosen \cite{abul-magdUnfoldingSpectrumChaotic2014}.
+
+Given empirically observed eigenvalues \(\Lambda\), the spectral rigidity,
+\(\Delta_3(L)\), is calculated for any positive real value \(L <
+\max(\Lambda)\) as:
+\[
+\Delta_3(L) = \left \langle \min_{A,B} \frac{1}{L} \int_c^{c+L} \left(  \eta(\lambda) -A \lambda - B \right)^2 \right \rangle_c
+\]
+where \(\eta(\lambda)\) is the number of unfolded eigenvalues less than or
+equal to \(\lambda\), \(\langle \cdot \rangle_c\) denotes the average with
+respect to all starting points \(c\), and where \(A\) and \(B\) denote the
+slope and intercept, respectively, of the least squares fit of a straight line
+to \(\eta(\lambda)\) on \([c, c+L]\)
+\cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
+as a timeseries, the spectral rigidty for a value \(L\) can be is thus the
+\textit{average nonlinearity} of all intervals of length \(L\) over the series.
+
+
+The level number variance, \(\Sigma^2(L)\), or level variance, for short, is
+closely related to the spectral rigidity \cite{mehtaRandomMatrices2004}, and is
+calculated as:
+\[
+\Sigma^2(L) = \left\langle \eta^2(L, c) \right\rangle_c - \left\langle \eta(L, c) \right\rangle^2_c
+\]
+where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\),
+and where \(c\), \(L\), and \(\langle \cdot \rangle_c\) are as above
+\cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
+as an \textit{irregular} timeseries, the level number varaince is simply the
+variance of the number of samples of all intervals of length \(L\) over the
+series.
+
+Both the spectral rigidity and level number variance are also computed and
+investigated in this study. Because the computation of these statistics is
+non-trivial, we developed and release the separate, open-source Python library
+\code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
+allows for efficient, parallel computation of the spectral rigidity and level
+variance via Monte Carlo methods, and automatically ensures convergence of the
+statistics to user-specified tolerances.
+
 
 \subsubsection{Baseline Features}
+\label{sec:baselines}
 
-If RMT- or eigenvalue-based features fail to outperform simple reductions of
-the fMRI data in predictive utility, it is difficult to justify the greater
-computational and interpretational complexities of the former. These simple
-statistical reductions help assess the relative value of RMT features.
+MAYBE MOVE THIS SECTION AFTER RMT AND EIGEN FEATURES?
 
-Baseline reductions compute either a robust measure of location (mean, max,
-min) or non-robust measure of location (median, \(95^{\text{th}}\) percentile,
-\(5^{\text{th}}\) percentile), or a non-robust (standard deviation, range) or
-robust (interquartile range, difference between \(95^{\text{th}}\) percentile
-and \(5^{\text{th}}\) percentile) measure of scale summarizing across the voxel
-dimension, yielding a feature of \(T\) dimensions. Exact details can be found
-in the
+If RMT- or eigenvalue-based features fail to outperform features that are simple
+summary statistics of the fMRI data in predictive utility, it is difficult to
+justify the greater computational and interpretational complexities of the
+former. We compute ten simple statistical reductions of the voxel time series
+("timeseries features") to help assess the relative value of RMT features.
+
+Baseline reductions use as statistical summaries: robust measures of location
+(mean, max, min); non-robust measures of location (median, \(95^{\text{th}}\)
+percentile, \(5^{\text{th}}\) percentile); non-robust measures of scale
+(standard deviation, range); and robust measures of scale (interquartile range,
+difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
+percentile). These statistics are used to summarizing / reduce the fMRI data
+along the voxel dimension, yielding a feature of \(T\) dimensions. E.g. the "mean"
+feature is just the global mean signal. Exact details can be found in the
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
 source code}.
 
-
-\subsubsection{Baseline Features}
-MAYBE MOVE THIS SECTION AFTER RMT AND EIGEN FEATURES?
-
-
-fMRI global mean signal is
-
 \subsubsection{Non-RMT Eigenfeatures}
+\label{sec:eigs-only}
 
 Eigenfeatures summarize \(\mathbf{M}\) via some
 transformation of the eigenvalues of the correlation matrix of \(\mathbf{M}\),
 and thus yield a feature of  \(T - 1\) dimensions.
 
-\subsubsection{RMT Features}
-Given empirically observed eigenvalues \(\Lambda\), the spectral rigidity, \(\Delta_3(L)\), is
-calculated for any positive real value \(L < \max(\Lambda)\) as:
-\[
-\Delta_3(L) = \left \langle \min_{A,B} \frac{1}{L} \int_c^{c+L} \left(  \eta(\lambda) -A \lambda - B \right)^2 \right \rangle_c
-\]
-where \(\eta(\lambda)\) is the number of unfolded eigenvalues less than or equal to \(\lambda\),
-\(\langle \cdot \rangle_c\) denotes the average with respect to all starting points \(c\), and where
-\(A\) and \(B\) denote the slope and intercept, respectively, of the least squares fit of a straight
-line to \(\eta(\lambda)\) on \([c, c+L]\) \cite{guhrRandommatrixTheoriesQuantum1998a}. The spectral
-rigidty for a value \(L\) is thus the \textit{average nonlinearity}
-
-
-The level
-number variance, \(\Sigma^2(L)\), is closely related to the spectral rigidity
-\cite{mehtaRandomMatrices2004}, and is calculated as:
-
-\[
-\Sigma^2(L) = \left\langle \eta^2(L, c) \right\rangle_c - \left\langle \eta(L, c) \right\rangle^2_c
-\]
-
-where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\), and where \(c\), \(L\),
-and \(\langle \cdot \rangle_c\) are as above \cite{guhrRandommatrixTheoriesQuantum1998a}. Both the
-spectral rigidity and level number variance are also computed and investigated in this study.
 
 \subsection{Multiverse Analysis}
 \label{sec:multiverse}

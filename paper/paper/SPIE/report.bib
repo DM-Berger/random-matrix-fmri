@@ -689,6 +689,18 @@
   file = {/home/derek/Zotero/storage/9L9X9PS7/Dettmann et al. - 2017 - Spectral statistics of random geometric graphs.pdf}
 }
 
+@misc{dm-bergerStfxecutablesEmpyricalRMTV12022,
+  title = {Stfxecutables/{{empyricalRMT}}: V1.1.1},
+  shorttitle = {Stfxecutables/{{empyricalRMT}}},
+  author = {{DM-Berger}},
+  year = {2022},
+  month = sep,
+  doi = {10.5281/ZENODO.3820649},
+  abstract = {Respect {$<$}code{$>$}show\_progress{$<$}/code{$>$} argument in main spectral observable computation functions.},
+  copyright = {Open Access},
+  howpublished = {Zenodo}
+}
+
 @dataset{ds001747:1.0.0,
   title = {Exploring the {{Resting State Neural Activity}} of {{Monolinguals}} and {{Late}} and {{Early Bilinguals}}},
   author = {Gold, Carrie E. and Howell, Athena L. and Burdis, Jacob and Kirwan, C. Brock and Thompson, Gregory L.},
@@ -1513,6 +1525,24 @@
   file = {/home/derek/Zotero/storage/ZY3QJI7X/Marčenko and Pastur - 1967 - DISTRIBUTION OF EIGENVALUES FOR SOME SETS OF RANDO.pdf}
 }
 
+@misc{martinImplicitSelfRegularizationDeep2018,
+  title = {Implicit {{Self-Regularization}} in {{Deep Neural Networks}}: {{Evidence}} from {{Random Matrix Theory}} and {{Implications}} for {{Learning}}},
+  shorttitle = {Implicit {{Self-Regularization}} in {{Deep Neural Networks}}},
+  author = {Martin, Charles H. and Mahoney, Michael W.},
+  year = {2018},
+  month = oct,
+  number = {arXiv:1810.01075},
+  eprint = {1810.01075},
+  eprinttype = {arxiv},
+  primaryclass = {cs, stat},
+  publisher = {{arXiv}},
+  doi = {10.48550/arXiv.1810.01075},
+  abstract = {Random Matrix Theory (RMT) is applied to analyze weight matrices of Deep Neural Networks (DNNs), including both production quality, pre-trained models such as AlexNet and Inception, and smaller models trained from scratch, such as LeNet5 and a miniature-AlexNet. Empirical and theoretical results clearly indicate that the DNN training process itself implicitly implements a form of Self-Regularization. The empirical spectral density (ESD) of DNN layer matrices displays signatures of traditionally-regularized statistical models, even in the absence of exogenously specifying traditional forms of explicit regularization. Building on relatively recent results in RMT, most notably its extension to Universality classes of Heavy-Tailed matrices, we develop a theory to identify 5+1 Phases of Training, corresponding to increasing amounts of Implicit Self-Regularization. These phases can be observed during the training process as well as in the final learned DNNs. For smaller and/or older DNNs, this Implicit Self-Regularization is like traditional Tikhonov regularization, in that there is a "size scale" separating signal from noise. For state-of-the-art DNNs, however, we identify a novel form of Heavy-Tailed Self-Regularization, similar to the self-organization seen in the statistical physics of disordered systems. This results from correlations arising at all size scales, which arises implicitly due to the training process itself. This implicit Self-Regularization can depend strongly on the many knobs of the training process. By exploiting the generalization gap phenomena, we demonstrate that we can cause a small model to exhibit all 5+1 phases of training simply by changing the batch size. This demonstrates that---all else being equal---DNN optimization with larger batch sizes leads to less-well implicitly-regularized models, and it provides an explanation for the generalization gap phenomena.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Machine Learning,Statistics - Machine Learning},
+  file = {/home/derek/Zotero/storage/N2BZ4BHS/Martin and Mahoney - 2018 - Implicit Self-Regularization in Deep Neural Networ.pdf;/home/derek/Zotero/storage/NI3SLGZC/1810.html}
+}
+
 @article{martinImplicitSelfRegularizationDeep2021,
   title = {Implicit {{Self-Regularization}} in {{Deep Neural Networks}}: {{Evidence}} from {{Random Matrix Theory}} and {{Implications}} for {{Learning}}},
   shorttitle = {Implicit {{Self-Regularization}} in {{Deep Neural Networks}}},
@@ -1525,6 +1555,22 @@
   issn = {1533-7928},
   abstract = {Random Matrix Theory (RMT) is applied to analyze the weight matrices of Deep Neural Networks (DNNs), including both production quality, pre-trained models such as AlexNet and Inception, and smaller models trained from scratch, such as LeNet5 and a miniature-AlexNet. Empirical and theoretical results clearly indicate that the DNN training process itself implicitly implements a form of Self-Regularization, implicitly sculpting a more regularized energy or penalty landscape. In particular, the empirical spectral density (ESD) of DNN layer matrices displays signatures of traditionally-regularized statistical models, even in the absence of exogenously specifying traditional forms of explicit regularization, such as Dropout or Weight Norm constraints. Building on relatively recent results in RMT, most notably its extension to Universality classes of Heavy-Tailed matrices, and applying them to these empirical results, we develop a theory to identify 5+1 Phases of Training, corresponding to increasing amounts of Implicit Self-Regularization. These phases can be observed during the training process as well as in the final learned DNNs. For smaller and/or older DNNs, this Implicit Self-Regularization is like traditional Tikhonov regularization, in that there is a ``size scale'' separating signal from noise. For state-of-the-art DNNs, however, we identify a novel form of Heavy-Tailed Self-Regularization, similar to the self-organization seen in the statistical physics of disordered systems (such as classical models of actual neural activity). This results from correlations arising at all size scales, which for DNNs arises implicitly due to the training process itself. This implicit Self-Regularization can depend strongly on the many knobs of the training process. In particular, we demonstrate that we can cause a small model to exhibit all 5+1 phases of training simply by changing the batch size. Our results suggest that large, well-trained DNN architectures should exhibit Heavy-Tailed Self-Regularization, and we discuss the theoretical and practical implications of this.},
   file = {/home/derek/Zotero/storage/LMZ95CVS/Martin and Mahoney - 2021 - Implicit Self-Regularization in Deep Neural Networ.pdf}
+}
+
+@article{martinPredictingTrendsQuality2021,
+  title = {Predicting Trends in the Quality of State-of-the-Art Neural Networks without Access to Training or Testing Data},
+  author = {Martin, Charles H. and Peng, Tongsu and Mahoney, Michael W.},
+  year = {2021},
+  month = dec,
+  journal = {Nature Communications},
+  volume = {12},
+  number = {1},
+  pages = {4122},
+  issn = {2041-1723},
+  doi = {10.1038/s41467-021-24025-8},
+  abstract = {Abstract             In many applications, one works with neural network models trained by someone else. For such pretrained models, one may not have access to training data or test data. Moreover, one may not know details about the model, e.g., the specifics of the training data, the loss function, the hyperparameter values, etc. Given one or many pretrained models, it is a challenge to say anything about the expected performance or quality of the models. Here, we address this challenge by providing a detailed meta-analysis of hundreds of publicly available pretrained models. We examine norm-based capacity control metrics as well as power law based metrics from the recently-developed Theory of Heavy-Tailed Self Regularization. We find that norm based metrics correlate well with reported test accuracies for well-trained models, but that they often cannot distinguish well-trained versus poorly trained models. We also find that power law based metrics can do much better\textemdash quantitatively better at discriminating among series of well-trained models with a given architecture; and qualitatively better at discriminating well-trained versus poorly trained models. These methods can be used to identify when a pretrained neural network has problems that cannot be detected simply by examining training/test accuracies.},
+  langid = {english},
+  file = {/home/derek/Zotero/storage/V4T3T464/Martin et al. - 2021 - Predicting trends in the quality of state-of-the-a.pdf}
 }
 
 @article{matharooSpectralStatisticsQuenched2009,
@@ -2058,8 +2104,7 @@
   issn = {0031-9007, 1079-7114},
   doi = {10.1103/PhysRevLett.91.198104},
   langid = {english},
-  keywords = {gurpreet},
-  file = {/home/derek/Desktop/RandomMatrixFMRI/Readings/Seba (2003) Random Matrix Analysis of Human EEG Data.pdf}
+  keywords = {gurpreet}
 }
 
 @article{shalevConjunctiveContinuousPerformance2011,
