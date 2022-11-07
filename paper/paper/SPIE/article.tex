@@ -631,9 +631,10 @@ a polynomial is chosen \cite{abul-magdUnfoldingSpectrumChaotic2014}.
 Given empirically observed eigenvalues \(\Lambda\), the spectral rigidity,
 \(\Delta_3(L)\), is calculated for any positive real value \(L <
 \max(\Lambda)\) as:
-\[
+\begin{equation}
+\label{eq:rigidity}
 \Delta_3(L) = \left \langle \min_{A,B} \frac{1}{L} \int_c^{c+L} \left(  \eta(\lambda) -A \lambda - B \right)^2 \right \rangle_c
-\]
+\end{equation}
 where \(\eta(\lambda)\) is the number of unfolded eigenvalues less than or
 equal to \(\lambda\), \(\langle \cdot \rangle_c\) denotes the average with
 respect to all starting points \(c\), and where \(A\) and \(B\) denote the
@@ -647,9 +648,10 @@ as a timeseries, the spectral rigidty for a value \(L\) can be is thus the
 The level number variance, \(\Sigma^2(L)\), or level variance, for short, is
 closely related to the spectral rigidity \cite{mehtaRandomMatrices2004}, and is
 calculated as:
-\[
+\begin{equation}
+\label{eq:levlvar}
 \Sigma^2(L) = \left\langle \eta^2(L, c) \right\rangle_c - \left\langle \eta(L, c) \right\rangle^2_c
-\]
+\end{equation}
 where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\),
 and where \(c\), \(L\), and \(\langle \cdot \rangle_c\) are as above
 \cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
@@ -665,17 +667,87 @@ allows for efficient, parallel computation of the spectral rigidity and level
 variance via Monte Carlo methods, and automatically ensures convergence of the
 statistics to user-specified tolerances.
 
+\textit{Trimming Variants}. As the unfolding procedure operates on the sorted
+eigenvalues, and involves fitting a smooth polynomial or exponential to these
+values, extreme values are often trimmed (or omitted from fitting)
+\cite{moralesImprovedUnfoldingDetrending2011,
+abueleninEffectUnfoldingSpectral2012}. The number of eigenvalues to trim is
+highly subjective, and not usually well-documented. In addition, with a large
+number of different source matrices, it is too destructive to use the same hard
+criterion (e.g. largest 10\%, largest 3) for all unfoldings.
+
+We develop and test four trimming variants: no trimming, precision-based,
+largest, and middle, with far less subjective criteria for determining
+trimming thresholds. However, we relegate the details of these trimming
+procedures to the appendix, or refer readers to the source code [link].
+
+\textit{Unfolding Variants}. Following any trimming, the eigenvalues are fit
+with a polynomial. The choice of degree has been known to dramatically impact
+certain analyses involving the spectral rigidity or level
+variance\cite{abul-magdUnfoldingSpectrumChaotic2014,
+moralesImprovedUnfoldingDetrending2011, abueleninSpectralUnfoldingChaotic2018,
+fossionRandommatrixSpectraTime2013, abueleninEffectUnfoldingSpectral2012}. We
+thus compute the rigidity and level variance with all possible combinations of
+trimming and unfolding polynomial degree.
+
+\subsubsection{Non-RMT Eigenfeatures}
+\label{sec:eigs-only}
+
+When computing the RMT eigenfeatures, the polynomial fitting during unfolding
+has a smoothing effect, as do the additional averaging \(\langle\;\rangle_c\)
+operations. However, it is possible other, simpler
+transformations of the eigenvalues (e.g. uniform or Savitsky-Golay smoothing)
+might have equal or greater predictive utility. We thus also test smoothed
+variants of the eigenvalues as predictive features: we smooth the sorted
+eigenvalues with a uniform (moving average) filter and Savitsky-Golay, using
+window sizes of 3, 5, 7, and 9 to yield 8 total "smoothed eigenvalue" features.
+
+
+\subsubsection{Slicing Variants}
+
+It is possible that only some eigenvalues
+contain predictively-useful information. Broadly, we might expect the largest,
+middle, or smallest eigenvalues to be most useful in characterizing some
+system. E.g. if the smallest eigenvalues correspond to random / noise aspects
+of a system, but it the differences in the nature of the noise that most
+differentiate between certain states, then here the smallest eigenvalues may
+have the most predictive utility.
+
+Likewise, the \(L\) value in each RMT eigenfeature defines the degree of
+locality at which we summarize the spectrum. E.g. at small \(L\)-values, the
+spectral rigidity summarizes the non-linearity of eigenvalues thar are
+relatively close to each other. At large values of \(L\), the rigidity
+summarizes the long-range non-linearity of the spectrum. E.g. larger \(L\)
+values summarize the spectrum more globally, and smaller \(L\) values summarize
+it more locally.
+
+Since predictive utility may vary with summary locality, or with the region of
+the original spectrum, we investigate various contiguous front, middle, and end
+slices of each eigenfeature in all analyses, and where the size of each slice
+is either 5\%, 10\%, or 20\% of the full eigenfeatures for the front and end.
+silces, and 10\%, 20\%, and 40\% for the middle eigenvalues.
+
+\subsubsection{Feature Combinations}
+
+It could easily be the case that a combination of RMT and non-RMT eigenfeatures
+are more predictive than either alone. We thus test a variety of eigenfeature
+combinations, with the motivation for these particular combinations being to
+test whether RMT eigenfeatures add anything beyond smoothing.
+...
+
+
+
 
 \subsubsection{Baseline Features}
 \label{sec:baselines}
 
 MAYBE MOVE THIS SECTION AFTER RMT AND EIGEN FEATURES?
 
-If RMT- or eigenvalue-based features fail to outperform features that are simple
-summary statistics of the fMRI data in predictive utility, it is difficult to
-justify the greater computational and interpretational complexities of the
-former. We compute ten simple statistical reductions of the voxel time series
-("timeseries features") to help assess the relative value of RMT features.
+If RMT- or eigenvalue-based features fail to predictively outperform features
+that are simple summary statistics of the fMRI data, it is difficult to justify
+the greater computational and interpretational complexities of the former. We
+compute ten simple statistical reductions of the voxel time series ("timeseries
+features") to help assess the relative value of RMT features.
 
 Baseline reductions use as statistical summaries: robust measures of location
 (mean, max, min); non-robust measures of location (median, \(95^{\text{th}}\)
@@ -686,18 +758,22 @@ percentile). These statistics are used to summarizing / reduce the fMRI data
 along the voxel dimension, yielding a feature of \(T\) dimensions. E.g. the "mean"
 feature is just the global mean signal. Exact details can be found in the
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
-source code}.
+source code}. Note we do not take slice variants of these baseline features.
 
-\subsubsection{Non-RMT Eigenfeatures}
-\label{sec:eigs-only}
+\subsubsection{Final Feature List}
 
-Eigenfeatures summarize \(\mathbf{M}\) via some
-transformation of the eigenvalues of the correlation matrix of \(\mathbf{M}\),
-and thus yield a feature of  \(T - 1\) dimensions.
+[INSERT TABLE OF ALL FEATURES]
 
 
 \subsection{Multiverse Analysis}
 \label{sec:multiverse}
+
+Our investigation can be structured hierarchically: we have a number of
+\textit{datasets}, and each dataset has one or more \textit{classification
+tasks}. Each classification task can be solved with a \textit{classifier}.
+Each classifier fit operates on a \textit{featyre}, and each feature is
+extracted via a certain \textit{preprocessing degree} and various
+\textit{analytic choices} (slicing, trimming, unfolding degree, normalization).
 
 \section{Results}
 \label{sec:results}
