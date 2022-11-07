@@ -16,12 +16,6 @@
 \affil[a]{St. Francis Xavier University, Department of Computer Science, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
 \affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
 
-% \author[a]{First Author}
-% \author[a]{Second Author}
-% \author[b]{Third Author}
-% \author[a,b,*]{Fourth Author}
-% \affil[a]{University Name, Faculty Group, Department, Street Address, City, Country, Postal Code}
-% \affil[b]{Company Name, Street Address, City, Country, Postal Code}
 
 \renewcommand{\cftdotsep}{\cftnodots}
 \cftpagenumbersoff{figure}
@@ -188,72 +182,56 @@ interactions both in different species
 \cite{agrawalQuantifyingRandomnessProtein2014} and breast cancer
 \cite{raiRandomnessPreservedPatterns2015}.
 
-At its most rudimentary, RMT simply describes the statistically-expected
-behaviour of the eigenvalues of some classes—or \textit{ensembles}—of random
-matrices under certain assumptions or conditions. A random matrix is,
-generally, a matrix in which the entries are drawn from independently
-and identically distributed (\textit{iid}) distributions. For example, one of the simplest
-ensembles [cite handbook] is the Gaussian Unitary Ensemble (GUE), wherein [desc
-of ensemble properties] and which appears to be useful in describing
-[real-world examples].
+At its most rudimentary, RMT describes the expected behaviour of the
+eigenvalues—also often called levels—of a number of classes of random
+matrices\cite{andersonIntroductionRandomMatrices2010,
+akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. A random matrix is,
+simplifying somewhat, a matrix in which the entries are drawn from
+independently and identically distributed (\textit{iid}) distributions.
 
-This means that if we examine a system and find that the distribution of
-eigenvalues of that system resemble some RMT predicted spectrum, we potentially
-gain insight into the nature of that system. If, in addition, we find a large
-deviance from the spectrum predicted by RMT, we find contrapositive evidence
-that the system is \textit{not} like those described by RMT. Roughly, complex
-systems well-described by RMT are highly random and independent, whereas
-systems that are not so well-described are either highly dependent, non-random,
-or both.
-
-In this sense, RMT might have real \textit{explanatory} and
-\textit{statistical} value: the more we see that a system resembles an RMT
-system, the less we can distinguish it from one of random, non-interacting
-components, and the less the system resembles an RMT system, the more
-fundamentally complex and interactive the interactions.
-
-For a system as complex as the human brain, RMT is thus tantalizing. If some
-matrix representation of brain activity can be described, even partially, by
-aspects of RMT theory, this would mean  description of this matrix either aligned nicely with
-RMT theory, or otherwise was broadly predictively useful.
-
-[Transition to fMRI now...]
-
-
-In functional magnetic resonance imaging (fMRI), changes in the
-blood-oxygenation-level-dependent (BOLD) signals are related to neural
-activity. It is common to investigate statistical relationships between the
-BOLD signals through \textbf{functional connectivity} analyses, where
-correlations between collections of these signals are examined to infer
-connections between different voxels or regions of interest (ROIs) within the
-brain.
-
-Whether in the presence of experimental stimuli, or the relative absence, as in
-resting state fMRI (rs-fMRI), complex patterns in functional connectivity
-networks are ubiquitous
-\cite{bucknerBrainDefaultNetwork2008,foxCoverHumanBrain2005,gonzalez-castilloTaskbasedDynamicFunctional2018,hermundstadStructuralFoundationsRestingstate2013}.
-This complexity suggests fMRI is a candidate to be studied using \textbf{Random
-Matrix Theory} (RMT), a set of mathematical tools originally developed some 50
-years ago to solve complex problems in nuclear physics
-\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}
-
-In various physical systems where nuclei can have different possible states,
-precisely modeling the entirety of the interactions between nuclei is often
-intractable. For such large, complex systems, the eigenvalues (or spectra)
-efficiently summarize the totality of the interactions between components of
-the system, and RMT describes the expected behaviour of such eigenvalues. By
-analysing the spectrum statistically, complex systems can be investigated by
-comparison to the universal properties predicted by RMT.
+RMT likely has the most real-world explanatory potential when dealing with a
+complex system of many (hundreds or more\cite{mehtaRandomMatrices2004})
+interacting components. If such a system has a matrix representation, and the
+eigenvalues of this representation have a distribution similar to one predicted
+by RMT, it suggests the system is either highly random or chaotic. By contrast,
+if the observed spectra deviate significantly from RMT-predicted spectra, this
+suggests otherwise. A number of studies have used RMT to make such
+interpretations and comparisons between
+systems\cite{santhanamStatisticsAtmosphericCorrelations2001,
+jalanUncoveringRandomnessSuccess2014,
+bandyopadhyayUniversalityComplexNetworks2007,
+agrawalQuantifyingRandomnessProtein2014, raiRandomnessPreservedPatterns2015,
+sebaRandomMatrixAnalysis2003, wangSpectralPropertiesTemporal2015,
+wangRandomMatrixTheory2016, matharooSpontaneousBackpainAlters2020}.
 
 \subsection{RMT and Neurobiological Signals}
 
-Recently, RMT has been applied to study brain functioning. The earliest study
+RMT may thus have real potential in understanding the human brain. For an
+imaging modality like functional magnetic resonance imaging (fMRI), where
+changes in the blood-oxygenation-level-dependent (BOLD) signals are related to
+neural activity, RMT may be an ideal starting point. Each voxel or collection
+of voxels—i.e. Region of Interest (ROI\footnote{We will use ROI to refer to
+\textit{any} collection of voxels of any size. E.g. a single voxel is still an
+ROI.}); any collection )—can be considered an interacting component of the system.
+
+Likewise, in \textbf{functional connectivity} analyses, statistical
+relationships of the BOLD ROI time-courses are investigated in the hope of
+gaining insights into brain functioniong (see
+\citenum{bastosTutorialReviewFunctional2016,
+vandenheuvelExploringBrainNetwork2010} for reviews, but also
+\citenum{nobleDecadeTestretestReliability2019} and
+\citenum{lurieQuestionsControversiesStudy2020} for challenges facing functional
+connectivity analyses). In this framework, each connection or correlation can
+be considered a system component, and the eigenvalues of such a correlation
+matrix can be examined from the perspective of RMT.
+
+The earliest study taking this approach
 demonstrated that spectra of the correlations between electroencephalographic
 (EEG) signals closely resemble those of the Gaussian Orthogonal Ensemble (GOE)
-\cite{sebaRandomMatrixAnalysis2003}. Somewhat more recently, RMT was used to
+\cite{sebaRandomMatrixAnalysis2003}. In fMRI, RMT has been used to
 evaluate the quality of whole brain features extracted from fMRI data
-\cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}. RMT has
-also been used in diffusion MRI to aid in the selection of the number of
+\cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}, and in
+diffusion MRI to aid in the selection of the number of
 components to employ in principal-component reduction analysis and denoising
 \cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
 
@@ -312,6 +290,7 @@ A major disadvantage of both the above approaches, besides requiring
 parcellation into ROIs, is that most such parcellation methods are atlas-based,
 and thus require image registration, and, general, an entire preprocessing
 pipeline to ensure that registration is successful.
+
 
 RMT suggests a potentially useful reduction in the form of the eigenvalues of
 the voxelwise functional connectivity. An \(N \times t\) matrix \(\bf{A}\) of
@@ -611,6 +590,18 @@ this process, each scan yields an \(N \times T\) matrix \(\mathbf{M}\), where
 \(T\) is the number of volumes acquired. All features summarize this matrix
 of brain voxels \(\mathbf{M}\) in some manner.
 
+\subsubsection{Raw Eigenvalues}
+\label{sec:raw-eigs}
+
+The time and space complexities of computing the full \(N \times N\) correlation
+matrix of \(\mathbf{M}\), and the subsequent eigenvalues, are too large to be
+tractable. However, since transposition does not change the eigenvalues, we
+can use the transpose to efficiently compute these eigenvalues (see
+Appendix \ref{sec:transpose}).
+
+
+
+
 \subsubsection{RMT Features}
 \label{sec:rmt-features}
 
@@ -655,8 +646,8 @@ calculated as:
 where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\),
 and where \(c\), \(L\), and \(\langle \cdot \rangle_c\) are as above
 \cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
-as an \textit{irregular} timeseries, the level number varaince is simply the
-variance of the number of samples of all intervals of length \(L\) over the
+as an \textit{irregular} timeseries, the level number variance is the
+variation of the number of samples of all intervals of length \(L\) over the
 series.
 
 Both the spectral rigidity and level number variance are also computed and
@@ -939,44 +930,83 @@ Authors may wish to create figures consisting of two or more images, in which ca
 Example of a figure containing multiple images: (a) sun and (b) blob. Figures containing multiple images must be submitted to SPIE as a single image file.}
 \end{figure}
 
-\subsection{Tables}
-Tables are numbered in the order in which they are referenced. They should appear in the document in numerical order and as close as possible to their first reference in the text. It is preferable to have tables appear at the top or bottom of the page, if possible. Table captions are handled identically to those for figures, except that they appear above the table. See Table~\ref{tab:fonts} for an example.
+% \subsection{Tables}
+% Tables are numbered in the order in which they are referenced. They should appear in the document in numerical order and as close as possible to their first reference in the text. It is preferable to have tables appear at the top or bottom of the page, if possible. Table captions are handled identically to those for figures, except that they appear above the table. See Table~\ref{tab:fonts} for an example.
 
-\subsection{Multimedia}
-Acceptable file formats, including MOV (.mov), MPEG (.mpg), and MP4 (.mp4), are playable using standard media players, such as VLC or Windows Media Player. The recommended maximum size for each multimedia file is 10-12 MB. Authors must insert a representative still image from the video file in the manuscript as a figure. The caption label will be linked by the publisher to the actual video file. The video may also be mentioned in an existing figure caption. Multimedia files are treated in the same manner as figures and they will be numbered sequentially with normal figures.  The video number, file type, and file size should be included in parentheses at the end of the figure caption. See Figure \ref{vid:satellite} for an example.
+% \subsection{Multimedia}
+% Acceptable file formats, including MOV (.mov), MPEG (.mpg), and MP4 (.mp4), are playable using standard media players, such as VLC or Windows Media Player. The recommended maximum size for each multimedia file is 10-12 MB. Authors must insert a representative still image from the video file in the manuscript as a figure. The caption label will be linked by the publisher to the actual video file. The video may also be mentioned in an existing figure caption. Multimedia files are treated in the same manner as figures and they will be numbered sequentially with normal figures.  The video number, file type, and file size should be included in parentheses at the end of the figure caption. See Figure \ref{vid:satellite} for an example.
 
-\begin{video}
-\begin{center}
-{\includegraphics[height=5cm]{satellite.eps}}
-\\
-\end{center}
-\caption{\label{vid:satellite}This satellite is a still image from Video 1 (Video 1, MPEG, 2.5 MB).}
-\end{video}
+% \begin{video}
+% \begin{center}
+% {\includegraphics[height=5cm]{satellite.eps}}
+% \\
+% \end{center}
+% \caption{\label{vid:satellite}This satellite is a still image from Video 1 (Video 1, MPEG, 2.5 MB).}
+% \end{video}
 
 \appendix    % this command starts appendixes
 
-\section{Miscellaneous Formatting Details}
-\label{sect:misc}
-At times it may be desired, for formatting reasons, to break a line without starting a new paragraph. In a LaTeX source file, a linebreak is created with \verb|\\|.
+\section{Correlation Eigenvalues via Transposition}
+\label{sec:transpose}
+
+Let \(\mathbf{X}\) is a real \(n \times p\) matrix with \(n > p\). Let
+\[
+\mathbf{Z} = \text{norm}(\mathbf{X}) =
+\left(
+\mathbf{X}_1 - \bar{\mathbf{X}}_1 | \dots | \mathbf{X}_p - \bar{\mathbf{X}}_p
+\right)
+\]
+where \(\mathbf{X}_i\) denotes column \(i\) of \(\mathbf{X}\). Denote the (unordered) set
+of eigenvalues of \(\mathbf{X}\) as \(\text{eigs}(\mathbf{X})\), and let \(r = (p - 1)^{-1}\).
+Denote the covariance matrix of \(\mathbf{X}\) as \(\text{cov}(\mathbf{X})\).  Then:
+
+\begin{align*}
+\text{eigs}\left( \text{cov}(\mathbf{X})  \right)
+&= \text{eigs}(r \cdot \mathbf{Z}\mathbf{Z}^{\top}) \\
+&= r \cdot \text{eigs}(\mathbf{Z}\mathbf{Z}^{\top}) \\
+&= r \cdot \text{eigs}((\mathbf{Z}\mathbf{Z}^{\top})^{\top}) \\
+&= r \cdot \text{eigs}(\mathbf{Z}^{\top}\mathbf{Z}) \\
+\end{align*}
+
+Denote the correlation matrix of \(\mathbf{X}\) as \(\text{corr}(\mathbf{X})\), and let
+\[
+\mathbf{Y} = \text{stand}(\mathbf{X}) =
+\left(
+(\mathbf{X}_1 - \bar{\mathbf{X}}_1) / \sigma_1 | \dots | (\mathbf{X}_p - \bar{\mathbf{X}}_p) / \sigma_p
+\right)
+\]
+
+Then
+
+\[
+\text{eigs}\left( \text{corr}(\mathbf{X})  \right)
+= \text{eigs}\left( \text{cov}(\mathbf{Y})  \right)
+= r \cdot \text{eigs}(\mathbf{Y}^{\top}\mathbf{Y})
+\]
 
 
-\subsection{Formatting Equations}
-Equations may appear inline with the text, if they are simple, short, and not of major importance; for example, $\beta = b/r$.  Important equations appear on their own line.  Such equations are centered.  For example, ``The expression for the field of view is
-\begin{equation}
-\label{eq:fov}
-2 a = \frac{(b + 1)}{3c} \, ,
-\end{equation}
-where $a$ is the ...''  Principal equations are numbered, with the equation number placed within parentheses and right justified.
+% \section{Miscellaneous Formatting Details}
+% \label{sect:misc}
+% At times it may be desired, for formatting reasons, to break a line without starting a new paragraph. In a LaTeX source file, a linebreak is created with \verb|\\|.
 
-Equations are considered to be part of a sentence and should be punctuated accordingly. In the above example, a comma appears after the equation because the next line is a subordinate clause. If the equation ends the sentence, a period should follow the equation. The line following an equation should not be indented unless it is meant to start a new paragraph. Indentation after an equation is avoided in LaTeX by not leaving a blank line between the equation and the subsequent text.
 
-References to equations include the equation number in parentheses, for example, ``Equation~(\ref{eq:fov}) shows ...'' or ``Combining Eqs.~(2) and (3), we obtain...'' Note that the word ``Equation'' is spelled out if it begins a sentence, but is abbreviated as ``Eq.'' otherwise. Using a tilde in the LaTeX source file between two characters avoids unwanted line breaks, for example between ``Eq.'' and the following equation number..
+% \subsection{Formatting Equations}
+% Equations may appear inline with the text, if they are simple, short, and not of major importance; for example, $\beta = b/r$.  Important equations appear on their own line.  Such equations are centered.  For example, ``The expression for the field of view is
+% \begin{equation}
+% \label{eq:fov}
+% 2 a = \frac{(b + 1)}{3c} \, ,
+% \end{equation}
+% where $a$ is the ...''  Principal equations are numbered, with the equation number placed within parentheses and right justified.
 
-\subsection{Formatting Theorems}
+% Equations are considered to be part of a sentence and should be punctuated accordingly. In the above example, a comma appears after the equation because the next line is a subordinate clause. If the equation ends the sentence, a period should follow the equation. The line following an equation should not be indented unless it is meant to start a new paragraph. Indentation after an equation is avoided in LaTeX by not leaving a blank line between the equation and the subsequent text.
 
-To include theorems in a formal way, the theorem identification should appear in a 10-point, bold font, left justified, and followed by a period.  The text of the theorem continues on the same line in normal, 10-pt. font, achieved in LaTeX using \verb|\footnotesize|.  For example,
+% References to equations include the equation number in parentheses, for example, ``Equation~(\ref{eq:fov}) shows ...'' or ``Combining Eqs.~(2) and (3), we obtain...'' Note that the word ``Equation'' is spelled out if it begins a sentence, but is abbreviated as ``Eq.'' otherwise. Using a tilde in the LaTeX source file between two characters avoids unwanted line breaks, for example between ``Eq.'' and the following equation number..
 
-\vspace{2ex}\noindent{\footnotesize\textbf{Theorem 1.} For any unbiased estimator...}
+% \subsection{Formatting Theorems}
+
+% To include theorems in a formal way, the theorem identification should appear in a 10-point, bold font, left justified, and followed by a period.  The text of the theorem continues on the same line in normal, 10-pt. font, achieved in LaTeX using \verb|\footnotesize|.  For example,
+
+% \vspace{2ex}\noindent{\footnotesize\textbf{Theorem 1.} For any unbiased estimator...}
 
 % \disclosures
 \subsection*{Disclosures}
