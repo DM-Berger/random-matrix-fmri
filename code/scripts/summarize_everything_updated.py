@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sbn
+from shutil import copyfile
 from joblib import Memory
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -32,8 +33,10 @@ from rmt.visualize import best_rect
 PROJECT = ROOT.parent
 MEMORY = Memory(PROJECT / "__JOBLIB_CACHE__")
 SPIE_OUTDIR = PROJECT / "results/plots/figures/SPIE"
-if not SPIE_OUTDIR.exists():
-    SPIE_OUTDIR.mkdir(exist_ok=True, parents=True)
+SPIE_PAPER_OUTDIR = PROJECT / "paper/paper/SPIE/figures"
+
+SPIE_OUTDIR.mkdir(exist_ok=True, parents=True)
+SPIE_PAPER_OUTDIR.mkdir(exist_ok=True, parents=True)
 
 SPIE_JMI_MAX_WIDTH_INCHES = 6.75
 SPIE_JMI_MAX_COL_WIDTH_INCHES = 3 + 5 / 16
@@ -1413,8 +1416,11 @@ def make_row_labels(grid: FacetGrid, col_order: list[str], row_order: list[str])
 def savefig(fig: Figure, filename: str) -> None:
     print("Saving...", end="", flush=True)
     outfile = SPIE_OUTDIR / filename
+    paper_outfile = SPIE_PAPER_OUTDIR / filename
     fig.savefig(outfile, dpi=600)
     print(f" saved figure to {outfile}")
+    copyfile(outfile, paper_outfile)
+    print(f"Copied saved figure to {paper_outfile}")
     plt.close()
 
 

@@ -2,6 +2,7 @@
 %\documentclass[a4paper,12pt]{spieman}  % use this instead for A4 paper
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{graphicx}
+\graphicspath{ {./figures/} }
 \usepackage{setspace}
 \usepackage{tocloft}
 \usepackage{doi}
@@ -124,7 +125,7 @@ analytic choices.
 Eigenfeatures clearly have potential for understanding and reducing fMRI
 functional connectivity. However, the utility of these features is strongly
 dependent on analytic decisions, suggesting considerable caution when
-interprting past and future studies applying RMT.
+interpreting past and future studies applying RMT to fMRI.
 
 % This document shows the required format and appearance of a manuscript
 % prepared for SPIE journals. It is prepared using LaTeX2e with the class file
@@ -160,9 +161,19 @@ interprting past and future studies applying RMT.
 % of the journal.
 
 
-Random Matrix Theory (RMT) has obvious potential.  In small-scale physical
-systems, RMT universalities have been observed in quantum chaotic systems,
-complex nuclei, atoms, molecules and disordered mesoscopic systems
+At its most rudimentary, RMT describes the expected behaviour of the
+eigenvalues—also often called levels—of a number of classes of random
+matrices\cite{andersonIntroductionRandomMatrices2010,
+akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. A random matrix is,
+simplifying somewhat, a matrix in which the entries are drawn from
+independently and identically distributed (\textit{iid}) distributions. Though
+first developed to describe the fluctuation of nuclei energy levels in quantum
+physics \cite{mehtaRandomMatrices2004, guhrRandommatrixTheoriesQuantum1998a},
+RMT has been shown have extremely broad potential.
+
+In small-scale physical systems, RMT universalities have been observed in
+quantum chaotic systems, complex nuclei, atoms, molecules and disordered
+mesoscopic systems
 \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001},
 and at larger scales, RMT has been applied to atmospheric physics
 \cite{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations
@@ -173,21 +184,19 @@ liquids
 \cite{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009}
 and amorphous clusters
 \cite{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}.
-
 Within biological systems, RMT has also been used to successfully model aspects
 of  amino acid functional relationships
 \cite{bhadolaTargetingFunctionalMotifs2016}, synchrony in epileptic seizures
 \cite{osorioPhasesynchronizationRandommatrixBased2011}, and in protein-protein
 interactions both in different species
 \cite{agrawalQuantifyingRandomnessProtein2014} and breast cancer
-\cite{raiRandomnessPreservedPatterns2015}.
-
-At its most rudimentary, RMT describes the expected behaviour of the
-eigenvalues—also often called levels—of a number of classes of random
-matrices\cite{andersonIntroductionRandomMatrices2010,
-akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. A random matrix is,
-simplifying somewhat, a matrix in which the entries are drawn from
-independently and identically distributed (\textit{iid}) distributions.
+\cite{raiRandomnessPreservedPatterns2015}. RMT has also been used to guide
+statistical decisions in principal components
+analyses\cite{franklinParallelAnalysisMethod1995,
+veraartDenoisingDiffusionMRI2016, ulfarssonDimensionEstimationNoisy2008}, and,
+even more recently, has provided insights into the behaviours of deep
+neural networks\cite{martinImplicitSelfRegularizationDeep2021,
+martinPredictingTrendsQuality2021}.
 
 RMT likely has the most real-world explanatory potential when dealing with a
 complex system of many (hundreds or more\cite{mehtaRandomMatrices2004})
@@ -206,17 +215,20 @@ wangRandomMatrixTheory2016, matharooSpontaneousBackpainAlters2020}.
 
 \subsection{RMT and Neurobiological Signals}
 
-RMT may thus have real potential in understanding the human brain. For an
-imaging modality like functional magnetic resonance imaging (fMRI), where
-changes in the blood-oxygenation-level-dependent (BOLD) signals are related to
-neural activity, RMT may be an ideal starting point. Each voxel or collection
-of voxels—i.e. Region of Interest (ROI\footnote{We will use ROI to refer to
-\textit{any} collection of voxels of any size. E.g. a single voxel is still an
-ROI.}); any collection )—can be considered an interacting component of the system.
+In the human brain, each neuron, collection of neurons, or region of interest
+(ROI) is a potentially-interacting component in a highly complex system. RMT
+may have potential in describing the totality of these interactions, provided
+that measurements of functioning can be obtained with sufficient spatial and
+temporal resolution to speak to some neurobiological or neuropsychological
+phenomenon of interest.
 
-Likewise, in \textbf{functional connectivity} analyses, statistical
-relationships of the BOLD ROI time-courses are investigated in the hope of
-gaining insights into brain functioniong (see
+For an imaging modality like fMRI, where changes in the
+blood-oxygenation-level-dependent (BOLD) signals are related to neural
+activity, RMT may be an ideal starting point. Each voxel time course (or
+collection of such time sources - i.e. ROIs) can be considered an interacting
+component of the system. Likewise, in \textit{functional connectivity}
+analyses, statistical relationships of the BOLD ROI time-courses are
+investigated in the hope of gaining insights into brain functioniong (see
 \citenum{bastosTutorialReviewFunctional2016,
 vandenheuvelExploringBrainNetwork2010} for reviews, but also
 \citenum{nobleDecadeTestretestReliability2019} and
@@ -235,12 +247,12 @@ diffusion MRI to aid in the selection of the number of
 components to employ in principal-component reduction analysis and denoising
 \cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
 
-Finally, RMT has been used in ROI-based fMRI functional-connectivity studies to
+RMT has also been used in ROI-based fMRI functional-connectivity studies to
 investigate differences between rest and task states
 \cite{wangSpectralPropertiesTemporal2015}, between subjects with and without
 ADHD \cite{wangRandomMatrixTheory2016}, and between pain and non-pain states
 \cite{matharooSpontaneousBackpainAlters2020}. Across these three studies, the
-spectra of resting or low-attention states exhibited properties closest to the
+spectra of resting or low-attention states exhibited properties close to the
 GOE. These findings suggest that certain aspects of psychological processes
 might be characterized, in part, by features computed from the eigenvalues of
 fMRI correlation matrices, and that these features might vary in an
@@ -248,24 +260,31 @@ interpretable manner across psychological processes. If this is the case, RMT
 could aid in understanding the functioning of the human brain.
 
 
-\subsection{Motivating Eigenfeatures}
+\subsection{Eigenvalues and Prediction}
 
-The basic insight of RMT is thus that the \textit{eigenvalues alone} may
-provide interesting information about highly complex Neurobiological systems.
-However, in practice, the eigenvalues computed from empirically observed data
-are noisy. RMT is statistical in nature, describing only the \textit{expected}
-behaviour of the system spectra. To this end, a number of summary statistics or
-``spectral observables'' \cite{mehtaRandomMatrices2004} can be computed from
-empirically observed spectra, with these spectral observables sometimes being
-better suited for further analysis or comparison to theory. Two such summary
-statistics that have been somewhat popular are the \textit{spectral rigidity}
-and \textit{level number variance} (``rigidity'' and ``level variance'' for
-short; details in Section \ref{sect:methods}).
+The basic insight of RMT is thus that the eigenvalues alone may provide
+interesting information about highly complex systems. However, real systems are
+usually noisy, and involve a mixture of random and non-random components and
+interactions. RMT is statistical in nature, describing only the expected
+behaviour of the spectra of \textit{iid} random matrics. To this end, a number
+of summary statistics or ``spectral observables''
+\cite{mehtaRandomMatrices2004, guhrRandommatrixTheoriesQuantum1998a} can be
+computed from empirically observed spectra, with these spectral observables
+sometimes being better suited for further analysis, or for the comparison of
+empirical observations to theory. Two such summary statistics that have been
+popular\cite{santhanamStatisticsAtmosphericCorrelations2001,
+jalanUncoveringRandomnessSuccess2014, matharooSpontaneousBackpainAlters2020,
+bandyopadhyayUniversalityComplexNetworks2007,
+agrawalQuantifyingRandomnessProtein2014, raiRandomnessPreservedPatterns2015,
+sebaRandomMatrixAnalysis2003,wangSpectralPropertiesTemporal2015,
+wangRandomMatrixTheory2016} are the \textit{spectral rigidity} and
+\textit{level number variance} (``rigidity'' and ``level variance'' for short;
+details in Section \ref{sect:methods}).
 
 However, from a predictive standpoint, these summary statistics may eliminate
 predictively-useful information. If the basic RMT insight is that the
-eigenvalues are useful features to understand a system, then those eigenvalues
-alone (or other simple transformations of them) ought also to be predictively
+eigenvalues alone can provide understanding of a system, then those eigenvalues
+(or other simple transformations of them) ought also to be predictively
 useful. We examine a number of such \textit{eigenfeatures} in this study.
 
 In addition, the functional connectivity - the matrix of correlations of
@@ -651,8 +670,9 @@ variation of the number of samples of all intervals of length \(L\) over the
 series.
 
 Both the spectral rigidity and level number variance are also computed and
-investigated in this study. Because the computation of these statistics is
-non-trivial, we developed and release the separate, open-source Python library
+investigated in this study, for all \(L \in \{ 1, 2, \dots 20 \}\).
+Because the computation of these statistics is non-trivial, we developed and
+release the separate, open-source Python library
 \code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
 allows for efficient, parallel computation of the spectral rigidity and level
 variance via Monte Carlo methods, and automatically ensures convergence of the
@@ -670,7 +690,7 @@ criterion (e.g. largest 10\%, largest 3) for all unfoldings.
 We develop and test four trimming variants: no trimming, precision-based,
 largest, and middle, with far less subjective criteria for determining
 trimming thresholds. However, we relegate the details of these trimming
-procedures to the appendix, or refer readers to the source code [link].
+procedures to the Appendix \ref{sec:trimming}, or refer readers to the \href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated_dataset.py#L431-L444}{source code}.
 
 \textit{Unfolding Variants}. Following any trimming, the eigenvalues are fit
 with a polynomial. The choice of degree has been known to dramatically impact
@@ -696,27 +716,24 @@ window sizes of 3, 5, 7, and 9 to yield 8 total "smoothed eigenvalue" features.
 
 \subsubsection{Slicing Variants}
 
-It is possible that only some eigenvalues
-contain predictively-useful information. Broadly, we might expect the largest,
-middle, or smallest eigenvalues to be most useful in characterizing some
-system. E.g. if the smallest eigenvalues correspond to random / noise aspects
-of a system, but it the differences in the nature of the noise that most
-differentiate between certain states, then here the smallest eigenvalues may
-have the most predictive utility.
+We might expect the largest, middle, or smallest eigenvalues to be most useful
+in characterizing some system. E.g. if the smallest eigenvalues correspond to
+random / noise aspects of a system, but it is differences in the nature of the
+noise that most differentiate between certain systems, then here the smallest
+eigenvalues may have the most predictive utility.
 
 Likewise, the \(L\) value in each RMT eigenfeature defines the degree of
-locality at which we summarize the spectrum. E.g. at small \(L\)-values, the
-spectral rigidity summarizes the non-linearity of eigenvalues thar are
-relatively close to each other. At large values of \(L\), the rigidity
-summarizes the long-range non-linearity of the spectrum. E.g. larger \(L\)
-values summarize the spectrum more globally, and smaller \(L\) values summarize
-it more locally.
+locality at which we summarize the spectrum: at small \(L\)-values, the
+spectral rigidity summarizes the non-linearity of eigenvalues that are
+relatively close to each other in magnitude. At large values of \(L\), the rigidity
+summarizes the long-range non-linearity of the spectrum.
 
 Since predictive utility may vary with summary locality, or with the region of
-the original spectrum, we investigate various contiguous front, middle, and end
-slices of each eigenfeature in all analyses, and where the size of each slice
-is either 5\%, 10\%, or 20\% of the full eigenfeatures for the front and end.
-silces, and 10\%, 20\%, and 40\% for the middle eigenvalues.
+the original spectrum, we investigate various front, middle, and end contiguous
+slices of each eigenfeature in all analyses, where the size of each slice is
+either the first or last 5\%, 10\%, or 20\% of the full eigenfeatures for
+non-middle slices, or the middle 10\%, 20\%, or 40\% of the full eigenfeature for
+the middle eigenvalues.
 
 \subsubsection{Feature Combinations}
 
@@ -768,6 +785,17 @@ extracted via a certain \textit{preprocessing degree} and various
 
 \section{Results}
 \label{sec:results}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{gross_feature_overall_by_subgroup.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:main-results}
+AUROC distributions across gross feature groupings and comparison tasks.}
+\end{figure}
 
 First not non-predictable data, and then no longer discuss it in subsequent features.
 
@@ -983,6 +1011,42 @@ Then
 = \text{eigs}\left( \text{cov}(\mathbf{Y})  \right)
 = r \cdot \text{eigs}(\mathbf{Y}^{\top}\mathbf{Y})
 \]
+
+\section{Trimming Procedures}
+
+We implement three trimming procedures: precision-based, largest, and middle
+trimming. The
+\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated_dataset.py#L431-L444}{source
+code} is the definitive reference for the procedures, but we describe the
+motivations belows.
+
+In precision-based trimming, we trim away any eigenvalues that are close enough
+to zero to be considered a result of numerical error due to floating point
+representation. There are two thresholds we consider, including the one used by
+NumPy\cite{harrisArrayProgrammingNumPy2020} for the
+\href{https://numpy.org/doc/stable/reference/generated/numpy.linalg.matrix_rank.html}{determination
+of matrix rank}, and those recommended by LAPACK\cite{laug} in their user
+guide\cite{andersonLAPACKUsersGuide1999a} on the
+\href{https://netlib.org/lapack/lug/node89.html}{error bounds for symmetric
+eigenproblems}, and related
+\href{https://netlib.org/lapack/lug/node90.html}{additional details}. We trim
+each matrix eigenvalues to whichever threshold is largest for the matrix in
+question.
+
+For largest trimming, we must determine a threshold at which to separate
+"large" from "small" eigenvalues. The eigenvalues for our data tended to grow
+exponentially, so we instead looked at thresholding on the logarithms. We then
+used \(k\)-means with \(k=2\) on the precision-trimmed eigenvalues, and took
+the largest cluster (which also always had the smaller mean) cluster as the
+"largest" eigenvalues to trim away. "Middle" trimming simply reflects the
+threshold found by the largest trim method, e.g. if the largest trim method
+removes the last \(n\) precision-trimmed eigenvalues, then we also trim the
+first \(n\) smallest eigenvalues remaining after precision-trimming.
+
+We chose one-dimensional k-means partly due to efficiency and simplicity, and
+because of the general relation to classical threholding methods like the Otsu
+method\cite{liuOtsuMethodKmeans2009}.
+
 
 
 % \section{Miscellaneous Formatting Details}
