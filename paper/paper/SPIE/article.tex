@@ -810,11 +810,22 @@ significantly. In all cases the default hyperparameter values were used.
 
 \subsection{Preprocessing Levels}
 
-Each preprocessing intermediate in the (1) brain extraction, (2) slice time correction,
-(3) motion correction, and (4) template registration pipeline was saved and used for
-entirely separate feature analyses. E.g. all features were extracted from a brain
-prepared with one of four levels or degrees of preprocessing, where level \(k\)
-includes preprocessings steps 1 to \(k\), inclusive, and starting at \(k = 1\).
+Each preprocessing intermediate in the (1) brain extraction, (2) slice time
+correction, (3) motion correction, and (4) template registration pipeline was
+saved and used for entirely separate feature analyses. E.g. all features were
+extracted from a brain prepared with one of four levels or degrees of
+preprocessing, where level \(k\) includes preprocessings steps 1 to \(k\),
+inclusive, and starting at \(k = 1\).
+
+\subsection{Normalization}
+
+Because of the exponential distribution of the eigenfeatures, normalization is
+somewhat non-trivial, and a simple standardization or min-max normalization is
+ineffective. We instead first apply a logarithm to all eigenfeatures, and then
+test each classifier with un-normalized or min-max normalized versions of the
+log-features. Baseline features are also tested with un-normalized and min-max
+normalized versions, but without any log transform.
+
 
 \begin{table}[h!]
 \caption{
