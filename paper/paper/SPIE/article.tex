@@ -701,19 +701,19 @@ variance\cite{abul-magdUnfoldingSpectrumChaotic2014,
 moralesImprovedUnfoldingDetrending2011, abueleninSpectralUnfoldingChaotic2018,
 fossionRandommatrixSpectraTime2013, abueleninEffectUnfoldingSpectral2012}. We
 thus compute the rigidity and level variance with all possible combinations of
-trimming and unfolding polynomial degree.
+trimming and unfolding polynomial degrees of 3, 5, 7, and 9.
 
 \subsubsection{Non-RMT Eigenfeatures}
 \label{sec:eigs-only}
 
-When computing the RMT eigenfeatures, the polynomial fitting during unfolding
+When computing RMT eigenfeatures, the polynomial fitting during unfolding
 has a smoothing effect, as do the additional averaging \(\langle\;\rangle_c\)
 operations. However, it is possible other, simpler
 transformations of the eigenvalues (e.g. uniform or Savitsky-Golay smoothing)
 might have equal or greater predictive utility. We thus also test smoothed
 variants of the eigenvalues as predictive features: we smooth the sorted
 eigenvalues with a uniform (moving average) filter and Savitsky-Golay, using
-window sizes of 3, 5, 7, and 9 to yield 8 total "smoothed eigenvalue" features.
+window sizes of 3, 5, 7, and 9 to yield 8 total ``smoothed eigenvalue'' features.
 
 
 \subsubsection{Slicing Variants}
