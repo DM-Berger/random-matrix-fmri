@@ -688,9 +688,11 @@ number of different source matrices, it is too destructive to use the same hard
 criterion (e.g. largest 10\%, largest 3) for all unfoldings.
 
 We develop and test four trimming variants: no trimming, precision-based,
-largest, and middle, with far less subjective criteria for determining
-trimming thresholds. However, we relegate the details of these trimming
-procedures to the Appendix \ref{sec:trimming}, or refer readers to the \href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated_dataset.py#L431-L444}{source code}.
+largest, and middle, with far less subjective criteria for determining trimming
+thresholds. However, we relegate the details of these trimming procedures to
+the Appendix \ref{sec:trimming}, or refer readers to the
+\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated_dataset.py#L431-L444}{source
+code}.
 
 \textit{Unfolding Variants}. Following any trimming, the eigenvalues are fit
 with a polynomial. The choice of degree has been known to dramatically impact
@@ -1013,6 +1015,7 @@ Then
 \]
 
 \section{Trimming Procedures}
+\label{sec:trimming}
 
 We implement three trimming procedures: precision-based, largest, and middle
 trimming. The
