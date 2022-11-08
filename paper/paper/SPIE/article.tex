@@ -6,8 +6,11 @@
 \usepackage{setspace}
 \usepackage{tocloft}
 \usepackage{doi}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
 
 \newcommand{\code}[1]{\small \texttt{#1} \normalsize}
+\newcommand{\tcode}[1]{\footnotesize \texttt{#1} \normalsize}
 
 \title{Random Matrix Theory Tools for the Analysis of Functional Magnetic Resonance Imaging Examinations}
 
@@ -568,9 +571,10 @@ code}.
 
 
 \section{Methods}
-\label{sect:methods}
+\label{sec:methods}
 
 \subsection{fMRI Preprocessing}
+\label{sec:preproc}
 
 
 We limited preprocessing to a simple pipeline of, in order, (1) brain
@@ -612,13 +616,19 @@ of brain voxels \(\mathbf{M}\) in some manner.
 \subsubsection{Raw Eigenvalues}
 \label{sec:raw-eigs}
 
-The time and space complexities of computing the full \(N \times N\) correlation
-matrix of \(\mathbf{M}\), and the subsequent eigenvalues, are too large to be
-tractable. However, since transposition does not change the eigenvalues, we
-can use the transpose to efficiently compute these eigenvalues (see
-Appendix \ref{sec:transpose}).
+The time and space complexities of computing the full \(N \times N\)
+correlation matrix of \(\mathbf{M}\), and the subsequent eigenvalues, are too
+large to be tractable. However, since transposition does not change the
+eigenvalues, we can use the transpose to efficiently compute these eigenvalues
+(see Appendix \ref{sec:transpose}). These raw eigenvalues (feature \code{eigs}
+in Table \ref{tab:features}), most directly test the idea that eigenvalues
+alone are useful functional connectivity features.
 
-
+However, not all eigenvalues may have predictive utility. We also examine as
+features the central eigenvalues (defined as the middle 10\%, 20\%, or 40\% of
+the sorted eigenvalues, \code{eigsmiddle} in Table \ref{tab:features}), and
+tail eigenvalues (defined as the first and last 5\%,  10\%, and 20\% of each
+tail of the spectrum, \code{eigsminmax} in Table \ref{tab:features}).
 
 
 \subsubsection{RMT Features}
@@ -703,7 +713,7 @@ fossionRandommatrixSpectraTime2013, abueleninEffectUnfoldingSpectral2012}. We
 thus compute the rigidity and level variance with all possible combinations of
 trimming and unfolding polynomial degrees of 3, 5, 7, and 9.
 
-\subsubsection{Non-RMT Eigenfeatures}
+\subsubsection{Smoothed Eigenfeatures}
 \label{sec:eigs-only}
 
 When computing RMT eigenfeatures, the polynomial fitting during unfolding
@@ -714,6 +724,17 @@ might have equal or greater predictive utility. We thus also test smoothed
 variants of the eigenvalues as predictive features: we smooth the sorted
 eigenvalues with a uniform (moving average) filter and Savitsky-Golay, using
 window sizes of 3, 5, 7, and 9 to yield 8 total ``smoothed eigenvalue'' features.
+
+\subsubsection{Feature Combinations}
+
+It could easily be the case that a combination of RMT and non-RMT eigenfeatures
+are more predictive than either alone. We thus test a variety of eigenfeature
+combinations, with the motivation for these particular combinations being to
+test whether RMT eigenfeatures add anything beyond smoothing. Combined features
+are formed by concatenation, so that if we have features \(f_1, \dots,  f_n\)
+with dimensions \(p_1, \dots, p_n\), then the combined feature is \([f_1;
+\dots; f_n]\) with \(\sum p_i\) dimensions.  The final combinations chosen can
+be found in Table \ref{tab:features}.
 
 
 \subsubsection{Slicing Variants}
@@ -737,21 +758,18 @@ either the first or last 5\%, 10\%, or 20\% of the full eigenfeatures for
 non-middle slices, or the middle 10\%, 20\%, or 40\% of the full eigenfeature for
 the middle eigenvalues.
 
-\subsubsection{Feature Combinations}
-
-It could easily be the case that a combination of RMT and non-RMT eigenfeatures
-are more predictive than either alone. We thus test a variety of eigenfeature
-combinations, with the motivation for these particular combinations being to
-test whether RMT eigenfeatures add anything beyond smoothing.
-...
-
+For combined features, slicing variants are also computed, with slicing
+performed first on each feature to be combined. E.g. if we have features \(f_1,
+\dots,  f_n\) with dimensions \(p_1, \dots, p_n\), then the sliced max 25\%
+feature for each component feature, \(\hat{f}_i\) is the last \(p_i / 4\)
+elements of \(f_i\), and the combined sliced feature is  \([\hat{f}_1;\;
+\dots;\; \hat{f}_n]\)\footnote{Exact implementation can be found in the
+\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source code}}.
 
 
 
 \subsubsection{Baseline Features}
 \label{sec:baselines}
-
-MAYBE MOVE THIS SECTION AFTER RMT AND EIGEN FEATURES?
 
 If RMT- or eigenvalue-based features fail to predictively outperform features
 that are simple summary statistics of the fMRI data, it is difficult to justify
@@ -765,25 +783,132 @@ percentile, \(5^{\text{th}}\) percentile); non-robust measures of scale
 (standard deviation, range); and robust measures of scale (interquartile range,
 difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
 percentile). These statistics are used to summarizing / reduce the fMRI data
-along the voxel dimension, yielding a feature of \(T\) dimensions. E.g. the "mean"
+along the voxel dimension, yielding a feature of \(T\) dimensions. E.g. the ``mean''
 feature is just the global mean signal. Exact details can be found in the
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
-source code}. Note we do not take slice variants of these baseline features.
+source code}.
 
-\subsubsection{Final Feature List}
+We do not take slice variants of these baseline features, since the baseline
+features are still time series. However, we do also evaluate a number of
+smoothing degrees of these features, to account for noise and to be somewhat
+similar to the various smoothing variants for the eigenfeatures. Each baseline
+feature thus has a uniformly smoothed variant, where the size of the smoothing
+window is either 1 (no smoothing), 2, 4, 8, or 16.
 
-[INSERT TABLE OF ALL FEATURES]
+
+\subsection{Classifiers}
+
+We use a variety of stadard machine-learning classifiers available in the
+Scikit-learn\cite{pedregosaScikitlearnMachineLearning2011} Python library to
+solve each classification task. We use a gradient-boosted decision tree (GBDT),
+random forest (RF) classifier, support vector classifier (SVC) with radial
+basis function, and k-nearest neighbours classifiers with k equal to 3, 5, and
+9 (KNN3, KNN5, and KNN9, respectively). We originally also attempted to test a
+simple logistic regression classifier, but found that this model to frequently
+failed to converge for a number of features, even after increasing iterations
+significantly. In all cases the default hyperparameter values were used.
+
+\subsection{Preprocessing Levels}
+
+Each preprocessing intermediate in the (1) brain extraction, (2) slice time correction,
+(3) motion correction, and (4) template registration pipeline was saved and used for
+entirely separate feature analyses. E.g. all features were extracted from a brain
+prepared with one of four levels or degrees of preprocessing, where level \(k\)
+includes preprocessings steps 1 to \(k\), inclusive, and starting at \(k = 1\).
+
+\begin{table}[h!]
+\caption{
+    Feature groupings for summarization. eigs = non-RMT eigenfeatures and their combinations with
+    other non-RMT eigenfeatures. rmt = RMT eigenfeatures and their combinations. tseries = baseline
+    timeseries reductions.\\
+}
+\label{tab:features}
+\small
+\centering
+\begin{tabular}{lllr}
+\hline
+\textbf{Gross Source} & \textbf{Feature Group} & \textbf{Feature id}   \\
+\hline
+eigs           & eigs          & \tcode{eigs}                           \\
+               & eigs max      & \tcode{eigsminmax10}                   \\
+               &               & \tcode{eigsminmax20}                   \\
+               &               & \tcode{eigsminmax5}                    \\
+               & eigs middle   & \tcode{eigsmiddle10}                   \\
+               &               & \tcode{eigsmiddle20}                   \\
+               &               & \tcode{eigsmiddle40}                   \\
+               & eigs smooth   & \tcode{eigs + eigs\_smooth}            \\
+               &               & \tcode{eigs + savgol}                  \\
+               &               & \tcode{eigs\_savgol}                   \\
+               &               & \tcode{eigs\_smooth}                   \\
+               &               &                                        \\
+rmt            & rmt + eigs    & \tcode{eigs + levelvar}                \\
+               &               & \tcode{eigs + rigidity}                \\
+               &               & \tcode{eigs + rigidity + levelvar}     \\
+               &               & \tcode{eigs + unfolded}                \\
+               &               & \tcode{eigs + unfolded + levelvar}     \\
+               &               & \tcode{eigs + unfolded + rigidity}     \\
+               & rmt only      & \tcode{levelvar}                       \\
+               &               & \tcode{rigidity}                       \\
+               &               & \tcode{rigidity + levelvar}            \\
+               &               & \tcode{unfolded}                       \\
+               &               & \tcode{unfolded + levelvar}            \\
+               &               & \tcode{unfolded + rigidity}            \\
+               &               & \tcode{unfolded + rigidity + levelvar} \\
+               &               &                                        \\
+tseries        & location      & \tcode{T-max}                          \\
+               &               & \tcode{T-mean}                         \\
+               &               & \tcode{T-med}                          \\
+               &               & \tcode{T-min}                          \\
+               &               & \tcode{T-p05}                          \\
+               &               & \tcode{T-p95}                          \\
+               & scale         & \tcode{T-iqr}                          \\
+               &               & \tcode{T-rng}                          \\
+               &               & \tcode{T-rrng}                         \\
+               &               & \tcode{T-std}                          \\
+\hline
+\end{tabular}
+\end{table}
+
 
 
 \subsection{Multiverse Analysis}
 \label{sec:multiverse}
 
-Our investigation can be structured hierarchically: we have a number of
-\textit{datasets}, and each dataset has one or more \textit{classification
-tasks}. Each classification task can be solved with a \textit{classifier}.
-Each classifier fit operates on a \textit{featyre}, and each feature is
-extracted via a certain \textit{preprocessing degree} and various
-\textit{analytic choices} (slicing, trimming, unfolding degree, normalization).
+We perform a \textit{multiverse
+analysis}\cite{steegenIncreasingTransparencyMultiverse2016} to assess the
+overall predictive potential of the various eigenfeatures across all
+previously-mentioned analytic choices. That is, for each combination of
+comparison task and classifier, we use 5-fold cross validation, and use the
+mean AUROC (mAUROC) across folds as our metric to evaluate feature predictive utility.
+
+Each non-baseline feature is evaluated, for each classification task and
+classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\)
+2 normalization methods \(\times\) 4 trimming choices \(\times\) 4 unfolding
+degrees  \(\times\) 10 slice choices. Each baseline feature is evaluated
+exactly 40 times for each comparison task and classifier: 4 preprocessing
+levels \(\times\) 2 normalization methods \(\times\) 5 smoothing window sizes.
+In total, with all the datasets examined in this study, this yields 2 053 920
+mAUROC values to summarize, with 5 main \textit{analytic factors}:
+preprocessing, normalization, trimming, degree, and slicing.
+
+\section{Results}
+
+Summarizing this amount of data requires some caution. Measures of location or
+scale, even when robust, are, for the most part, misleading and uninformative when distributions
+are skewed, and summarizing too broadly is likewise uninformative. E.g. the
+average mAUROC across all over \(2 \times 10^6\) model evaluations is too
+broad a summary to meaningfully interpret. Likewise, each analytic factor
+could produce an interaction: e.g. perhaps
+a meaningful number.
+
+Our multiverse analysis can be structured semi-hierarchically, where choices at each level
+in the hierarchy impact the final distribution of AUROCs observed. We have a
+number of \textit{datasets}, and each dataset has one or more
+\textit{classification tasks}. Each classification task can be solved with a
+\textit{classifier}. Each classifier fit operates on a \textit{feature}, and
+each feature is extracted via a certain \textit{preprocessing degree} and
+various \textit{analytic choices} (slicing, trimming, unfolding degree,
+normalization).
 
 \section{Results}
 \label{sec:results}

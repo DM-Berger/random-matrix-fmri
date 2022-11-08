@@ -2122,6 +2122,15 @@ def summary_stats_and_tables() -> None:
     )
 
 
+def make_feature_table() -> None:
+    df = load_combined()
+    feats = (
+        df.loc[:, ["gross_feature", "feature_group", "feature"]].value_counts().to_frame()
+    )
+    feats.sort_values(by=["gross_feature", "feature_group", "feature"], inplace=True)
+    print(feats.to_latex())
+
+
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
