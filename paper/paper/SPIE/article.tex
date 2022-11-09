@@ -8,6 +8,8 @@
 \usepackage{doi}
 \usepackage{csquotes}
 \MakeOuterQuote{"}
+\usepackage{xr}
+\externaldocument[S-]{supplementary}
 
 \newcommand{\code}[1]{\small \texttt{#1} \normalsize}
 \newcommand{\tcode}[1]{\footnotesize \texttt{#1} \normalsize}
@@ -162,7 +164,6 @@ interpreting past and future studies applying RMT to fMRI.
 % not reflect the final page layout of a published journal paper. Accepted
 % papers are professionally typeset in XML according to the layout and design
 % of the journal.
-
 
 At its most rudimentary, RMT describes the expected behaviour of the
 eigenvalues—also often called levels—of a number of classes of random
@@ -838,7 +839,7 @@ normalized versions, but without any log transform.
 \centering
 \begin{tabular}{lllr}
 \hline
-\textbf{Gross Source} & \textbf{Feature Group} & \textbf{Feature id}   \\
+\textbf{Coarse Grouping} & \textbf{Fine Grouping} & \textbf{Feature id}   \\
 \hline
 eigs           & eigs          & \tcode{eigs}                           \\
                & eigs max      & \tcode{eigsminmax10}                   \\
@@ -908,8 +909,8 @@ slicing—to consider.
 
 Summarizing this amount of data requires some caution. Measures of location or
 scale, even when robust, are, for the most part, misleading and uninformative
-when distributions are skewed. In most cases we find skewed mAUROC distributions,
-and so have chosen primarily to present our findings visually.
+when distributions are skewed. In most cases we find skewed mAUROC
+distributions, and so have chosen primarily to present our findings visually.
 
 In addition, each analytic factor could produce an interaction. For example, it
 could be that trimming impacts the overall mAUROC distribution only at a
@@ -918,19 +919,63 @@ too many potential interactions to present, so we limit our presentation
 to the most significant ones.
 
 As there are a large number of figures, we summarize patterns of results across
-two abstract levels of feature groupings—"gross", and "feature group"—shown in
+two abstract levels of feature groupings—"coarse", and "fine"—shown in
 Table \ref{tab:features}.
 
-Finally, it makes sense to exclude classification tasks or an analytic
-factor from summaries if there is no evidence that the classification task is
-solvable in general, or for that factor. We take as lack of evidence of solvability
-an mAUROC distribution that is either (1) roughly symmetric and has mean and median
-very close to 0.5, or (2) left-tailed, with median less than 0.5.
+Finally, it makes sense to exclude classification tasks or an analytic factor
+from summaries if there is no evidence that the classification task is solvable
+in general, or for that factor. We take as lack of evidence of solvability an
+mAUROC distribution that is either (1) roughly symmetric and has mean and
+median close to 0.5, or (2) with median and mode less than 0.5.
 
-\subsection{}
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{coarse_feature_overall_by_subgroup.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:main-results}
+AUROC distributions across gross feature groupings and comparison tasks.}
+\end{figure}
 
-initial investigation reveals no evidence
-that a certain compone
+\subsection{Classification Tasks}
+
+\subsubsection{Non-Predictable Comparisons}
+Based on the mAUROC distributions for either coarsely-grouped (Figure
+\ref{fig:main-results}) or finely-grouped features (Figure
+S\ref{S-fig:feature-group-all}), neither bilinguality nor depression were
+predictable by either baseline or eigenfeatures. Additionally, the \code{pain v
+duloxetine} comparison in the \textit{Osteo} dataset, and the
+\code{trait\_attend v trait\_nonattend} conditions ("WeeklyAttend" in Figures
+\ref{fig:main-results} and S\ref{S-fig:feature-group-all}) in the \textit{Attention}
+dataset were also not meaningfully predictable by any feature. As such, we exclude
+these classification tasks from further figures and discussion.
+
+\subsubsection{Predictable Comparisons}
+As visible in Figure \ref{fig:main-results}, when coarsely summarizing features,
+eigenfeatures were more likely to be predictively useful than not, and except
+for in the \code{task\_attend v task\_nonattend} comparison, were also more
+predictively useful than the baseline features. We also note that although
+orders of magnitude more models were fit for eigenfeatures (see Section \ref{sec:multiverse}),
+the mAUROC distributions for the baseline features are either equally as wide,
+or, for the Parkinson's data, wider.
+
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{coarse_feature_by_preproc_predictive_subgroup.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:preproc} mAUROC distributions by preprocessing degree.}
+\end{figure}
+
+
+\subsection{Effect of Preprocessing}
+At a coarse level
+
 
 
 
@@ -939,18 +984,7 @@ that a certain compone
 task is not solvable with some or even all classifiers
 
 
-\label{sec:results}
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[width=6.5in]{gross_feature_overall_by_subgroup.png}
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:main-results}
-AUROC distributions across gross feature groupings and comparison tasks.}
-\end{figure}
 
 First not non-predictable data, and then no longer discuss it in subsequent features.
 

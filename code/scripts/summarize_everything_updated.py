@@ -149,7 +149,7 @@ OVERALL_PREDICTIVE_GROUP_ORDER = [
     "Aging - younger v older",
     "Osteo - nopain v duloxetine",
     "Osteo - nopain v pain",
-    "Osteo - pain v duloxetine",
+    # "Osteo - pain v duloxetine",
     "Parkinsons - ctrl v park",  # questionable, only tseries seem predictive
     "TaskAttention - task_attend v task_nonattend",
     "Vigilance - vigilant v nonvigilant",
@@ -241,9 +241,9 @@ def load_all_renamed() -> DataFrame:
     )
     df = df.loc[~dupes]
     df["subgroup"] = df["data"] + " - " + df["comparison"]
-    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["fine_feature"] = df["feature"].apply(fine_feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
-    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
+    df["coarse_feature"] = df["feature"].apply(coarse_feature_grouping)
     return df
 
 
@@ -279,9 +279,9 @@ def load_tseries() -> DataFrame:
     )
     df = df.loc[~dupes]
     df["subgroup"] = df["data"] + " - " + df["comparison"]
-    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["fine_feature"] = df["feature"].apply(fine_feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
-    df["gross_feature"] = df["feature"].apply(gross_feature_grouping)
+    df["coarse_feature"] = df["feature"].apply(coarse_feature_grouping)
     return df
 
 
@@ -366,7 +366,7 @@ def is_eigs_only(s: str) -> bool:
     return s == "eigs" or ("middle" in s)
 
 
-def feature_grouping(s: str) -> str:
+def fine_feature_grouping(s: str) -> str:
     if is_ts_loc(s):
         return "tseries loc"
     if is_ts_scale(s):
@@ -385,7 +385,7 @@ def feature_grouping(s: str) -> str:
         return "rmt + eigs"
 
 
-def gross_feature_grouping(s: str) -> str:
+def coarse_feature_grouping(s: str) -> str:
     if is_ts_loc(s) or is_ts_scale(s):
         return "tseries"
     if is_rmt_only(s) or is_rmt_plus(s):
@@ -467,7 +467,7 @@ def summarize_performance_by_aggregation(
     # df = load_all_renamed()
     df = load_combined()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
-    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["fine_feature"] = df["feature"].apply(fine_feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
 
     df = df.loc[~df.data.str.contains("Reflect")]
@@ -479,7 +479,7 @@ def summarize_performance_by_aggregation(
         data=df,
         x="auroc",
         kind="kde",
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         col="subgroup",
@@ -507,7 +507,7 @@ def summarize_performance_by_aggregation(
         data=df,
         y="auroc",
         x="subgroup",
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="violin",
@@ -534,7 +534,7 @@ def summarize_performance_by_aggregation(
         data=df,
         y="auroc",
         x="subgroup",
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
@@ -557,7 +557,7 @@ def summarize_performance_by_aggregation(
         x="auroc",
         y="subgroup",
         order=SUBGROUP_ORDER,
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
@@ -590,7 +590,7 @@ def summarize_performance_by_aggregation(
         y="auroc",
         x="slice",
         order=SLICE_ORDER,
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
@@ -613,7 +613,7 @@ def summarize_performance_by_aggregation(
         x="auroc",
         y="slice",
         order=SLICE_ORDER,
-        hue="feature_group",
+        hue="fine_feature",
         palette=FEATURE_GROUP_PALETTE,
         hue_order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
@@ -646,7 +646,7 @@ def summarize_performance_by_aggregation(
         x="auroc",
         col="subgroup",
         col_order=SUBGROUP_ORDER,
-        y="feature_group",
+        y="fine_feature",
         kind="box",
         hue="slice",
         hue_order=SLICE_ORDER,
@@ -679,7 +679,7 @@ def summarize_performance_by_aggregation(
         col="subgroup",
         col_order=SUBGROUP_ORDER,
         col_wrap=4,
-        x="feature_group",
+        x="fine_feature",
         order=list(FEATURE_GROUP_PALETTE.keys()),
         kind="box",
         hue="preproc",
@@ -1214,7 +1214,7 @@ def get_overfit_scores() -> None:
     # df = load_all_renamed()
     df = load_combined()
     df["subgroup"] = df["data"] + " - " + df["comparison"]
-    df["feature_group"] = df["feature"].apply(feature_grouping)
+    df["fine_feature"] = df["feature"].apply(fine_feature_grouping)
     df["slice_group"] = df["slice"].apply(slice_grouping)
     df["is_overfit"] = (df["auroc"] < 0.5).astype(int)
     df["overfit_score"] = df["auroc"].apply(lambda auroc: 2 * (auroc - 0.5))
@@ -1235,7 +1235,7 @@ def get_overfit_scores() -> None:
         ]
     )
     p95 = df.groupby(
-        ["subgroup", "feature_group", "classifier", "preproc", "trim", "slice_group"]
+        ["subgroup", "fine_feature", "classifier", "preproc", "trim", "slice_group"]
     ).quantile(0.95)
     good = p95["overfit_score"].loc[p95["overfit_score"] < 0].reset_index()
     print("")
@@ -1352,6 +1352,14 @@ def despine(grid: FacetGrid) -> None:
     for ax in grid.fig.axes:
         ax.set_yticks([])
 
+def thinify_lines(grid: FacetGrid) -> None:
+    fig: Figure = grid.fig
+    for ax in fig.axes:
+        for line in ax.get_lines():
+            line.set_linewidth(1.0)
+
+    for line in grid.legend.legendHandles:
+        line.set_linewidth(1.0)
 
 def dashify_gross(grid: FacetGrid) -> None:
     fig: Figure = grid.fig
@@ -1373,7 +1381,6 @@ def dashify_gross(grid: FacetGrid) -> None:
         grid.legend.legendHandles[2].set_linestyle("solid")
     except IndexError:
         pass
-
 
 def dashify_trims(grid: FacetGrid) -> None:
     fig: Figure = grid.fig
@@ -1433,7 +1440,7 @@ def make_kde_plots() -> None:
     df = load_combined()
     print(" done")
 
-    def plot_by_gross_feature() -> None:
+    def plot_by_coarse_feature() -> None:
         ax: Axes
         fig: Figure
         print("Plotting...", end="", flush=True)
@@ -1441,7 +1448,7 @@ def make_kde_plots() -> None:
             data=df,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             fill=False,
             common_norm=False,
             palette=GROSS_FEATURE_PALETTE,
@@ -1457,7 +1464,7 @@ def make_kde_plots() -> None:
         clean_titles(grid, split_at="-")
         fig = grid.fig
         fig.suptitle(
-            "Distribution of AUROCs by Feature Group",
+            "Distribution of AUROCs by Coarse Feature Group",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1468,11 +1475,11 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.79, 0.09))
         despine(grid)
         dashify_gross(grid)
-        savefig(fig, "gross_feature_overall_by_subgroup.png")
+        savefig(fig, "coarse_feature_overall_by_subgroup.png")
 
-    def plot_largest_by_gross_feature() -> None:
+    def plot_largest_by_coarse_feature() -> None:
         """Too big / complicated"""
-        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+        dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
         print("Plotting...", end="", flush=True)
@@ -1480,10 +1487,10 @@ def make_kde_plots() -> None:
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
-            # hue="feature_group",
+            # hue="fine_feature",
             # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             # palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1505,7 +1512,7 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each combination of Gross Feature Group, Dataset, and Classifier",
+            "Distributions of Largest 500 AUROCs for each combination of Coarse Feature Group, Dataset, and Classifier",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1514,13 +1521,13 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "gross_feature_largest_by_subgroup_data.png")
+        savefig(fig, "coarse_feature_largest_by_subgroup_data.png")
 
-    def plot_largest_by_gross_feature_subgroup() -> None:
+    def plot_largest_by_coarse_feature_subgroup() -> None:
         """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
         worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
         """
-        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+        dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
         print("Plotting...", end="", flush=True)
@@ -1528,7 +1535,7 @@ def make_kde_plots() -> None:
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1547,7 +1554,7 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each Combination of Gross Feature Group and Dataset",
+            "Distributions of Largest 500 AUROCs for each Combination of Coarse Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1556,11 +1563,11 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "gross_feature_largest_by_subgroup.png")
+        savefig(fig, "coarse_feature_largest_by_subgroup.png")
 
-    def plot_smallest_by_gross_feature_subgroup() -> None:
+    def plot_smallest_by_coarse_feature_subgroup() -> None:
         print("Grouping...", end="", flush=True)
-        dfg = df.groupby(["subgroup", "gross_feature"]).apply(
+        dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
             lambda grp: grp.nsmallest(500, "auroc")
         )
         print("done")
@@ -1569,7 +1576,7 @@ def make_kde_plots() -> None:
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1588,7 +1595,7 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Smallest 500 AUROCs for each Combination of Gross Feature Group and Dataset",
+            "Distributions of Smallest 500 AUROCs for each Combination of Coarse Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1597,17 +1604,17 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "gross_feature_smallest_by_subgroup.png")
+        savefig(fig, "coarse_feature_smallest_by_subgroup.png")
 
-    def plot_largest_by_feature_groups() -> None:
-        dfg = df.groupby(["subgroup", "feature_group"]).apply(
+    def plot_largest_by_fine_feature_groups() -> None:
+        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
         grid = sbn.displot(
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="feature_group",
+            hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1625,24 +1632,24 @@ def make_kde_plots() -> None:
         despine(grid)
         # dashify_gross(grid)
         fig = grid.fig
-        fig.suptitle("Distribution of Largest 500 AUROCs for each Feature Group")
+        fig.suptitle("Distribution of Largest 500 AUROCs for Fine Feature Groups")
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.92, bottom=0.05, left=0.03, right=0.985, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.72, 0.08))
-        savefig(fig, "feature_group_largests_by_subgroup.png")
+        savefig(fig, "fine_feature_group_largests_by_subgroup.png")
 
-    def plot_smallest_by_feature_groups() -> None:
-        dfg = df.groupby(["subgroup", "feature_group"]).apply(
+    def plot_smallest_by_fine_feature_groups() -> None:
+        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
             lambda grp: grp.nsmallest(500, "auroc")
         )
         grid = sbn.displot(
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="feature_group",
+            hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1660,21 +1667,21 @@ def make_kde_plots() -> None:
         despine(grid)
         # dashify_gross(grid)
         fig = grid.fig
-        fig.suptitle("Distribution of Smallest 500 AUROCs for each Feature Group")
+        fig.suptitle("Distribution of Smallest 500 AUROCs for each Fine Feature Grouping")
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.92, bottom=0.05, left=0.05, right=0.985, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.76, 0.11))
-        savefig(fig, "feature_group_smallest_by_subgroup.png")
+        savefig(fig, "fine_feature_group_smallest_by_subgroup.png")
 
-    def plot_all_by_feature_groups() -> None:
+    def plot_all_by_fine_feature_groups() -> None:
         grid = sbn.displot(
             data=df,
             x="auroc",
             kind="kde",
-            hue="feature_group",
+            hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1691,17 +1698,17 @@ def make_kde_plots() -> None:
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
         fig = grid.fig
-        fig.suptitle("Overall Distribution of AUROCs for each Feature Group")
+        fig.suptitle("Overall Distribution of AUROCs for each Fine Feature Group")
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.76, 0.11))
-        savefig(fig, "all_by_feature_groups.png")
+        savefig(fig, "all_by_fine_feature_groups.png")
 
-    def plot_largest_by_gross_feature_preproc() -> None:
+    def plot_largest_by_coarse_feature_preproc() -> None:
         print("Grouping...", end="", flush=True)
-        dfg = df.groupby(["preproc", "gross_feature"]).apply(
+        dfg = df.groupby(["preproc", "coarse_feature"]).apply(
             lambda grp: grp.nlargest(500, "auroc")
         )
         print("done")
@@ -1710,7 +1717,7 @@ def make_kde_plots() -> None:
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1741,11 +1748,11 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.05, 0.75))
         for ax in fig.axes:
             ax.set_ylabel("")
-        savefig(fig, "gross_feature_largest_by_preproc.png")
+        savefig(fig, "coarse_feature_largest_by_preproc.png")
 
-    def plot_smallest_by_gross_feature_preproc() -> None:
+    def plot_smallest_by_coarse_feature_preproc() -> None:
         print("Grouping...", end="", flush=True)
-        dfg = df.groupby(["preproc", "gross_feature"]).apply(
+        dfg = df.groupby(["preproc", "coarse_feature"]).apply(
             lambda grp: grp.nsmallest(500, "auroc")
         )
         print("done")
@@ -1754,7 +1761,7 @@ def make_kde_plots() -> None:
             data=dfg,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1785,15 +1792,15 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.05, 0.75))
         for ax in fig.axes:
             ax.set_ylabel("")
-        savefig(fig, "gross_feature_smallest_by_preproc.png")
+        savefig(fig, "coarse_feature_smallest_by_preproc.png")
 
-    def plot_by_gross_feature_preproc_subgroup() -> None:
+    def plot_by_coarse_feature_preproc_subgroup() -> None:
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=df,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1827,16 +1834,16 @@ def make_kde_plots() -> None:
         for ax in fig.axes:
             ax.set_ylabel("")
         plt.show()
-        savefig(fig, "gross_feature_by_preproc_subgroup.png")
+        savefig(fig, "coarse_feature_by_preproc_subgroup.png")
 
-    def plot_by_gross_predictive_feature_preproc_subgroup() -> None:
+    def plot_by_coarse_predictive_feature_preproc_subgroup() -> None:
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
             fill=False,
@@ -1881,19 +1888,73 @@ def make_kde_plots() -> None:
             ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "gross_feature_by_preproc_predictive_subgroup.png")
+        savefig(fig, "coarse_feature_by_preproc_predictive_subgroup.png")
 
-    def plot_by_feature_group_predictive_norm_subgroup() -> None:
+    def plot_by_fine_predictive_feature_preproc_subgroup() -> None:
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
             x="auroc",
             kind="kde",
-            # hue="gross_feature",
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="preproc",
+            row_order=PREPROC_ORDER,
+            # col_wrap=4,
+            bw_adjust=2.0,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "preproc = ", split_at="|")
+        clean_titles(grid, ".*\n")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "task_attend", "high")
+        clean_titles(grid, "task_nonattend", "low")
+        clean_titles(grid, "nonvigilant", "low")
+        clean_titles(grid, "vigilant", "high")
+        clean_titles(grid, "younger", "young")
+        clean_titles(grid, "duloxetine", "dlxtn")
+        despine(grid)
+        thinify_lines(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Preprocessing for Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=10, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.82, bottom=0.085, left=0.1, right=0.98, hspace=0.2, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.80))
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=PREPROC_ORDER
+        )
+        for i, ax in enumerate(fig.axes):
+            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
+                ax.set_title("")
+        savefig(fig, "fine_feature_by_preproc_predictive_subgroup.png")
+
+    def plot_by_fine_feature_group_predictive_norm_subgroup() -> None:
+        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfp,
+            x="auroc",
+            kind="kde",
+            # hue="coarse_feature",
             # hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             # palette=GROSS_FEATURE_PALETTE,
-            hue="feature_group",
+            hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1928,7 +1989,7 @@ def make_kde_plots() -> None:
             "AUROCs by Normalization for Predictable Data",
             fontsize=10,
         )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.set_size_inches(w=10, h=8)
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
@@ -1938,19 +1999,19 @@ def make_kde_plots() -> None:
             ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "feature_group_by_norm_predictive_subgroup.png")
+        savefig(fig, "fine_feature_group_by_norm_predictive_subgroup.png")
 
-    def plot_by_feature_group_predictive_classifier_subgroup() -> None:
+    def plot_by_coarse_feature_group_predictive_classifier_subgroup() -> None:
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
             x="auroc",
             kind="kde",
-            hue="gross_feature",
+            hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
-            # hue="feature_group",
+            # hue="fine_feature",
             # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
             # palette=FEATURE_GROUP_PALETTE,
             fill=False,
@@ -1995,9 +2056,9 @@ def make_kde_plots() -> None:
             ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "feature_group_by_predictive_subgroup_classifier.png")
+        savefig(fig, "coarse_feature_group_by_predictive_subgroup_classifier.png")
 
-        bulks = dfp.groupby(["subgroup", "classifier", "gross_feature"]).apply(
+        bulks = dfp.groupby(["subgroup", "classifier", "coarse_feature"]).apply(
             lambda grp: grp.auroc.quantile([0.25, 0.50, 0.75]).T
         )
         bulks = bulks.reset_index()
@@ -2051,32 +2112,33 @@ def make_kde_plots() -> None:
 
     # these are not great
     # plot_overall()
-    # plot_largest_by_gross_feature()
 
-    # plot_by_gross_feature()
-    # plot_largest_by_gross_feature_subgroup()
-    # plot_smallest_by_gross_feature_subgroup()
-    # plot_largest_by_feature_groups()
-    # plot_smallest_by_feature_groups()
-    # plot_all_by_feature_groups()
+    # plot_largest_by_coarse_feature()
+    # plot_by_coarse_feature()
+    # plot_largest_by_coarse_feature_subgroup()
+    # plot_smallest_by_coarse_feature_subgroup()
+    # plot_largest_by_fine_feature_groups()
+    # plot_smallest_by_fine_feature_groups()
+    # plot_all_by_fine_feature_groups()
 
-    # plot_by_gross_feature_preproc()
-    # plot_largest_by_gross_feature_preproc()
-    # plot_smallest_by_gross_feature_preproc()
-    # plot_by_gross_feature_preproc_subgroup()
-    # plot_by_gross_predictive_feature_preproc_subgroup()
-    # plot_by_feature_group_predictive_norm_subgroup()
-    plot_by_feature_group_predictive_classifier_subgroup()
-    plot_rmt_by_trim()
+    # plot_by_coarse_feature_preproc()
+    # plot_largest_by_coarse_feature_preproc()
+    # plot_smallest_by_coarse_feature_preproc()
+    # plot_by_coarse_feature_preproc_subgroup()
+    # plot_by_coarse_predictive_feature_preproc_subgroup()
+    # plot_by_fine_feature_group_predictive_norm_subgroup()
+    plot_by_fine_predictive_feature_preproc_subgroup()
+    # plot_by_coarse_feature_group_predictive_classifier_subgroup()
+    # plot_rmt_by_trim()
 
 
 def summary_stats_and_tables() -> None:
     df = load_combined()
     df_ses = load_combined(drop_ses=False)
-    df["mega_feature"] = df["gross_feature"].apply(
+    df["mega_feature"] = df["coarse_feature"].apply(
         lambda s: "eigs_all" if s != "tseries" else "tseries"
     )
-    df_ses["mega_feature"] = df_ses["gross_feature"].apply(
+    df_ses["mega_feature"] = df_ses["coarse_feature"].apply(
         lambda s: "eigs_all" if s != "tseries" else "tseries"
     )
     meds = df.groupby(["subgroup", "mega_feature"])["auroc"].median().unstack()
@@ -2125,9 +2187,9 @@ def summary_stats_and_tables() -> None:
 def make_feature_table() -> None:
     df = load_combined()
     feats = (
-        df.loc[:, ["gross_feature", "feature_group", "feature"]].value_counts().to_frame()
+        df.loc[:, ["coarse_feature", "fine_feature", "feature"]].value_counts().to_frame()
     )
-    feats.sort_values(by=["gross_feature", "feature_group", "feature"], inplace=True)
+    feats.sort_values(by=["coarse_feature", "fine_feature", "feature"], inplace=True)
     print(feats.to_latex())
 
 
@@ -2135,8 +2197,8 @@ if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
-    df = load_combined()
-    df_ses = load_combined(drop_ses=False)
+    # df = load_combined()
+    # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
 

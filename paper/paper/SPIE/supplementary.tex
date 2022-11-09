@@ -1,0 +1,94 @@
+% \documentclass[12pt]{supplementary}  % 12pt font required by SPIE;
+\documentclass{article}  % use this instead for A4 paper
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{authblk}
+\usepackage{times}
+\usepackage{float}
+\usepackage{ifthen}
+\usepackage{setspace}
+\usepackage[super]{cite}[2003/11/04] % need vers. > 4.01
+\usepackage{color}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{graphicx}
+\graphicspath{ {./figures/} }
+\usepackage{setspace}
+\usepackage{tocloft}
+\usepackage{doi}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
+\usepackage{pdflscape}
+\usepackage{geometry}
+\geometry{
+  textwidth=11in,
+  textheight=8.5in,
+  headheight=0in,
+  headsep=0in,
+  marginparwidth=0in,
+  papersize={11in,8.5in},
+  left=0in,
+  lmargin=0in,
+  inner=0in,
+  right=0in,
+  rmargin=0in,
+  outer=0in,
+  top=0in,
+  tmarg=0in,
+  bottom=0in,
+  bmargin=0in,
+}
+
+\newcommand{\code}[1]{\small \texttt{#1} \normalsize}
+\newcommand{\tcode}[1]{\footnotesize \texttt{#1} \normalsize}
+
+\pagestyle{empty}               % page numbers is default; use empty for no numbers
+
+
+\title{Supplementary Material}
+
+\author[a]{Derek Berger}
+\author[a,*]{Jacob Levman}
+\author[b]{Gurpreet M. Matharoo}
+\affil[a]{St. Francis Xavier University, Department of Computer Science, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
+\affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
+
+
+\renewcommand{\cftdotsep}{\cftnodots}
+\cftpagenumbersoff{figure}
+\cftpagenumbersoff{table}
+
+\begin{document}
+
+\begin{center}
+\maketitle
+\end{center}
+
+
+
+\begin{spacing}{1}   % use single spacing for supplementary
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{all_by_fine_feature_groups.png}
+\end{center}
+\caption
+{ \label{fig:feature-group-all}
+AUROC distributions across gross feature groupings and comparison tasks.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_by_preproc_predictive_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-preproc}
+AUROC distributions across fine feature groupings and predictable comparison tasks, with effect of preprocessing.}
+\end{figure}
+
+
+
+\bibliography{report}   % bibliography data in report.bib
+\bibliographystyle{spiejour}   % makes bibtex use spiejour.bst
+
+\end{spacing}
+\end{document}
