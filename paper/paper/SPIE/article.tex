@@ -893,35 +893,52 @@ comparison task and classifier, we use 5-fold cross validation, and use the
 mean AUROC (mAUROC) across folds as our metric to evaluate feature predictive utility.
 
 Each non-baseline feature is evaluated, for each classification task and
-classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\)
-2 normalization methods \(\times\) 4 trimming choices \(\times\) 4 unfolding
+classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\) 2
+normalization methods \(\times\) 4 trimming choices \(\times\) 4 unfolding
 degrees  \(\times\) 10 slice choices. Each baseline feature is evaluated
 exactly 40 times for each comparison task and classifier: 4 preprocessing
 levels \(\times\) 2 normalization methods \(\times\) 5 smoothing window sizes.
 In total, with all the datasets examined in this study, this yields 2 053 920
-mAUROC values to summarize, with 5 main \textit{analytic factors}:
-preprocessing, normalization, trimming, degree, and slicing.
+mAUROC values to summarize, with 5 main \textit{analytic factors}—
+preprocessing, normalization, trimming, unfolding/smoothing degree, and
+slicing—to consider.
 
 \section{Results}
+\label{sec:results}
 
 Summarizing this amount of data requires some caution. Measures of location or
-scale, even when robust, are, for the most part, misleading and uninformative when distributions
-are skewed, and summarizing too broadly is likewise uninformative. E.g. the
-average mAUROC across all over \(2 \times 10^6\) model evaluations is too
-broad a summary to meaningfully interpret. Likewise, each analytic factor
-could produce an interaction: e.g. perhaps
-a meaningful number.
+scale, even when robust, are, for the most part, misleading and uninformative
+when distributions are skewed. In most cases we find skewed mAUROC distributions,
+and so have chosen primarily to present our findings visually.
 
-Our multiverse analysis can be structured semi-hierarchically, where choices at each level
-in the hierarchy impact the final distribution of AUROCs observed. We have a
-number of \textit{datasets}, and each dataset has one or more
-\textit{classification tasks}. Each classification task can be solved with a
-\textit{classifier}. Each classifier fit operates on a \textit{feature}, and
-each feature is extracted via a certain \textit{preprocessing degree} and
-various \textit{analytic choices} (slicing, trimming, unfolding degree,
-normalization).
+In addition, each analytic factor could produce an interaction. For example, it
+could be that trimming impacts the overall mAUROC distribution only at a
+certain preprocessing level and for certain feature slicing. However, there are
+too many potential interactions to present, so we limit our presentation
+to the most significant ones.
 
-\section{Results}
+As there are a large number of figures, we summarize patterns of results across
+two abstract levels of feature groupings—"gross", and "feature group"—shown in
+Table \ref{tab:features}.
+
+Finally, it makes sense to exclude classification tasks or an analytic
+factor from summaries if there is no evidence that the classification task is
+solvable in general, or for that factor. We take as lack of evidence of solvability
+an mAUROC distribution that is either (1) roughly symmetric and has mean and median
+very close to 0.5, or (2) left-tailed, with median less than 0.5.
+
+\subsection{}
+
+initial investigation reveals no evidence
+that a certain compone
+
+
+
+
+  if a certain feature is simply not useful, or if a certain comparison
+task is not solvable with some or even all classifiers
+
+
 \label{sec:results}
 
 \begin{figure}
