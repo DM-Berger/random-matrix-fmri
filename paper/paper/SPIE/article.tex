@@ -1028,8 +1028,7 @@ likely to have mAUROC \(<\) 0.5. Overall, however, differences in the mAUROC dis
 were small.
 
 \subsection{Normalization}
-There was no visible effect of normalization on mAUROC distributions at any
-summary level.
+There was no visible effect of feature normalization on mAUROC distributions.
 
 
 \subsection{Effect of Trimming}
@@ -1055,7 +1054,7 @@ largest unfolding degree of 9 produces the most favourable mAUROC
 distributions.
 
 \subsection{Effect of Slicing}
-Features were most predictive when using either the largest 5 or 10\% or middle
+Features were slightly more predictive when using either the largest 5 or 10\% or middle
 25\% ("max-05", "max-10" and "mid-25" in Figure
 \ref{S-fig:best-params-slicing}), and least predictive when features primarily
 involved the smallest eigenvalues.
@@ -1071,6 +1070,34 @@ distributions in Figure S\ref{S-fig:best-params}. Using these analytic choices,
 the \code{depress v control} comparison in the \textit{Depression} dataset
 becomes weakly predictable, and the smoothed eigenvalue features tend to
 closely follow the unfolded eigenvalues in predictive utility.
+
+
+\section{Discussion}
+
+In this study, eigenfeatures inspired by RMT and derived from the eigenvalues
+of the full, whole-brain voxelwise fMRI correlation matrix, were found to have
+predictive utility across a wide variety of phenomena. Compared to simple
+baseline reductions of the fMRI data, these eigenfeatures had more consistent
+predictive utility, and a higher maximum predictive potential (Figures
+\ref{fig:main-results}-\ref{fig:largest}).  In addition to evidence from
+previous studies
+\cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}
+this suggests RMT may be a useful analytic and theoretical tool for
+understanding functional connectivity.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{unfolded_duloxetine_nopain.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:unfolded} Raw eigenvalues and unfolded eigenvaleus (polynomial degree 9) for \textit{Osteo} dataset \code{duloxetine v nopain} classification task.}
+\end{figure}
+
+When RMT-based eigenfeatures were most predictive
+
+
 
 
 

@@ -26,7 +26,13 @@ from seaborn import FacetGrid
 from statsmodels.distributions.empirical_distribution import ECDF
 from tqdm import tqdm
 
-from rmt.updated_features import FEATURE_OUTFILES as PATHS
+from rmt.updated_dataset import UpdatedProcessedDataset
+from rmt.enumerables import UpdatedDataset, PreprocLevel, TrimMethod
+from rmt.updated_features import (
+    FEATURE_OUTFILES as PATHS,
+    Unfolded,
+    Eigenvalues,
+)
 from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
 from rmt.visualize import best_rect
 
@@ -1905,29 +1911,37 @@ def make_kde_plots() -> None:
         savefig(fig, "best_rmt_params_by_subgroup_and_slicing.png")
 
     def plot_all_by_fine_feature_groups_best_params_best_slice() -> None:
-        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
+        rmt = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
         rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
         rmt = rmt.loc[rmt.deg.isin([3, 9])]
         rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
+        rmt = rmt.loc[rmt.slice.isin(["max-05", "max-10", "mid-25"])]
         idx = rmt.feature.isin(["unfolded"])
         rmt = rmt[idx]
 
-        other = df.loc[df.coarse_feature.isin(["eigs"])]
-        data = pd.concat([rmt, other], axis=0)
+        # other = df.loc[df.coarse_feature.isin(["eigs"])]
+        # data = pd.concat([rmt, other], axis=0)
+        data = rmt
+
+        palette = {**FEATURE_GROUP_PALETTE}
+        palette.pop("tseries loc")
+        palette.pop("tseries scale")
 
         grid = sbn.displot(
             data=data,
             x="auroc",
             kind="kde",
             hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
+            hue_order=list(palette.keys()),
+            palette=palette,
             fill=False,
             common_norm=False,
             col="subgroup",
-            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            row="slice",
-            row_order=SLICE_ORDER,
+            # col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            col_order=SUBGROUP_ORDER,
+            col_wrap=3,
+            # row="slice",
+            # row_order=SLICE_ORDER,
             bw_adjust=1.2,
             alpha=0.8,
             facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
@@ -1938,20 +1952,18 @@ def make_kde_plots() -> None:
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
         clean_titles(grid, r"slice = .+\| ")
-        make_row_labels(
-            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=SLICE_ORDER
-        )
+        # make_row_labels(
+        #     grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=SLICE_ORDER
+        # )
         fig = grid.fig
-        fig.suptitle(
-            "Overall Distribution of AUROCs for each Fine Feature Group by Slicing"
-        )
+        fig.suptitle("Overall Distribution of AUROCs Using Best Analytic Choices")
         fig.tight_layout()
         fig.set_size_inches(w=10, h=8)
         fig.subplots_adjust(
             top=0.892, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
         )
-        sbn.move_legend(grid, loc=(0.01, 0.835))
-        savefig(fig, "best_rmt_params_by_subgroup_and_slicing.png")
+        sbn.move_legend(grid, loc=(0.70, 0.04))
+        savefig(fig, "best_rmt_params_by_subgroup.png")
 
     def plot_largest_by_coarse_feature_preproc() -> None:
         print("Grouping...", end="", flush=True)
@@ -2290,7 +2302,7 @@ def make_kde_plots() -> None:
         add_auroc_lines(grid, "vline")
         fig = grid.fig
         fig.suptitle(
-            "AUROCs by Normalization for Predictable Data",
+            "AUROCs by Classifier for Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=20, h=15)
@@ -2345,7 +2357,7 @@ def make_kde_plots() -> None:
             grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=CLASSIFIER_ORDER
         )
         despine(grid)
-        dashify_gross(grid)
+        thinify_lines(grid)
         add_auroc_lines(grid, "vline")
         fig = grid.fig
         fig.suptitle(
@@ -2462,7 +2474,7 @@ def make_kde_plots() -> None:
         fig.subplots_adjust(
             top=0.79, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
         )
-        sbn.move_legend(grid, loc=(0.01, 0.83))
+        sbn.move_legend(grid, loc=(0.01, 0.825))
         make_row_labels(
             grid,
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
@@ -2543,7 +2555,7 @@ def make_kde_plots() -> None:
     # plot_by_coarse_predictive_feature_preproc_subgroup()
     # plot_by_fine_feature_group_predictive_norm_subgroup()
     # plot_by_fine_predictive_feature_preproc_subgroup()
-    # plot_by_fine_feature_group_predictive_classifier_subgroup()
+    plot_by_fine_feature_group_predictive_classifier_subgroup()
     # plot_largest_by_fine_feature_subgroup()
     # plot_smallest_by_fine_feature_subgroup()
     # plot_by_coarse_feature_group_predictive_classifier_subgroup()
@@ -2551,8 +2563,9 @@ def make_kde_plots() -> None:
     # plot_rmt_by_degree()
     # plot_rmt_largest_by_degree()
     # plot_all_by_fine_feature_groups_best_params()
-    plot_all_by_fine_feature_groups_best_params_slice()
+    # plot_all_by_fine_feature_groups_best_params_slice()
     # plot_all_by_fine_feature_groups_best_params()
+    # plot_all_by_fine_feature_groups_best_params_best_slice()
 
 
 def summary_stats_and_tables() -> None:
@@ -2616,6 +2629,164 @@ def make_feature_table() -> None:
     print(feats.to_latex())
 
 
+def plot_unfolded_duloxetine() -> None:
+    fig: Figure
+    ax: Axes
+    args = dict(
+        source=UpdatedDataset.Osteo,
+        preproc=PreprocLevel.MotionCorrect,
+        norm=True,
+    )
+    deg = 9
+    trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
+    # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
+    unfs = [Unfolded(degree=deg, trim=trim, **args).data for trim in trims]
+    eigs = Eigenvalues(**args).data
+    # smooths = [EigenvaluesSmoothed(degree=deg, **args).data for deg in degrees]
+    # eigs = EigsMinMax20(**args).data
+
+    fig, axes = plt.subplots(ncols=len(unfs) + 1, nrows=1, sharex=True, sharey=False)
+    # fig.suptitle(
+    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
+    # )
+    for i, (unf, trim) in enumerate(zip(unfs, trims)):
+        ax = axes[i + 1]
+        ax.set_yscale("log")
+        ax.set_title(f"trim = {trim.name}", fontsize=9)
+        dulox = unf.drop(columns="y").loc[unf["y"] == "duloxetine"]
+        nopain = unf.drop(columns="y").loc[unf["y"] == "nopain"]
+        for k in range(len(dulox)):
+            vals = dulox.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals,
+                color=BLUE,
+                lw=0.5,
+                label="duloxetine" if k == 0 else None,
+                alpha=0.5,
+            )
+        for k in range(len(nopain)):
+            vals = nopain.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals, color=ORNG, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5
+            )
+
+    ax = axes[0]
+    ax.set_yscale("log")
+    ax.set_title("Raw Eigenvalues", fontsize=9)
+    dulox = eigs.drop(columns="y").loc[eigs["y"] == "duloxetine"]
+    nopain = eigs.drop(columns="y").loc[eigs["y"] == "nopain"]
+    for k in range(len(dulox)):
+        vals = dulox.iloc[k, :]
+        vals[vals <= 1e-3] = np.nan
+        ax.plot(
+            vals,
+            color=BLUE,
+            lw=0.5,
+            label="duloxetine" if k == 0 else None,
+            alpha=0.5,
+        )
+    for k in range(len(nopain)):
+        vals = nopain.iloc[k, :]
+        vals[vals <= 1e-3] = np.nan
+        ax.plot(vals, color=ORNG, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5)
+
+    for ax in axes:
+        ax.set_yticklabels(ax.get_yticklabels(), fontsize=8)
+        ax.set_xticklabels(ax.get_xticklabels(), fontsize=8)
+
+    fig.text(x=0.5, y=0.02, s="Feature Index", ha="center", fontsize=8)
+    fig.text(
+        y=0.5, x=0.02, s="Feature Value", va="center", rotation="vertical", fontsize=8
+    )
+    fig.set_size_inches(w=6.5, h=2)
+    fig.tight_layout()
+    fig.subplots_adjust(
+        top=0.889, bottom=0.179, left=0.099, right=0.977, hspace=0.2, wspace=0.35
+    )
+    plt.show()
+    savefig(fig, "unfolded_duloxetine_nopain.png")
+
+
+def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
+    fig: Figure
+    ax: Axes
+    args = dict(
+        source=source,
+        preproc=PreprocLevel.MotionCorrect,
+        norm=True,
+    )
+    deg = 9
+    trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
+    # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
+    unfs = [Unfolded(degree=deg, trim=trim, **args).data for trim in trims]
+    eigs = Eigenvalues(**args).data
+    # smooths = [EigenvaluesSmoothed(degree=deg, **args).data for deg in degrees]
+    # eigs = EigsMinMax20(**args).data
+
+    fig, axes = plt.subplots(ncols=len(unfs) + 1, nrows=1, sharex=True, sharey=False)
+    # fig.suptitle(
+    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
+    # )
+    for i, (unf, trim) in enumerate(zip(unfs, trims)):
+        ax = axes[i + 1]
+        ax.set_yscale("log")
+        ax.set_xscale("log")
+        ax.set_title(f"trim = {trim.name}", fontsize=9)
+        g1 = unf.drop(columns="y").loc[unf["y"] == group1]
+        g2 = unf.drop(columns="y").loc[unf["y"] == group2]
+        for k in range(len(g1)):
+            vals = g1.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals,
+                color=BLUE,
+                lw=0.5,
+                label=group1 if k == 0 else None,
+                alpha=0.5,
+            )
+        for k in range(len(g2)):
+            vals = g2.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(vals, color=ORNG, lw=0.5, label=group2 if k == 0 else None, alpha=0.5)
+
+    ax = axes[0]
+    ax.set_yscale("log")
+    ax.set_title("Raw Eigenvalues", fontsize=9)
+    g1 = eigs.drop(columns="y").loc[eigs["y"] == group1]
+    g2 = eigs.drop(columns="y").loc[eigs["y"] == group2]
+    for k in range(len(g1)):
+        vals = g1.iloc[k, :]
+        vals[vals <= 1e-3] = np.nan
+        ax.plot(
+            vals,
+            color=BLUE,
+            lw=0.5,
+            label=group1 if k == 0 else None,
+            alpha=0.5,
+        )
+    for k in range(len(g2)):
+        vals = g2.iloc[k, :]
+        vals[vals <= 1e-3] = np.nan
+        ax.plot(vals, color=ORNG, lw=0.5, label=group2 if k == 0 else None, alpha=0.5)
+
+    for ax in axes:
+        ax.set_yticklabels(ax.get_yticklabels(), fontsize=8)
+        ax.set_xticklabels(ax.get_xticklabels(), fontsize=8)
+
+    fig.text(x=0.5, y=0.02, s="Feature Index", ha="center", fontsize=8)
+    fig.text(
+        y=0.5, x=0.02, s="Feature Value", va="center", rotation="vertical", fontsize=8
+    )
+    fig.set_size_inches(w=6.5, h=2)
+    fig.tight_layout()
+    fig.subplots_adjust(
+        top=0.889, bottom=0.179, left=0.099, right=0.977, hspace=0.2, wspace=0.35
+    )
+    savefig(fig, f"unfolded_{source.value.lower()}_{group1}_v_{group2}.png")
+
+
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
@@ -2625,8 +2796,13 @@ if __name__ == "__main__":
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
 
+    # plot_unfolded_duloxetine()
+    # plot_unfolded_aging()
+    plot_feature(UpdatedDataset.Vigilance, group1="vigilant", group2="nonvigilant")
+    plot_feature(UpdatedDataset.Older, group1="younger", group2="older")
+    plot_feature(UpdatedDataset.Osteo, group1="duloxetine", group2="nopain")
     # summary_stats_and_tables()
-    make_kde_plots()
+    # make_kde_plots()
 
     # ts = load_tseries()
     # df = load_combined()
