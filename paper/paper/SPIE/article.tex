@@ -890,8 +890,9 @@ We perform a \textit{multiverse
 analysis}\cite{steegenIncreasingTransparencyMultiverse2016} to assess the
 overall predictive potential of the various eigenfeatures across all
 previously-mentioned analytic choices. That is, for each combination of
-comparison task and classifier, we use 5-fold cross validation, and use the
-mean AUROC (mAUROC) across folds as our metric to evaluate feature predictive utility.
+comparison task, classifier, and analytic choices, we use 5-fold cross
+validation, and use the mean AUROC (mAUROC) across folds as our metric to
+evaluate feature predictive utility.
 
 Each non-baseline feature is evaluated, for each classification task and
 classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\) 2
@@ -918,10 +919,10 @@ could be that trimming impacts the overall mAUROC distribution only at a
 certain preprocessing level and for certain feature slicing. However, there are
 too many potential interactions to present, so we limit our presentation to the
 most significant ones.  As there are a large number of features, we also
-summarize patterns of results across two abstract levels of feature
-groupings—"coarse", and "fine"—shown in Table \ref{tab:features}.
+summarize patterns of results across two abstract groupings of features
+("coarse", and "fine") shown in Table \ref{tab:features}.
 
-Finally, it makes sense to exclude classification tasks or an analytic factor
+It is also important to exclude a classification task or an analytic factor
 from summaries if there is no evidence that the classification task is solvable
 in general, or for that factor. We take as lack of evidence of solvability an
 mAUROC distribution that is either (1) roughly symmetric and has mean and
@@ -1016,7 +1017,7 @@ registration reduced the predictive utility of the eigenfeatures (Figure
 \ref{fig:preproc}, second-last column). When examining features more finely, it
 is clear that preprocessing most impacts the mAUROC distribution of the largest
 and central eigenvalues ("eigs middle" and "eigs max" in Figure
-S\ref{S-fig:fine-preproc})
+S\ref{S-fig:fine-preproc}).
 
 \subsection{Effect of Classifier}
 mAUROC distributions were generally similar across coarse or fine feature
@@ -1026,13 +1027,20 @@ the random forest classifier, whereas in the \textit{Aging} data, a SVC was leas
 likely to have mAUROC \(<\) 0.5. Overall, however, differences in the mAUROC distributions
 were small.
 
+\subsection{Normalization}
+There was no visible effect of normalization on mAUROC distributions at any
+summary level.
+
 
 \subsection{Effect of Trimming}
 Trimming based on numerical precision (see Section \ref{sec:rmt-features} and
 Appendix \ref{sec:trimming}), did not result in meaningfully different mAUROC
-distributions in any case (Figure S\ref{S-fig:fine-trim}).   While there was no
-clearly observable differences between the mAUROC distributions depending on
-whether
+distributions in any case (Figure S\ref{S-fig:fine-trim}). However, trimming
+away the largest, or both largest and smallest eigenvalues, generally had a
+significant positive effect on the predictive quality of RMT features, most
+especially for RMT features involving the unfolded eigenvalues. When employing
+these trimming methods, these features were consistently more predictive than
+not.
 
 \subsection{Effect of Unfolding Degree}
 The choice of polynomial unfolding degree significantly impacted the mAUROC
@@ -1046,17 +1054,25 @@ eigenvalues), it seems clear from Figure S\ref{S-fig:fine-degree} the the
 largest unfolding degree of 9 produces the most favourable mAUROC
 distributions.
 
+\subsection{Effect of Slicing}
+Features were most predictive when using either the largest 5 or 10\% or middle
+25\% ("max-05", "max-10" and "mid-25" in Figure
+\ref{S-fig:best-params-slicing}), and least predictive when features primarily
+involved the smallest eigenvalues.
+
+\subsection{Best Case Scenario}
+Viewing all the impactful analytic choices as tunable hyperparameters, and
+selecting the overall "best" hyperparameters of \(\text{trimming} \in
+\{\text{middle}, \text{largest}\}\), \(\text{degree} \in \{3, 9\}\),
+\(\text{preprocessing} \in \{\text{MotionCorrect}, \text{MNIRegister}\}\),
+\(\text{slicing} \in \{\text{"max-10"}, \text{"mid-25"}\} \) and
+restricting to only the "unfolded" RMT feature, results in the mAUROC
+distributions in Figure S\ref{S-fig:best-params}. Using these analytic choices,
+the \code{depress v control} comparison in the \textit{Depression} dataset
+becomes weakly predictable, and the smoothed eigenvalue features tend to
+closely follow the unfolded eigenvalues in predictive utility.
 
 
-
-First not non-predictable data, and then no longer discuss it in subsequent features.
-
-\subsection{Normalization}
-NO meaningful effect of normalization on AUROC distributions at level of gross feature, or feature
-group, so can safely ignore this.
-NO meaningful effect of normalization for any feature group by classifier either, so
-normalization doesn't seem to matter here.
-Maybe add table of correlations by groupings here
 
 
 % \subsection{Page Setup and Fonts}

@@ -105,6 +105,15 @@ FEATURE_GROUP_PALETTE = {
     "rmt only": BLUE,
 }
 
+NON_BASELINE_PALETTE = {
+    "eigs": BLCK,
+    "eigs max": ORNG,
+    "eigs smooth": GREEN,
+    "eigs middle": GREY,
+    "rmt + eigs": PURP,
+    "rmt only": BLUE,
+}
+
 GROSS_FEATURE_PALETTE = {
     "tseries": ORNG,
     "eigs": BLCK,
@@ -1803,6 +1812,147 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.76, 0.11))
         savefig(fig, "all_by_fine_feature_groups.png")
 
+    def plot_all_by_fine_feature_groups_best_params() -> None:
+        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
+        rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
+        rmt = rmt.loc[rmt.deg.isin([3, 9])]
+        rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
+        rmt = rmt.loc[rmt.slice.isin(["max-10", "mid-25"])]
+        idx = rmt.feature.isin(["unfolded"])
+        rmt = rmt[idx]
+
+        other = df.loc[df.coarse_feature.isin(["eigs", "tseries"])]
+        data = pd.concat([rmt, other], axis=0)
+
+        grid = sbn.displot(
+            data=data,
+            x="auroc",
+            kind="kde",
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
+        )
+        thinify_lines(grid)
+        add_auroc_lines(grid, kind="vline")
+        despine(grid)
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        fig = grid.fig
+        fig.suptitle("Overall Distribution of AUROCs for each Fine Feature Group")
+        fig.tight_layout()
+        fig.set_size_inches(w=10, h=8)
+        fig.subplots_adjust(
+            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+        )
+        sbn.move_legend(grid, loc=(0.76, 0.09))
+        savefig(fig, "best_rmt_params_by_subgroup.png")
+
+    def plot_all_by_fine_feature_groups_best_params_slice() -> None:
+        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
+        # rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
+        # rmt = rmt.loc[rmt.deg.isin([3, 9])]
+        # rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
+        idx = rmt.feature.isin(["unfolded"])
+        rmt = rmt[idx]
+
+        other = df.loc[df.coarse_feature.isin(["eigs"])]
+        data = pd.concat([rmt, other], axis=0)
+
+        grid = sbn.displot(
+            data=data,
+            x="auroc",
+            kind="kde",
+            hue="fine_feature",
+            hue_order=list(NON_BASELINE_PALETTE.keys()),
+            palette=NON_BASELINE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="slice",
+            row_order=SLICE_ORDER,
+            bw_adjust=0.8,
+            alpha=0.8,
+            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
+        )
+        thinify_lines(grid)
+        add_auroc_lines(grid, kind="vline")
+        despine(grid)
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, r"slice = .+\| ")
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=SLICE_ORDER
+        )
+        fig = grid.fig
+        fig.suptitle(
+            "Overall Distribution of AUROCs for each Fine Feature Group by Slicing"
+        )
+        fig.set_size_inches(w=18, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.908, bottom=0.07, left=0.021, right=0.92, hspace=1.0, wspace=0.128
+        )
+        sbn.move_legend(grid, loc=(0.93, 0.50))
+        savefig(fig, "best_rmt_params_by_subgroup_and_slicing.png")
+
+    def plot_all_by_fine_feature_groups_best_params_best_slice() -> None:
+        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
+        rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
+        rmt = rmt.loc[rmt.deg.isin([3, 9])]
+        rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
+        idx = rmt.feature.isin(["unfolded"])
+        rmt = rmt[idx]
+
+        other = df.loc[df.coarse_feature.isin(["eigs"])]
+        data = pd.concat([rmt, other], axis=0)
+
+        grid = sbn.displot(
+            data=data,
+            x="auroc",
+            kind="kde",
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="slice",
+            row_order=SLICE_ORDER,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
+        )
+        thinify_lines(grid)
+        add_auroc_lines(grid, kind="vline")
+        despine(grid)
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, r"slice = .+\| ")
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=SLICE_ORDER
+        )
+        fig = grid.fig
+        fig.suptitle(
+            "Overall Distribution of AUROCs for each Fine Feature Group by Slicing"
+        )
+        fig.tight_layout()
+        fig.set_size_inches(w=10, h=8)
+        fig.subplots_adjust(
+            top=0.892, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.835))
+        savefig(fig, "best_rmt_params_by_subgroup_and_slicing.png")
+
     def plot_largest_by_coarse_feature_preproc() -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["preproc", "coarse_feature"]).apply(
@@ -2240,7 +2390,11 @@ def make_kde_plots() -> None:
             facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
         )
         print("done")
-        clean_titles(grid, r"deg = [0-9]")
+        clean_titles(grid, "trim = ")
+        clean_titles(grid, "none")
+        clean_titles(grid, "precision")
+        clean_titles(grid, "largest")
+        clean_titles(grid, "middle")
         clean_titles(grid, "subgroup = ", split_at="-")
         clean_titles(grid, "feature = ", split_at="|")
         despine(grid)
@@ -2393,9 +2547,12 @@ def make_kde_plots() -> None:
     # plot_largest_by_fine_feature_subgroup()
     # plot_smallest_by_fine_feature_subgroup()
     # plot_by_coarse_feature_group_predictive_classifier_subgroup()
-    plot_rmt_by_trim()
+    # plot_rmt_by_trim()
     # plot_rmt_by_degree()
     # plot_rmt_largest_by_degree()
+    # plot_all_by_fine_feature_groups_best_params()
+    plot_all_by_fine_feature_groups_best_params_slice()
+    # plot_all_by_fine_feature_groups_best_params()
 
 
 def summary_stats_and_tables() -> None:
@@ -2468,6 +2625,7 @@ if __name__ == "__main__":
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
 
+    # summary_stats_and_tables()
     make_kde_plots()
 
     # ts = load_tseries()
