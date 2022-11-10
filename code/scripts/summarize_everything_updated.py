@@ -82,6 +82,18 @@ SUBGROUPERS = [
     ["data", "comparison", "classifier", "preproc", "deg", "trim", "norm"],
 ]
 
+RMT_FEATURE_PALETTE = {
+    "unfolded": GREEN,
+    "rigidity": BLUE,
+    "levelvar": PINK,
+    "rigidity + levelvar": ORNG,
+    "unfolded + levelvar": BLCK,
+    "unfolded + rigidity": GREY,
+    "unfolded + rigidity + levelvar": PURP,
+}
+
+RMT_FEATURE_ORDER = list(RMT_FEATURE_PALETTE.keys())
+
 FEATURE_GROUP_PALETTE = {
     "tseries loc": RED,
     "tseries scale": PINK,
@@ -120,6 +132,8 @@ SLICE_ORDER = [
     "min-10",
     "min-05",
 ]
+
+DEGREE_ORDER = [3, 5, 7, 9]
 
 SUBGROUP_ORDER = [
     "Bilinguality - monolingual v bilingual",
@@ -1352,6 +1366,7 @@ def despine(grid: FacetGrid) -> None:
     for ax in grid.fig.axes:
         ax.set_yticks([])
 
+
 def thinify_lines(grid: FacetGrid) -> None:
     fig: Figure = grid.fig
     for ax in fig.axes:
@@ -1360,6 +1375,7 @@ def thinify_lines(grid: FacetGrid) -> None:
 
     for line in grid.legend.legendHandles:
         line.set_linewidth(1.0)
+
 
 def dashify_gross(grid: FacetGrid) -> None:
     fig: Figure = grid.fig
@@ -1381,6 +1397,7 @@ def dashify_gross(grid: FacetGrid) -> None:
         grid.legend.legendHandles[2].set_linestyle("solid")
     except IndexError:
         pass
+
 
 def dashify_trims(grid: FacetGrid) -> None:
     fig: Figure = grid.fig
@@ -1565,6 +1582,45 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.79, 0.09))
         savefig(fig, "coarse_feature_largest_by_subgroup.png")
 
+    def plot_largest_by_fine_feature_subgroup() -> None:
+        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
+            lambda grp: grp.nlargest(500, "auroc")
+        )
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            # facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0), sharey=False),
+            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
+        )
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        thinify_lines(grid)
+        fig = grid.fig
+        fig.suptitle(
+            "Distributions of Largest 500 AUROCs for each Combination of Fine Feature Group and Dataset",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=10, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.79, 0.09))
+        savefig(fig, "fine_feature_largest_by_subgroup.png")
+
     def plot_smallest_by_coarse_feature_subgroup() -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
@@ -1605,6 +1661,47 @@ def make_kde_plots() -> None:
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
         savefig(fig, "coarse_feature_smallest_by_subgroup.png")
+
+    def plot_smallest_by_fine_feature_subgroup() -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
+            lambda grp: grp.nsmallest(500, "auroc")
+        )
+        print("done")
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=dfg,
+            x="auroc",
+            kind="kde",
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=SUBGROUP_ORDER,
+            col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.1, 0.6), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "classifier = ")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        despine(grid)
+        thinify_lines(grid)
+        fig = grid.fig
+        fig.suptitle(
+            "Distributions of Smallest 500 AUROCs for each Combination of Fine Feature Group and Dataset",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=10, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.79, 0.09))
+        savefig(fig, "fine_feature_smallest_by_subgroup.png")
 
     def plot_largest_by_fine_feature_groups() -> None:
         dfg = df.groupby(["subgroup", "fine_feature"]).apply(
@@ -2064,51 +2161,215 @@ def make_kde_plots() -> None:
         bulks = bulks.reset_index()
         predictive = bulks[0.5] > 0.5
 
-    def plot_rmt_by_trim() -> None:
+    def plot_by_fine_feature_group_predictive_classifier_subgroup() -> None:
+        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
-            data=df.loc[
-                df.feature.apply(
-                    lambda s: (("rigid" in s) or ("levelvar" in s)) and ("eigs" not in s)
-                )
-            ],
+            data=dfp,
             x="auroc",
             kind="kde",
-            hue="trim",
-            hue_order=TRIM_ORDER,
-            palette=TRIM_PALETTE,
+            hue="fine_feature",
+            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
+            palette=FEATURE_GROUP_PALETTE,
+            fill=False,
+            common_norm=False,
+            row="classifier",
+            row_order=CLASSIFIER_ORDER,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            bw_adjust=1.5,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, "norm = ", split_at="|")
+        clean_titles(grid, ".*\n")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "task_attend", "high")
+        clean_titles(grid, "task_nonattend", "low")
+        clean_titles(grid, "nonvigilant", "low")
+        clean_titles(grid, "vigilant", "high")
+        clean_titles(grid, "younger", "young")
+        clean_titles(grid, "duloxetine", "dlxtn")
+        make_row_labels(
+            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=CLASSIFIER_ORDER
+        )
+        despine(grid)
+        dashify_gross(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "AUROCs by Classifier for Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=20, h=15)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.88))
+        for i, ax in enumerate(fig.axes):
+            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
+                ax.set_title("")
+        savefig(fig, "fine_feature_group_by_predictive_subgroup_classifier.png")
+
+    def plot_rmt_by_trim() -> None:
+        data = df.loc[
+            df.feature.apply(
+                lambda s: (("rigid" in s) or ("levelvar" in s) or ("unfolded" in s))
+                and ("eigs" not in s)
+            )
+        ]
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=data,
+            x="auroc",
+            kind="kde",
+            hue="feature",
+            hue_order=RMT_FEATURE_ORDER,
+            palette=RMT_FEATURE_PALETTE,
             fill=False,
             common_norm=False,
             col="subgroup",
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            # row="feature",
-            # row_order=FEATUR,
-            col_wrap=4,
+            row="trim",
+            row_order=TRIM_ORDER,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        clean_titles(grid, r"deg = [0-9]")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "feature = ", split_at="|")
+        despine(grid)
+        # dashify_trims(grid)
+        thinify_lines(grid)
+        add_auroc_lines(grid, "vline")
+        make_row_labels(
+            grid,
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row_order=TRIM_ORDER,
+        )
+        fig = grid.fig
+        fig.suptitle(
+            "RMT Feature AUROCs by Trimming on Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=10, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.81, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.85))
+        savefig(fig, "rmt_feature_auroc_by_trim.png")
+
+    def plot_rmt_by_degree() -> None:
+        print("Plotting...", end="", flush=True)
+        grid = sbn.displot(
+            data=df.loc[
+                df.feature.apply(
+                    lambda s: (("rigid" in s) or ("levelvar" in s) or ("unfolded" in s))
+                    and ("eigs" not in s)
+                )
+            ],
+            x="auroc",
+            kind="kde",
+            hue="feature",
+            hue_order=RMT_FEATURE_ORDER,
+            palette=RMT_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="deg",
+            row_order=DEGREE_ORDER,
+            # col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
             facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
         )
         print("done")
         # clean_titles(grid, " = ", split_at="|")
+        clean_titles(grid, r"deg = [0-9]")
         clean_titles(grid, "subgroup = ", split_at="-")
         clean_titles(grid, "feature = ", split_at="|")
         despine(grid)
-        dashify_trims(grid)
+        thinify_lines(grid)
         add_auroc_lines(grid, "vline")
         fig = grid.fig
         fig.suptitle(
-            "RMT Feature AUROCs by Trimming on Predictable Data",
+            "RMT Feature AUROCs by Degree on Predictable Data",
             fontsize=10,
         )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
+        fig.set_size_inches(w=10, h=8)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.87, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
+            top=0.79, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
         )
-        sbn.move_legend(grid, loc=(0.685, 0.15))
-        for ax in fig.axes:
-            ax.set_ylabel("")
-        savefig(fig, "rmt_feature_auroc_by_trim.png")
+        sbn.move_legend(grid, loc=(0.01, 0.83))
+        make_row_labels(
+            grid,
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row_order=[f"degree = {d}" for d in DEGREE_ORDER],
+        )
+        savefig(fig, "rmt_feature_auroc_by_degree.png")
+
+    def plot_rmt_largest_by_degree() -> None:
+        print("Plotting...", end="", flush=True)
+        data = df.loc[
+            df.feature.apply(
+                lambda s: (("rigid" in s) or ("levelvar" in s) or ("unfolded" in s))
+                and ("eigs" not in s)
+            )
+        ]
+        df_largest = data.groupby(["deg", "feature"]).apply(
+            lambda grp: grp.nlargest(2000, "auroc")
+        )
+        grid = sbn.displot(
+            data=df_largest,
+            x="auroc",
+            kind="kde",
+            hue="feature",
+            hue_order=RMT_FEATURE_ORDER,
+            palette=RMT_FEATURE_PALETTE,
+            fill=False,
+            common_norm=False,
+            col="subgroup",
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row="deg",
+            row_order=DEGREE_ORDER,
+            # col_wrap=4,
+            bw_adjust=1.2,
+            alpha=0.8,
+            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+        )
+        print("done")
+        # clean_titles(grid, " = ", split_at="|")
+        clean_titles(grid, r"deg = [0-9]")
+        clean_titles(grid, "subgroup = ", split_at="-")
+        clean_titles(grid, "feature = ", split_at="|")
+        despine(grid)
+        thinify_lines(grid)
+        add_auroc_lines(grid, "vline")
+        fig = grid.fig
+        fig.suptitle(
+            "RMT Feature Largest 2000 AUROCs by Degree on Predictable Data",
+            fontsize=10,
+        )
+        fig.set_size_inches(w=10, h=8)
+        fig.tight_layout()
+        fig.subplots_adjust(
+            top=0.79, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
+        )
+        sbn.move_legend(grid, loc=(0.01, 0.83))
+        make_row_labels(
+            grid,
+            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
+            row_order=[f"degree = {d}" for d in DEGREE_ORDER],
+        )
+        savefig(fig, "rmt_feature_auroc_largest_by_degree.png")
 
     # these are not great
     # plot_overall()
@@ -2127,9 +2388,14 @@ def make_kde_plots() -> None:
     # plot_by_coarse_feature_preproc_subgroup()
     # plot_by_coarse_predictive_feature_preproc_subgroup()
     # plot_by_fine_feature_group_predictive_norm_subgroup()
-    plot_by_fine_predictive_feature_preproc_subgroup()
+    # plot_by_fine_predictive_feature_preproc_subgroup()
+    # plot_by_fine_feature_group_predictive_classifier_subgroup()
+    # plot_largest_by_fine_feature_subgroup()
+    # plot_smallest_by_fine_feature_subgroup()
     # plot_by_coarse_feature_group_predictive_classifier_subgroup()
-    # plot_rmt_by_trim()
+    plot_rmt_by_trim()
+    # plot_rmt_by_degree()
+    # plot_rmt_largest_by_degree()
 
 
 def summary_stats_and_tables() -> None:

@@ -907,20 +907,19 @@ slicing—to consider.
 \section{Results}
 \label{sec:results}
 
-Summarizing this amount of data requires some caution. Measures of location or
+Summarizing this quantity of data requires some caution. Measures of location or
 scale, even when robust, are, for the most part, misleading and uninformative
 when distributions are skewed. In most cases we find skewed mAUROC
-distributions, and so have chosen primarily to present our findings visually.
+distributions, and so have chosen primarily to present our findings visually,
+with kernel density estimates.
 
 In addition, each analytic factor could produce an interaction. For example, it
 could be that trimming impacts the overall mAUROC distribution only at a
 certain preprocessing level and for certain feature slicing. However, there are
-too many potential interactions to present, so we limit our presentation
-to the most significant ones.
-
-As there are a large number of figures, we summarize patterns of results across
-two abstract levels of feature groupings—"coarse", and "fine"—shown in
-Table \ref{tab:features}.
+too many potential interactions to present, so we limit our presentation to the
+most significant ones.  As there are a large number of features, we also
+summarize patterns of results across two abstract levels of feature
+groupings—"coarse", and "fine"—shown in Table \ref{tab:features}.
 
 Finally, it makes sense to exclude classification tasks or an analytic factor
 from summaries if there is no evidence that the classification task is solvable
@@ -961,6 +960,12 @@ orders of magnitude more models were fit for eigenfeatures (see Section \ref{sec
 the mAUROC distributions for the baseline features are either equally as wide,
 or, for the Parkinson's data, wider.
 
+Eigenfeatures most strongly and consistently demonstrated predictive utility
+in the \textit{Aging} dataset \code{older v younger} classification task, the
+\textit{Osteo} dataset \code{nopain v duloxetine} task, and in the \textit{Attention}
+\code{vigilant v nonvigilant} comparison.
+
+
 
 \begin{figure}
 \begin{center}
@@ -972,16 +977,74 @@ or, for the Parkinson's data, wider.
 { \label{fig:preproc} mAUROC distributions by preprocessing degree.}
 \end{figure}
 
+\subsection{Largest mAUROCs}
+Considering the various analytic choices as tunable parameters, it makes sense
+to examine the \textit{largest} portion of mAUROCs as an indication of the
+maximum predictive potential of the eigenfeatures. In this case, it is clear
+that eigenfeatures using RMT features almost always had the highest potential
+predictive utility (Figure \ref{fig:largest}). Figure S\ref{S-fig:fine-largest}
+shows that this was primarily due to either the "rmt only" or "rmt + eigs"
+features (see Table \ref{tab:features}). However, these features were also most
+likely to cause poor performance and overfitting (indicated by an mAUROC \(<\)
+0.5; Figure S\ref{S-fig:fine-smallest}).
+
+Examining these RMT features more closely (Figure S\ref{S-fig:fig:fine-degree}),
+it is clear these features are more predictive mostly due to the unfolding
+procedure: the mAUROC distributions with largest medians and modes are due to
+features that include the unfolded eigenvalues. Combined features that use
+the unfolded eigenvalues plus some other RMT eigenfeature have identical
+mAUROC distributions to those using the unfolded eigenvalues alone.
+
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{coarse_feature_largest_by_subgroup.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:largest} Distributions of largest 500 mAUROCs by coarse feature grouping.}
+\end{figure}
 
 \subsection{Effect of Preprocessing}
-At a coarse level
+At a coarse level, slice time correction followed by motion correction tended
+to slightly increase the predictive utility of the eigenfeatures (Figure
+\ref{fig:preproc}) relative to brain extraction only. Subsequent registration
+following these steps did not generally impact mAUROC distributions further,
+except in the \code{task\_attend v task\_nonattend} comparison, where
+registration reduced the predictive utility of the eigenfeatures (Figure
+\ref{fig:preproc}, second-last column). When examining features more finely, it
+is clear that preprocessing most impacts the mAUROC distribution of the largest
+and central eigenvalues ("eigs middle" and "eigs max" in Figure
+S\ref{S-fig:fine-preproc})
+
+\subsection{Effect of Classifier}
+mAUROC distributions were generally similar across coarse or fine feature
+groupings (Figure S\ref{S-fig:coarse-classifier}, S\ref{S-fig:fine-classifier}).
+In the \textit{Attention} \code{task\_attend v task\_nonattend} condition, eigenfeatures were modally predictive only with
+the random forest classifier, whereas in the \textit{Aging} data, a SVC was least
+likely to have mAUROC \(<\) 0.5. Overall, however, differences in the mAUROC distributions
+were small.
 
 
+\subsection{Effect of Trimming}
+Trimming based on numerical precision (see Section \ref{sec:rmt-features} and
+Appendix \ref{sec:trimming}), did not result in meaningfully different mAUROC
+distributions in any case (Figure S\ref{S-fig:fine-trim}).   While there was no
+clearly observable differences between the mAUROC distributions depending on
+whether
 
-
-
-  if a certain feature is simply not useful, or if a certain comparison
-task is not solvable with some or even all classifiers
+\subsection{Effect of Unfolding Degree}
+The choice of polynomial unfolding degree significantly impacted the mAUROC
+distributions for most classification tasks and most RMT features, and most
+significantly for the level variance features (Figure
+S\ref{S-fig:fine-degree}). Overall, Figure S\ref{S-fig:fine-degree} weakly
+suggests that either smaller (degree = 3) or larger (degree = 9) unfolding
+degrees tend to yield the most predictively useful RMT features. However, when
+restricting to the most predictive RMT features (those including the unfolded
+eigenvalues), it seems clear from Figure S\ref{S-fig:fine-degree} the the
+largest unfolding degree of 9 produces the most favourable mAUROC
+distributions.
 
 
 
@@ -995,157 +1058,284 @@ NO meaningful effect of normalization for any feature group by classifier either
 normalization doesn't seem to matter here.
 Maybe add table of correlations by groupings here
 
-\subsection{Classifier}
-When the data is predictable, timeseries features almost all have the mode / max <= 0.5 for all
-classifiers and subgroups, whereas eigenfeatures (RMT, eigenvalue only, eigenvalue + RMT) more often
-than not have mode greater than 0.5, and bulk of the distribution > 0.5.
 
-KNN3 consistently has least favourable AUROC distributions across subgroups and features
+% \subsection{Page Setup and Fonts}
 
-\subsection{Page Setup and Fonts}
+% All text and figures, including footnotes, must fit inside a text area 6.5 in.\
+% wide by 9 in.\ high (16.51 by 22.86 cm). Manuscripts must be formatted for US
+% letter paper, on which the margins should be 1 in.\ (2.54 cm) on the top, 1
+% in.\ on the bottom, and 1 in.\ on the left and right.
 
-All text and figures, including footnotes, must fit inside a text area 6.5 in.\ wide by 9 in.\ high (16.51 by 22.86 cm). Manuscripts must be formatted for US letter paper, on which the margins should be 1 in.\ (2.54 cm) on the top, 1 in.\ on the bottom, and 1 in.\ on the left and right.
+% The Times New Roman font is used throughout the manuscript, in the sizes and
+% styles shown in Table~\ref{tab:fonts}. If this font is not available, use a
+% similar serif font. The manuscript should not contain headers or footers. Pages
+% should be numbered.
 
-The Times New Roman font is used throughout the manuscript, in the sizes and styles shown in Table~\ref{tab:fonts}. If this font is not available, use a similar serif font. The manuscript should not contain headers or footers. Pages should be numbered.
-
-\begin{table}[ht]
-\caption{Fonts sizes and styles.}
-\label{tab:fonts}
-\begin{center}
-\begin{tabular}{|l|l|} %% this creates two columns
-%% |l|l| to left justify each column entry
-%% |c|c| to center each column entry
-%% use of \rule[]{}{} below opens up each row
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Document entity & Brief description  \\
-\hline\hline
-\rule[-1ex]{0pt}{3.5ex}  Article title & 16 pt., bold, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Author names & 12 pt., bold, left justified   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Author affiliations & 10 pt., left justified   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Abstract & 10 pt.  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Keywords & 10 pt.  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Section heading & 12 pt., bold, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Subsection heading & 12 pt., italic, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Sub-subsection heading & 11 pt., italic, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Normal text & 12 pt. \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Figure and table captions &  10 pt. \\
-\hline
-\end{tabular}
-\end{center}
-\end{table}
+% \begin{table}[ht]
+% \caption{Fonts sizes and styles.}
+% \label{tab:fonts}
+% \begin{center}
+% \begin{tabular}{|l|l|} %% this creates two columns
+% %% |l|l| to left justify each column entry
+% %% |c|c| to center each column entry
+% %% use of \rule[]{}{} below opens up each row
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Document entity & Brief description  \\
+% \hline\hline
+% \rule[-1ex]{0pt}{3.5ex}  Article title & 16 pt., bold, left justified  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Author names & 12 pt., bold, left justified   \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Author affiliations & 10 pt., left justified   \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Abstract & 10 pt.  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Keywords & 10 pt.  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Section heading & 12 pt., bold, left justified  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Subsection heading & 12 pt., italic, left justified  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Sub-subsection heading & 11 pt., italic, left justified  \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Normal text & 12 pt. \\
+% \hline
+% \rule[-1ex]{0pt}{3.5ex}  Figure and table captions &  10 pt. \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
 
 \section{Parts of Manuscript}
 
-This section describes the normal structure of a manuscript and how each part should be handled. The appropriate vertical spacing between various parts of this document is achieved in LaTeX through the proper use of defined constructs, such as \verb|\section{}|.
+This section describes the normal structure of a manuscript and how each part
+should be handled. The appropriate vertical spacing between various parts of
+this document is achieved in LaTeX through the proper use of defined
+constructs, such as \verb|\section{}|.
 
 \subsection{Title and Author Information}
 \label{sect:title}
-The article title appears left justified at the top of the first page. The title font is 16 pt., bold. The rules for capitalizing the title are the same as for sentences; only the first word, proper nouns, and acronyms should be capitalized. Do not begin titles with articles (for example, a, an, the) or prepositions (for example, on, by, etc.). The word ``novel'' should not appear in the title, as publication will imply novelty. Avoid the use of acronyms in the title, unless they are widely understood. Appendix A contains more about acronyms.
+The article title appears left justified at the top of the first page. The
+title font is 16 pt., bold. The rules for capitalizing the title are the same
+as for sentences; only the first word, proper nouns, and acronyms should be
+capitalized. Do not begin titles with articles (for example, a, an, the) or
+prepositions (for example, on, by, etc.). The word ``novel'' should not appear
+in the title, as publication will imply novelty. Avoid the use of acronyms in
+the title, unless they are widely understood. Appendix A contains more about
+acronyms.
 
-The list of authors immediately follows the title, 18 points below. The font is 12 pt., bold and the author names are left justified. The author affiliations and addresses follow the names, in 10-pt., normal font and left justified. For multiple affiliations, each affiliation should appear on a separate line. Superscript letters (a, b, c, etc.) should be used to associate multiple authors with their respective affiliations. The corresponding author should be identified with an asterisk, and that person's email address should be provided below the keywords.
+The list of authors immediately follows the title, 18 points below. The font is
+12 pt., bold and the author names are left justified. The author affiliations
+and addresses follow the names, in 10-pt., normal font and left justified. For
+multiple affiliations, each affiliation should appear on a separate line.
+Superscript letters (a, b, c, etc.) should be used to associate multiple
+authors with their respective affiliations. The corresponding author should be
+identified with an asterisk, and that person's email address should be provided
+below the keywords.
 
 \subsection{Abstract}
-The abstract should be a summary of the paper and not an introduction. Because the abstract may be used in abstracting journals, it should be self-contained (i.e., no numerical references) and substantive in nature, presenting concisely the objectives, methodology used, results obtained, and their significance. Please note that the following journals require the use of structured abstracts in manuscript submissions: \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the\textit{ Journal of Medical Imaging}. Structured abstracts are encouraged for the \textit{Journal of Micro/Nanolithography, MEMS, and MOEMS}. Helpful guidelines for structured abstracts are available on the website of the journal.
+The abstract should be a summary of the paper and not an introduction. Because
+the abstract may be used in abstracting journals, it should be self-contained
+(i.e., no numerical references) and substantive in nature, presenting concisely
+the objectives, methodology used, results obtained, and their significance.
+Please note that the following journals require the use of structured abstracts
+in manuscript submissions: \textit{Neurophotonics}, the \textit{Journal of
+Biomedical Optics}, and the\textit{ Journal of Medical Imaging}. Structured
+abstracts are encouraged for the \textit{Journal of Micro/Nanolithography,
+MEMS, and MOEMS}. Helpful guidelines for structured abstracts are available on
+the website of the journal.
 
 \subsection{Subject terms/Keywords}
 Keywords are required. Please provide 3-6 keywords related to your paper.
 
 \subsection{Body of Paper}
-The body of the paper consists of numbered sections that present the main findings. These sections should be organized to best present the material.
+The body of the paper consists of numbered sections that present the main
+findings. These sections should be organized to best present the material.
 
-To provide transition elements in your paper, it is important to refer back (or forward) to specific sections. Such references are made by indicating the section number, for example, ``In Sec.\ 2 we showed...'' or ``Section 2.1 contained a description...'' If the word Section, Reference, Equation, or Figure starts a sentence, it is spelled out. When occurring in the middle of a sentence, these words are abbreviated Sec., Ref., Eq., and Fig.
+To provide transition elements in your paper, it is important to refer back (or
+forward) to specific sections. Such references are made by indicating the
+section number, for example, ``In Sec.\ 2 we showed...'' or ``Section 2.1
+contained a description...'' If the word Section, Reference, Equation, or
+Figure starts a sentence, it is spelled out. When occurring in the middle of a
+sentence, these words are abbreviated Sec., Ref., Eq., and Fig.
 
-At the first occurrence of an acronym, spell it out followed by the acronym in parentheses, for example, charge-coupled diode (CCD).
+At the first occurrence of an acronym, spell it out followed by the acronym in
+parentheses, for example, charge-coupled diode (CCD).
 
 \subsection{Footnotes}
-Textual footnotes should be used rarely to present important documentary or explanatory material whose inclusion in the text would be distracting.\footnote{Example of a footnote.} Due to problems with HTML display, use of footnotes should generally be avoided. If absolutely necessary, the footnote mark must come at the end of a sentence. To insert a footnote, use the {\verb|\footnote{}|} command.
+Textual footnotes should be used rarely to present important documentary or
+explanatory material whose inclusion in the text would be
+distracting.\footnote{Example of a footnote.} Due to problems with HTML
+display, use of footnotes should generally be avoided. If absolutely necessary,
+the footnote mark must come at the end of a sentence. To insert a footnote, use
+the {\verb|\footnote{}|} command.
 
 \subsection{Appendices}
-Brief appendices may be included when necessary, such as derivations of equations, proofs of theorems, and details of algorithms. Equations and figures appearing in appendices should continue sequential numbering from earlier in the paper.
+Brief appendices may be included when necessary, such as derivations of
+equations, proofs of theorems, and details of algorithms. Equations and figures
+appearing in appendices should continue sequential numbering from earlier in
+the paper.
 
 \subsection{Disclosures}
-Conflicts of interest should be declared under a separate header, above Acknowledgments. If the authors have no competing interests to declare, then a statement should be included declaring no conflicts of interest. For assistance generating a disclosure statement, see the form available from  the International Committee of Medical Journal Editors website: \linkable{http://www.icmje.org/conflicts-of-interest/}
+Conflicts of interest should be declared under a separate header, above
+Acknowledgments. If the authors have no competing interests to declare, then a
+statement should be included declaring no conflicts of interest. For assistance
+generating a disclosure statement, see the form available from  the
+International Committee of Medical Journal Editors website:
+\linkable{http://www.icmje.org/conflicts-of-interest/}
 
 \subsection{Acknowledgments}
-Acknowledgments and funding information should be added after the conclusion, and before references. Include grant numbers and the full name of the funding body. The acknowledgments section does not have a section number.
+Acknowledgments and funding information should be added after the conclusion,
+and before references. Include grant numbers and the full name of the funding
+body. The acknowledgments section does not have a section number.
 
 \subsection{Data, Materials, and Code Availability}
-Availability of data, materials, and/or code used in the research results reported in the manuscript may be declared under the heading ``Data, Materials, and Code Availability,'' following the Acknowledgments section. As relevant, provide specific access information or restrictions for data, materials, and computer code (i.e., links to repository access addresses with guidance on commercial or public access).
+Availability of data, materials, and/or code used in the research results
+reported in the manuscript may be declared under the heading ``Data, Materials,
+and Code Availability,'' following the Acknowledgments section. As relevant,
+provide specific access information or restrictions for data, materials, and
+computer code (i.e., links to repository access addresses with guidance on
+commercial or public access).
 
 \subsection{References}
-The References section lists books, articles, and reports that are cited in the paper. This section does not have a section number. The references are numbered in the order in which they are cited. Examples of the format to be followed are given at the end of this document.
+The References section lists books, articles, and reports that are cited in the
+paper. This section does not have a section number. The references are numbered
+in the order in which they are cited. Examples of the format to be followed are
+given at the end of this document.
 
-The reference list at the end of this document is created using BibTeX, which looks through the file {\ttfamily report.bib} for the entries cited in the LaTeX source file.  The format of the reference list is determined by the bibliography style file {\ttfamily spiejour.bst}, as specified in the \\ \verb|\bibliographystyle{spiejour}| command.  Alternatively, the references may be directly formatted in the LaTeX source file.
+The reference list at the end of this document is created using BibTeX, which
+looks through the file {\ttfamily report.bib} for the entries cited in the
+LaTeX source file.  The format of the reference list is determined by the
+bibliography style file {\ttfamily spiejour.bst}, as specified in the \\
+\verb|\bibliographystyle{spiejour}| command.  Alternatively, the references may
+be directly formatted in the LaTeX source file.
 
-For books\citenum{Lamport94,Alred03,Goossens97} the listing includes the list of authors (initials plus last name), book title (in italics), page or chapter numbers, publisher, city, and year of publication.  Journal-article references \citenum{Metropolis53,Harris06} include the author list, title of the article (in quotes), journal name (in italics, properly abbreviated), volume number (in bold), inclusive page numbers or citation identifier, and year.  A reference to a proceedings paper or a chapter in an edited book\citenum{Gull89a} includes the author list, title of the article (in quotes), conference name (in italics), editors (if appropriate), volume title (in italics), volume number if applicable (in bold), inclusive page numbers, publisher, city, and year.  References to an article in the SPIE Proceedings may include the conference name, as shown in Ref.~\citenum{Hanson93c}.
+For books\citenum{Lamport94,Alred03,Goossens97} the listing includes the list
+of authors (initials plus last name), book title (in italics), page or chapter
+numbers, publisher, city, and year of publication.  Journal-article references
+\citenum{Metropolis53,Harris06} include the author list, title of the article
+(in quotes), journal name (in italics, properly abbreviated), volume number (in
+bold), inclusive page numbers or citation identifier, and year.  A reference to
+a proceedings paper or a chapter in an edited book\citenum{Gull89a} includes
+the author list, title of the article (in quotes), conference name (in
+italics), editors (if appropriate), volume title (in italics), volume number if
+applicable (in bold), inclusive page numbers, publisher, city, and year.
+References to an article in the SPIE Proceedings may include the conference
+name, as shown in Ref.~\citenum{Hanson93c}.
 
-The references are numbered in the order of their first citation. Citations to the references are made using superscripts, as demonstrated in the preceding paragraph. One may also directly refer to a reference within the text, for example, ``as shown in Ref.~\citenum{Metropolis53} ...''  Two or more references should be separated by a comma with no space between them. Multiple sequential references should be displayed with a dash between the first and last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
+The references are numbered in the order of their first citation. Citations to
+the references are made using superscripts, as demonstrated in the preceding
+paragraph. One may also directly refer to a reference within the text, for
+example, ``as shown in Ref.~\citenum{Metropolis53} ...''  Two or more
+references should be separated by a comma with no space between them. Multiple
+sequential references should be displayed with a dash between the first and
+last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
 
 \subsubsection{Reference linking and DOIs}
-A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a digital object, such as a journal article or a book chapter, that provides a persistent link to its location on the internet. The use of DOIs allows readers to easily access cited articles. Authors should include the DOI at the end of each reference in brackets if a DOI is available. See examples at the end of this manuscript. A free DOI lookup service is available from CrossRef at \\\linkable{http://www.crossref.org/freeTextQuery/}. The inclusion of DOIs will facilitate reference linking and is highly recommended.
+A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a
+digital object, such as a journal article or a book chapter, that provides a
+persistent link to its location on the internet. The use of DOIs allows readers
+to easily access cited articles. Authors should include the DOI at the end of
+each reference in brackets if a DOI is available. See examples at the end of
+this manuscript. A free DOI lookup service is available from CrossRef at
+\\\linkable{http://www.crossref.org/freeTextQuery/}. The inclusion of DOIs will
+facilitate reference linking and is highly recommended.
 
-In the present LaTeX template, the author needs to add the DOI reference by including it in a ``note'' in the bibliography file, as shown in the file {\verb+report.bib+}, for example, \\ {\verb+note = "[doi:10.1117/12.154577]"+}. The DOI may be used by the reader to locate that document with the link: {\verb+http://dx.doi.org10.1117/12.154577+}.
+In the present LaTeX template, the author needs to add the DOI reference by
+including it in a ``note'' in the bibliography file, as shown in the file
+{\verb+report.bib+}, for example, \\ {\verb+note = "[doi:10.1117/12.154577]"+}.
+The DOI may be used by the reader to locate that document with the link:
+{\verb+http://dx.doi.org10.1117/12.154577+}.
 
 \subsection{Biographies}
-A brief professional biography of approximately 75 words may be provided for each author, if available. Biographies should be placed at the end of the paper, after the references. Personal information such as hobbies or birthplace/birthdate should not be included. Author photographs are not published.
+A brief professional biography of approximately 75 words may be provided for
+each author, if available. Biographies should be placed at the end of the
+paper, after the references. Personal information such as hobbies or
+birthplace/birthdate should not be included. Author photographs are not
+published.
 
 \section{Section Formatting}
 \label{sect:sections}
-In LaTeX, a new section is created with the \verb|\section{}| command, which automatically numbers the sections. Sections will be numbered sequentially, starting with the first section after the abstract, except for the acknowledgments and references. (Note that numbering of section headings is not required, but the numbering must be consistent if used.) All section headings should be left justified.
+In LaTeX, a new section is created with the \verb|\section{}| command, which
+automatically numbers the sections. Sections will be numbered sequentially,
+starting with the first section after the abstract, except for the
+acknowledgments and references. (Note that numbering of section headings is not
+required, but the numbering must be consistent if used.) All section headings
+should be left justified.
 
-Main section headings are in 12-pt. bold font, left-justified and in title case, where important words are capitalized.
+Main section headings are in 12-pt. bold font, left-justified and in title
+case, where important words are capitalized.
 
-Paragraphs that immediately follow a section heading are leading paragraphs and should not be indented, according to standard publishing style. The same goes for leading paragraphs of subsections and sub-subsections. Subsequent paragraphs are standard paragraphs, with 0.2-in (5 mm) indentation. There is no additional space between paragraphs. In LaTeX, paragraphs are separated by blank lines in the source file. Indentation of the first line of a paragraph may be avoided by starting it with \verb|\noindent|.
+Paragraphs that immediately follow a section heading are leading paragraphs and
+should not be indented, according to standard publishing style. The same goes
+for leading paragraphs of subsections and sub-subsections. Subsequent
+paragraphs are standard paragraphs, with 0.2-in (5 mm) indentation. There is no
+additional space between paragraphs. In LaTeX, paragraphs are separated by
+blank lines in the source file. Indentation of the first line of a paragraph
+may be avoided by starting it with \verb|\noindent|.
 
 \subsection{Subsection Headings}
-All important words in a subsection (level 1) header are capitalized. Subsection numbers consist of the section number, followed by a period, and the subsection number within that section, without a period at the end. The heading is left justified and its font is 12 pt. italic.
+All important words in a subsection (level 1) header are capitalized.
+Subsection numbers consist of the section number, followed by a period, and the
+subsection number within that section, without a period at the end. The heading
+is left justified and its font is 12 pt. italic.
 
 \subsubsection{Sub-subsection headings}
-The first word of a sub-subsection is capitalized. The rest of the text is not capitalized, except for proper names and acronyms (the latter should only be used if well known). The heading is left justified and its font is 11 pt. italic.
+The first word of a sub-subsection is capitalized. The rest of the text is not
+capitalized, except for proper names and acronyms (the latter should only be
+used if well known). The heading is left justified and its font is 11 pt.
+italic.
 
 \section{Figures and Tables}
 
 \subsection{Figures}
 
-Figures are numbered in the order in which they are called out in the text. They should appear in the document in numerical order and as close as possible to their first reference in the text. It may be necessary to move figures or tables around to enhance readability. LaTeX will attempt to place figures at the top or bottom of a page in which they are first referenced.
+Figures are numbered in the order in which they are called out in the text.
+They should appear in the document in numerical order and as close as possible
+to their first reference in the text. It may be necessary to move figures or
+tables around to enhance readability. LaTeX will attempt to place figures at
+the top or bottom of a page in which they are first referenced.
 
-Figures, along with their captions, should be separated from the main text by  0.2 in.\ or 5 mm and centered. Figure captions are centered below the figure or graph. Figure captions start with the abbreviation ``Fig'' in front of the figure number, followed by a period, and the text in 10-pt. font. See Fig.~\ref{fig:example} for an example.
+Figures, along with their captions, should be separated from the main text by
+0.2 in.\ or 5 mm and centered. Figure captions are centered below the figure or
+graph. Figure captions start with the abbreviation ``Fig'' in front of the
+figure number, followed by a period, and the text in 10-pt. font. See
+Fig.~\ref{fig:example} for an example.
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[height=5.5cm]{mcr3b.eps}
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:example}
-Example of a figure caption. }
-\end{figure}
+% \begin{figure}
+% \begin{center}
+% \begin{tabular}{c}
+% \includegraphics[height=5.5cm]{mcr3b.eps}
+% \end{tabular}
+% \end{center}
+% \caption
+% { \label{fig:example}
+% Example of a figure caption. }
+% \end{figure}
 
-Authors may wish to create figures consisting of two or more images, in which case, they should be neatly arranged in a rectangular array.  In no case, should the article's text be wrapped around a figure. Figure~\ref{fig:example2} shows two side-by-side images. When a figure contains more than one image, the author must submit them as a single image file. Further details about figure formatting can be found in the author guidelines for each specific SPIE journal: \\
-\linkable {https://www.spiedigitallibrary.org/journals/journal-authors}.
+% Authors may wish to create figures consisting of two or more images, in which
+% case, they should be neatly arranged in a rectangular array.  In no case,
+% should the article's text be wrapped around a figure. Figure~\ref{fig:example2}
+% shows two side-by-side images. When a figure contains more than one image, the
+% author must submit them as a single image file. Further details about figure
+% formatting can be found in the author guidelines for each specific SPIE
+% journal: \\
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[height=5.5cm]{fig2.eps}  % fig2 includes two images
-\\
-(a) \hspace{5.1cm} (b)
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:example2}
-Example of a figure containing multiple images: (a) sun and (b) blob. Figures containing multiple images must be submitted to SPIE as a single image file.}
-\end{figure}
+% \linkable {https://www.spiedigitallibrary.org/journals/journal-authors}.
+
+% \begin{figure}
+% \begin{center}
+% \begin{tabular}{c}
+% \includegraphics[height=5.5cm]{fig2.eps}  % fig2 includes two images
+% \\
+% (a) \hspace{5.1cm} (b)
+% \end{tabular}
+% \end{center}
+% \caption
+% { \label{fig:example2} Example of a figure containing multiple images: (a) sun
+% and (b) blob. Figures containing multiple images must be submitted to SPIE as a
+% single image file.}
+% \end{figure}
 
 % \subsection{Tables}
 % Tables are numbered in the order in which they are referenced. They should appear in the document in numerical order and as close as possible to their first reference in the text. It is preferable to have tables appear at the top or bottom of the page, if possible. Table captions are handled identically to those for figures, except that they appear above the table. See Table~\ref{tab:fonts} for an example.

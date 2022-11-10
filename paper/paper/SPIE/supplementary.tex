@@ -1,4 +1,3 @@
-% \documentclass[12pt]{supplementary}  % 12pt font required by SPIE;
 \documentclass{article}  % use this instead for A4 paper
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{authblk}
@@ -84,6 +83,72 @@ AUROC distributions across gross feature groupings and comparison tasks.}
 { \label{fig:fine-preproc}
 AUROC distributions across fine feature groupings and predictable comparison tasks, with effect of preprocessing.}
 \end{figure}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{coarse_feature_group_by_predictive_subgroup_classifier.png}
+\end{center}
+\caption
+{ \label{fig:coarse-classifier}
+AUROC distributions across coarse feature groupings and predictable comparison tasks, by classifier.}
+\end{figure}
+
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_group_by_predictive_subgroup_classifier.png}
+\end{center}
+\caption
+{ \label{fig:fine-classifier}
+AUROC distributions across coarse feature groupings and predictable comparison tasks, by classifier.}
+\end{figure}
+
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_largest_by_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-largest}
+Distributions of largest 500 mAUROCs across fine feature grouping, by comparison task.}
+\end{figure}
+
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_smallest_by_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-smallest}
+Distributions of smallest 500 mAUROCs across fine feature groupings, by comparison task.}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{rmt_feature_auroc_by_trim.png}
+\end{center}
+\caption
+{ \label{fig:fine-trim}
+Distributions of mAUROCs for unfolding-dependent RMT features, by degree.}
+\end{figure}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{rmt_feature_auroc_by_degree.png}
+\end{center}
+\caption
+{ \label{fig:fine-degree}
+Distributions of mAUROCs for unfolding-dependent RMT features, by degree.}
+\end{figure}
+
+
+
+
 
 
 
