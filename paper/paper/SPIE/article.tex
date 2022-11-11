@@ -814,8 +814,8 @@ significantly. In all cases the default hyperparameter values were used.
 Each preprocessing intermediate in the (1) brain extraction, (2) slice time
 correction, (3) motion correction, and (4) template registration pipeline was
 saved and used for entirely separate feature analyses. E.g. all features were
-extracted from a brain prepared with one of four levels or degrees of
-preprocessing, where level \(k\) includes preprocessings steps 1 to \(k\),
+extracted from an fMRI image prepared with one of four levels or degrees of
+preprocessing, where preprocessing level \(k\) includes preprocessings steps 1 to \(k\),
 inclusive, and starting at \(k = 1\).
 
 \subsection{Normalization}
@@ -912,14 +912,64 @@ Summarizing this quantity of data requires some caution. Measures of location or
 scale, even when robust, are, for the most part, misleading and uninformative
 when distributions are skewed. In most cases we find skewed mAUROC
 distributions, and so have chosen primarily to present our findings visually,
-with kernel density estimates.
+with kernel density estimates. However, we also provide overall numerical
+summaries of the feature performances in Table \ref{tab:numerical}.
+
+\begin{table}[h!]
+\caption{Numerical summaries of feature mAUROCs across predictable comparisons, and all combinations of
+analytic choices, sorted by 95\% percentile (robust max) value. Bold values indicate column "best" values, when reasonable. }
+\label{tab:numerical}
+\small
+\centering
+
+\begin{tabular}{lrrrrrrr}
+\hline
+Feature &      mean &       min &        5\% &       50\% &       95\% &       max &       std \\
+\hline
+eigs + eigs\_smooth            &  \textbf{0.583} &  0.188 &  0.408 &  0.567 &  \textbf{0.788} &  0.906 &  0.111 \\
+eigs + savgol                  &  0.580 &  0.188 &  0.408 &  \textbf{0.563} &  0.785 &  0.913 &  0.110 \\
+unfolded                       &  0.568 &  0.150 &  0.400 &  0.555 &  0.775 &  0.931 &  0.108 \\
+unfolded + levelvar            &  0.569 &  0.150 &  0.400 &  0.555 &  0.775 &  0.925 &  0.108 \\
+unfolded + rigidity            &  0.568 &  0.150 &  0.401 &  0.555 &  0.775 &  0.925 &  0.108 \\
+unfolded + rigidity + levelvar &  0.568 &  0.150 &  0.401 &  0.555 &  0.775 &  0.931 &  0.108 \\
+eigs + rigidity + levelvar     &  0.564 &  0.202 &  0.401 &  0.548 &  0.763 &  \textbf{0.937} &  0.105 \\
+eigs + unfolded                &  0.564 &  0.202 &  0.401 &  0.549 &  0.763 &  0.919 &  0.105 \\
+eigs + unfolded + levelvar     &  0.564 &  0.202 &  0.400 &  0.548 &  0.763 &  0.933 &  0.105 \\
+eigs + unfolded + rigidity     &  0.564 &  0.202 &  0.401 &  0.548 &  0.763 &  0.920 &  0.105 \\
+eigs + levelvar                &  0.563 &  0.202 &  0.400 &  0.548 &  0.758 &  0.914 &  0.104 \\
+eigs                           &  0.563 &  0.202 &  0.401 &  0.548 &  0.756 &  0.875 &  0.104 \\
+eigs + rigidity                &  0.563 &  0.202 &  0.400 &  0.548 &  0.756 &  0.882 &  0.104 \\
+eigs\_smooth                   &  0.569 &  0.188 &  0.417 &  0.556 &  0.755 &  0.907 &  0.102 \\
+T-p05                          &  0.526 &  0.249 &  0.340 &  0.500 &  0.754 &  0.856 &  0.110 \\
+eigs\_savgol                   &  0.566 &  0.188 &  0.410 &  0.553 &  0.748 &  0.909 &  0.102 \\
+eigsminmax20                   &  0.556 &  0.245 &  0.411 &  0.544 &  0.738 &  0.906 &  0.098 \\
+eigsminmax10                   &  0.550 &  0.231 &  0.409 &  0.538 &  0.737 &  0.906 &  0.095 \\
+eigsminmax5                    &  0.549 &  0.213 &  0.400 &  0.539 &  0.729 &  0.888 &  0.096 \\
+T-mean                         &  0.557 &  0.208 &  \textbf{0.427} &  0.558 &  0.717 &  0.814 &  0.085 \\
+levelvar                       &  0.534 &  0.075 &  0.367 &  0.527 &  0.712 &  0.879 &  0.101 \\
+eigsmiddle40                   &  0.547 &  \textbf{0.324} &  0.419 &  0.533 &  0.697 &  0.785 &  0.084 \\
+rigidity + levelvar            &  0.529 &  0.154 &  0.377 &  0.523 &  0.696 &  0.888 &  0.094 \\
+rigidity                       &  0.529 &  0.154 &  0.378 &  0.523 &  0.694 &  0.888 &  0.094 \\
+T-rrng                         &  0.545 &  0.281 &  0.384 &  0.542 &  0.688 &  0.759 &  0.090 \\
+eigsmiddle20                   &  0.545 &  0.321 &  0.419 &  0.533 &  0.686 &  0.798 &  0.080 \\
+T-iqr                          &  0.494 &  0.175 &  0.312 &  0.490 &  0.682 &  0.759 &  0.099 \\
+eigsmiddle10                   &  0.541 &  0.323 &  0.411 &  0.530 &  0.681 &  0.755 &  0.081 \\
+T-std                          &  0.513 &  0.252 &  0.392 &  0.500 &  0.679 &  0.729 &  0.086 \\
+T-rng                          &  0.538 &  0.279 &  0.392 &  0.539 &  0.678 &  0.779 &  0.092 \\
+T-max                          &  0.540 &  0.275 &  0.385 &  0.546 &  0.678 &  0.754 &  0.095 \\
+T-med                          &  0.539 &  0.221 &  0.399 &  0.541 &  0.665 &  0.702 &  0.077 \\
+T-p95                          &  0.524 &  0.294 &  0.402 &  0.514 &  0.653 &  0.693 &  0.077 \\
+T-min                          &  0.504 &  0.321 &  0.426 &  0.500 &  0.582 &  0.698 &  0.046 \\
+\hline
+\end{tabular}
+\end{table}
 
 In addition, each analytic factor could produce an interaction. For example, it
 could be that trimming impacts the overall mAUROC distribution only at a
 certain preprocessing level and for certain feature slicing. However, there are
-too many potential interactions to present, so we limit our presentation to the
-most significant ones.  As there are a large number of features, we also
-summarize patterns of results across two abstract groupings of features
+too many potential interactions to present, so we limit our presentation to
+main effects.  As there are a large number of features, we also summarize
+patterns of results across two abstract groupings of similar features
 ("coarse", and "fine") shown in Table \ref{tab:features}.
 
 It is also important to exclude a classification task or an analytic factor
@@ -953,18 +1003,14 @@ dataset were also not meaningfully predictable by any feature. As such, we exclu
 these classification tasks from further figures and discussion.
 
 \subsubsection{Predictable Comparisons}
-As visible in Figure \ref{fig:main-results}, when coarsely summarizing features,
-eigenfeatures were more likely to be predictively useful than not, and except
-for in the \code{task\_attend v task\_nonattend} comparison, were also more
-predictively useful than the baseline features. We also note that although
-orders of magnitude more models were fit for eigenfeatures (see Section \ref{sec:multiverse}),
-the mAUROC distributions for the baseline features are either equally as wide,
-or, for the Parkinson's data, wider.
-
-Eigenfeatures most strongly and consistently demonstrated predictive utility
-in the \textit{Aging} dataset \code{older v younger} classification task, the
-\textit{Osteo} dataset \code{nopain v duloxetine} task, and in the \textit{Attention}
-\code{vigilant v nonvigilant} comparison.
+As visible in Figure \ref{fig:main-results}, when coarsely summarizing
+features, eigenfeatures were more likely to be predictively useful than not,
+and except for in the \code{task\_attend v task\_nonattend} comparison, were
+also more predictively useful than the baseline features.  Eigenfeatures most
+strongly and consistently demonstrated predictive utility in the \textit{Aging}
+dataset \code{older v younger} classification task, the \textit{Osteo} dataset
+\code{nopain v duloxetine} task, and in the \textit{Attention} \code{vigilant v
+nonvigilant} comparison.
 
 
 
@@ -989,7 +1035,7 @@ features (see Table \ref{tab:features}). However, these features were also most
 likely to cause poor performance and overfitting (indicated by an mAUROC \(<\)
 0.5; Figure S\ref{S-fig:fine-smallest}).
 
-Examining these RMT features more closely (Figure S\ref{S-fig:fig:fine-degree}),
+Examining these RMT features more closely (Figure S\ref{S-fig:fine-degree}),
 it is clear these features are more predictive mostly due to the unfolding
 procedure: the mAUROC distributions with largest medians and modes are due to
 features that include the unfolded eigenvalues. Combined features that use
@@ -1059,28 +1105,16 @@ Features were slightly more predictive when using either the largest 5 or 10\% o
 \ref{S-fig:best-params-slicing}), and least predictive when features primarily
 involved the smallest eigenvalues.
 
-\subsection{Best Case Scenario}
-Viewing all the impactful analytic choices as tunable hyperparameters, and
-selecting the overall "best" hyperparameters of \(\text{trimming} \in
-\{\text{middle}, \text{largest}\}\), \(\text{degree} \in \{3, 9\}\),
-\(\text{preprocessing} \in \{\text{MotionCorrect}, \text{MNIRegister}\}\),
-\(\text{slicing} \in \{\text{"max-10"}, \text{"mid-25"}\} \) and
-restricting to only the "unfolded" RMT feature, results in the mAUROC
-distributions in Figure S\ref{S-fig:best-params}. Using these analytic choices,
-the \code{depress v control} comparison in the \textit{Depression} dataset
-becomes weakly predictable, and the smoothed eigenvalue features tend to
-closely follow the unfolded eigenvalues in predictive utility.
-
 
 \section{Discussion}
 
 In this study, eigenfeatures inspired by RMT and derived from the eigenvalues
 of the full, whole-brain voxelwise fMRI correlation matrix, were found to have
-predictive utility across a wide variety of phenomena. Compared to simple
-baseline reductions of the fMRI data, these eigenfeatures had more consistent
-predictive utility, and a higher maximum predictive potential (Figures
-\ref{fig:main-results}-\ref{fig:largest}).  In addition to evidence from
-previous studies
+predictive utility across a wide variety of phenomena and analytic choices.
+Compared to simple baseline reductions of the fMRI data, these eigenfeatures
+had more consistent predictive utility, and a higher maximum predictive
+potential (Figures \ref{fig:main-results}-\ref{fig:largest}). In addition to
+evidence from previous studies
 \cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}
 this suggests RMT may be a useful analytic and theoretical tool for
 understanding functional connectivity.
@@ -1088,19 +1122,94 @@ understanding functional connectivity.
 \begin{figure}
 \begin{center}
 \begin{tabular}{c}
-\includegraphics[width=6.5in]{unfolded_duloxetine_nopain.png}
+\includegraphics[width=6.5in]{unfolded_osteo_duloxetine_v_nopain.png}
 \end{tabular}
 \end{center}
 \caption
-{ \label{fig:unfolded} Raw eigenvalues and unfolded eigenvaleus (polynomial degree 9) for \textit{Osteo} dataset \code{duloxetine v nopain} classification task.}
+{ \label{fig:unfolded} Raw eigenvalues and unfolded eigenvalues (polynomial
+degree 9) for \textit{Osteo} dataset \footnotesize\texttt{duloxetine v nopain}
+classification task, brain extraction and slice time correction only. Median
+observed mAUROC = 0.643 (range = 0.346 - 0.925)}
 \end{figure}
 
-When RMT-based eigenfeatures were most predictive
 
 
+It is likely that the unfolded eigenvalues have predictive utility because of
+their smoothing and re-scaling effect. It is clear from Figure \ref{fig:unfolded},
+which depicts the raw eigenvalues and unfolded eigenvalues with different trimming
+procedures, that the raw eigenvalues have an extremely exponential distribution
+(Figure \ref{fig:unfolded} already uses a log-scale for plotting) due to the largest
+eigenvalues. The trimmed feature distributions are clearly far less pathologically distributed.
+Also, as is clear from Table \ref{tab:numerical} and Figure S\ref{S-fig:fine-classifier} that
+a simple combination of the raw eigenvalues plus smoothed versions of them are the most
+generally-predictive features examined here.
 
+It was also sometimes the case that adding RMT-specific features (e.g. the spectral
+rigidity, or level variance) to either the unfolded eigenvalues, or raw
+eigenvalues, would allow for a higher maximum mAUROC (Table
+\ref{tab:numerical}, Figure S\ref{S-fig:fine-largest}). One case where these
+features yielded the largest predictions was in the \textit{Aging} dataset.
+This is depicted in Figure \ref{fig:observables}, where it is clear that, after
+trimming, at almost any \(L\) value, subgroups are strongly and clearly
+visually-separable.
 
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{observables_older_younger_v_older.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:observables} Rigidity and level variance features (unfolding
+polynomial degree 3) for \textit{Aging} dataset \footnotesize\texttt{younger v
+older} classification task, brain extraction only. Median observed mAUROC =
+0.703 (range = 0.424 - 0.880). Horizontal axis L-values range from 1 to 20 in
+all subplots, as described in the \ref{sec:methods}.}
+\end{figure}
 
+However, the range of mAUROCs observed in all cases in this study suggests
+caution. All eigenfeatures and baselines features were sensitive to analytic
+choices such as the amount of preprocessing, feature slicing (including trimming) and
+feature smoothing / unfolding, and this sensitivity was such that all features
+resulted in mAUROCs on either side of 0.5. Most of these analytic choices are benign enough that
+it is difficult to rigorously justify one choice over another, meaning RMT-based
+analyses may be susceptible to post-hoc justification \cite{kerrHARKingHypothesizingResults1998}.
+
+It is also difficult to quantify the practical significance of the observed mAUROC values.
+With small datasets of rs- or task-fMRI data, binary classification using whole-brain
+features is challenging. For subject level classification, state of the art deep learning methods
+improve upon guessing by 17\% for autism \cite{bengs4DSpatioTemporalDeep2020} or 3-30\% for ADHD
+\cite{riazDeepFMRIEndtoendDeep2020}, 16\% for severe depression
+\cite{ramasubbuAccuracyAutomatedClassification2016}, and 23\% for obsessive compulsive disorder
+\cite{takagiNeuralMarkerObsessiveCompulsive2017}. Manual feature engineering with more separable
+conditions (e.g. schizophrenia) can result in classification accuracies well above 90\%
+\cite{duHighClassificationAccuracy2012}, and with larger data, sophisticated custom feature
+extraction methods can achieve near perfect accuracies at classifying task vs. rest
+\cite{zhangCharacterizingDifferentiatingTaskbased2016}. However, for functional connectivity data
+and with classical machine learning algorithms (such as SVM) we in general only expect large
+prediction accuracies (e.g. greater than 80\%) when the group functional connectivities are already
+strongly separated (e.g. Cohen’s \(d > 1.0\); \citenum{dansereauStatisticalPowerPrediction2017}).
+
+In this study, the median accuracy improvement upon guessing was 0 for all features, although
+eigenfeatures could improve upon guessing by 16.2\% - 33.7\% (\ref{S-tab:acc-numerical}).
+
+It is somewhat surprising that eigenfeatures are, on net, predictively-useful
+at all. The reduction of the functional connectivity matrix to \(T - 1\)
+eigenvalues is aggressive, and the subsequent small-degree polynomial fit used
+in the unfolding procedure further reduces information in the raw data.
+Still, the subsequent features more often than not allow non-trivial 5-fold
+cross-validated mean prediction AUROCs or accuracies.
+
+We believe that future studies using RMT to inform their examinations be more
+careful. In the absence of a cross-validated predictive framework that takes
+into account the strong impact of researcher analytic choices, any apparent
+explanatory utility of RMT should be treated with skepticism. RMT deals with
+highly-ideal \textit{iid} matrices, but almost no real-world systems involve
+\textit{iid} elements. The basic RMT insight that eigenvalues can be used to
+describe matrix-representable systems is certainly vindicated here, but the use
+of mathematically non-trivial RMT statistics (like the spectral rigidity or
+level number variance) should not be used if simpler statistical descriptions
+of the eigenvalues are equally informative.
 
 % \subsection{Page Setup and Fonts}
 
@@ -1149,75 +1258,75 @@ When RMT-based eigenfeatures were most predictive
 % \end{center}
 % \end{table}
 
-\section{Parts of Manuscript}
+% \section{Parts of Manuscript}
 
-This section describes the normal structure of a manuscript and how each part
-should be handled. The appropriate vertical spacing between various parts of
-this document is achieved in LaTeX through the proper use of defined
-constructs, such as \verb|\section{}|.
+% This section describes the normal structure of a manuscript and how each part
+% should be handled. The appropriate vertical spacing between various parts of
+% this document is achieved in LaTeX through the proper use of defined
+% constructs, such as \verb|\section{}|.
 
-\subsection{Title and Author Information}
-\label{sect:title}
-The article title appears left justified at the top of the first page. The
-title font is 16 pt., bold. The rules for capitalizing the title are the same
-as for sentences; only the first word, proper nouns, and acronyms should be
-capitalized. Do not begin titles with articles (for example, a, an, the) or
-prepositions (for example, on, by, etc.). The word ``novel'' should not appear
-in the title, as publication will imply novelty. Avoid the use of acronyms in
-the title, unless they are widely understood. Appendix A contains more about
-acronyms.
+% \subsection{Title and Author Information}
+% \label{sect:title}
+% The article title appears left justified at the top of the first page. The
+% title font is 16 pt., bold. The rules for capitalizing the title are the same
+% as for sentences; only the first word, proper nouns, and acronyms should be
+% capitalized. Do not begin titles with articles (for example, a, an, the) or
+% prepositions (for example, on, by, etc.). The word ``novel'' should not appear
+% in the title, as publication will imply novelty. Avoid the use of acronyms in
+% the title, unless they are widely understood. Appendix A contains more about
+% acronyms.
 
-The list of authors immediately follows the title, 18 points below. The font is
-12 pt., bold and the author names are left justified. The author affiliations
-and addresses follow the names, in 10-pt., normal font and left justified. For
-multiple affiliations, each affiliation should appear on a separate line.
-Superscript letters (a, b, c, etc.) should be used to associate multiple
-authors with their respective affiliations. The corresponding author should be
-identified with an asterisk, and that person's email address should be provided
-below the keywords.
+% The list of authors immediately follows the title, 18 points below. The font is
+% 12 pt., bold and the author names are left justified. The author affiliations
+% and addresses follow the names, in 10-pt., normal font and left justified. For
+% multiple affiliations, each affiliation should appear on a separate line.
+% Superscript letters (a, b, c, etc.) should be used to associate multiple
+% authors with their respective affiliations. The corresponding author should be
+% identified with an asterisk, and that person's email address should be provided
+% below the keywords.
 
-\subsection{Abstract}
-The abstract should be a summary of the paper and not an introduction. Because
-the abstract may be used in abstracting journals, it should be self-contained
-(i.e., no numerical references) and substantive in nature, presenting concisely
-the objectives, methodology used, results obtained, and their significance.
-Please note that the following journals require the use of structured abstracts
-in manuscript submissions: \textit{Neurophotonics}, the \textit{Journal of
-Biomedical Optics}, and the\textit{ Journal of Medical Imaging}. Structured
-abstracts are encouraged for the \textit{Journal of Micro/Nanolithography,
-MEMS, and MOEMS}. Helpful guidelines for structured abstracts are available on
-the website of the journal.
+% \subsection{Abstract}
+% The abstract should be a summary of the paper and not an introduction. Because
+% the abstract may be used in abstracting journals, it should be self-contained
+% (i.e., no numerical references) and substantive in nature, presenting concisely
+% the objectives, methodology used, results obtained, and their significance.
+% Please note that the following journals require the use of structured abstracts
+% in manuscript submissions: \textit{Neurophotonics}, the \textit{Journal of
+% Biomedical Optics}, and the\textit{ Journal of Medical Imaging}. Structured
+% abstracts are encouraged for the \textit{Journal of Micro/Nanolithography,
+% MEMS, and MOEMS}. Helpful guidelines for structured abstracts are available on
+% the website of the journal.
 
-\subsection{Subject terms/Keywords}
-Keywords are required. Please provide 3-6 keywords related to your paper.
+% \subsection{Subject terms/Keywords}
+% Keywords are required. Please provide 3-6 keywords related to your paper.
 
-\subsection{Body of Paper}
-The body of the paper consists of numbered sections that present the main
-findings. These sections should be organized to best present the material.
+% \subsection{Body of Paper}
+% The body of the paper consists of numbered sections that present the main
+% findings. These sections should be organized to best present the material.
 
-To provide transition elements in your paper, it is important to refer back (or
-forward) to specific sections. Such references are made by indicating the
-section number, for example, ``In Sec.\ 2 we showed...'' or ``Section 2.1
-contained a description...'' If the word Section, Reference, Equation, or
-Figure starts a sentence, it is spelled out. When occurring in the middle of a
-sentence, these words are abbreviated Sec., Ref., Eq., and Fig.
+% To provide transition elements in your paper, it is important to refer back (or
+% forward) to specific sections. Such references are made by indicating the
+% section number, for example, ``In Sec.\ 2 we showed...'' or ``Section 2.1
+% contained a description...'' If the word Section, Reference, Equation, or
+% Figure starts a sentence, it is spelled out. When occurring in the middle of a
+% sentence, these words are abbreviated Sec., Ref., Eq., and Fig.
 
-At the first occurrence of an acronym, spell it out followed by the acronym in
-parentheses, for example, charge-coupled diode (CCD).
+% At the first occurrence of an acronym, spell it out followed by the acronym in
+% parentheses, for example, charge-coupled diode (CCD).
 
-\subsection{Footnotes}
-Textual footnotes should be used rarely to present important documentary or
-explanatory material whose inclusion in the text would be
-distracting.\footnote{Example of a footnote.} Due to problems with HTML
-display, use of footnotes should generally be avoided. If absolutely necessary,
-the footnote mark must come at the end of a sentence. To insert a footnote, use
-the {\verb|\footnote{}|} command.
+% \subsection{Footnotes}
+% Textual footnotes should be used rarely to present important documentary or
+% explanatory material whose inclusion in the text would be
+% distracting.\footnote{Example of a footnote.} Due to problems with HTML
+% display, use of footnotes should generally be avoided. If absolutely necessary,
+% the footnote mark must come at the end of a sentence. To insert a footnote, use
+% the {\verb|\footnote{}|} command.
 
-\subsection{Appendices}
-Brief appendices may be included when necessary, such as derivations of
-equations, proofs of theorems, and details of algorithms. Equations and figures
-appearing in appendices should continue sequential numbering from earlier in
-the paper.
+% \subsection{Appendices}
+% Brief appendices may be included when necessary, such as derivations of
+% equations, proofs of theorems, and details of algorithms. Equations and figures
+% appearing in appendices should continue sequential numbering from earlier in
+% the paper.
 
 \subsection{Disclosures}
 Conflicts of interest should be declared under a separate header, above
@@ -1240,39 +1349,39 @@ provide specific access information or restrictions for data, materials, and
 computer code (i.e., links to repository access addresses with guidance on
 commercial or public access).
 
-\subsection{References}
-The References section lists books, articles, and reports that are cited in the
-paper. This section does not have a section number. The references are numbered
-in the order in which they are cited. Examples of the format to be followed are
-given at the end of this document.
+% \subsection{References}
+% The References section lists books, articles, and reports that are cited in the
+% paper. This section does not have a section number. The references are numbered
+% in the order in which they are cited. Examples of the format to be followed are
+% given at the end of this document.
 
-The reference list at the end of this document is created using BibTeX, which
-looks through the file {\ttfamily report.bib} for the entries cited in the
-LaTeX source file.  The format of the reference list is determined by the
-bibliography style file {\ttfamily spiejour.bst}, as specified in the \\
-\verb|\bibliographystyle{spiejour}| command.  Alternatively, the references may
-be directly formatted in the LaTeX source file.
+% The reference list at the end of this document is created using BibTeX, which
+% looks through the file {\ttfamily report.bib} for the entries cited in the
+% LaTeX source file.  The format of the reference list is determined by the
+% bibliography style file {\ttfamily spiejour.bst}, as specified in the \\
+% \verb|\bibliographystyle{spiejour}| command.  Alternatively, the references may
+% be directly formatted in the LaTeX source file.
 
-For books\citenum{Lamport94,Alred03,Goossens97} the listing includes the list
-of authors (initials plus last name), book title (in italics), page or chapter
-numbers, publisher, city, and year of publication.  Journal-article references
-\citenum{Metropolis53,Harris06} include the author list, title of the article
-(in quotes), journal name (in italics, properly abbreviated), volume number (in
-bold), inclusive page numbers or citation identifier, and year.  A reference to
-a proceedings paper or a chapter in an edited book\citenum{Gull89a} includes
-the author list, title of the article (in quotes), conference name (in
-italics), editors (if appropriate), volume title (in italics), volume number if
-applicable (in bold), inclusive page numbers, publisher, city, and year.
-References to an article in the SPIE Proceedings may include the conference
-name, as shown in Ref.~\citenum{Hanson93c}.
+% For books\citenum{Lamport94,Alred03,Goossens97} the listing includes the list
+% of authors (initials plus last name), book title (in italics), page or chapter
+% numbers, publisher, city, and year of publication.  Journal-article references
+% \citenum{Metropolis53,Harris06} include the author list, title of the article
+% (in quotes), journal name (in italics, properly abbreviated), volume number (in
+% bold), inclusive page numbers or citation identifier, and year.  A reference to
+% a proceedings paper or a chapter in an edited book\citenum{Gull89a} includes
+% the author list, title of the article (in quotes), conference name (in
+% italics), editors (if appropriate), volume title (in italics), volume number if
+% applicable (in bold), inclusive page numbers, publisher, city, and year.
+% References to an article in the SPIE Proceedings may include the conference
+% name, as shown in Ref.~\citenum{Hanson93c}.
 
-The references are numbered in the order of their first citation. Citations to
-the references are made using superscripts, as demonstrated in the preceding
-paragraph. One may also directly refer to a reference within the text, for
-example, ``as shown in Ref.~\citenum{Metropolis53} ...''  Two or more
-references should be separated by a comma with no space between them. Multiple
-sequential references should be displayed with a dash between the first and
-last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
+% The references are numbered in the order of their first citation. Citations to
+% the references are made using superscripts, as demonstrated in the preceding
+% paragraph. One may also directly refer to a reference within the text, for
+% example, ``as shown in Ref.~\citenum{Metropolis53} ...''  Two or more
+% references should be separated by a comma with no space between them. Multiple
+% sequential references should be displayed with a dash between the first and
+% last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
 
 \subsubsection{Reference linking and DOIs}
 A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a
@@ -1297,53 +1406,53 @@ paper, after the references. Personal information such as hobbies or
 birthplace/birthdate should not be included. Author photographs are not
 published.
 
-\section{Section Formatting}
-\label{sect:sections}
-In LaTeX, a new section is created with the \verb|\section{}| command, which
-automatically numbers the sections. Sections will be numbered sequentially,
-starting with the first section after the abstract, except for the
-acknowledgments and references. (Note that numbering of section headings is not
-required, but the numbering must be consistent if used.) All section headings
-should be left justified.
+% \section{Section Formatting}
+% \label{sect:sections}
+% In LaTeX, a new section is created with the \verb|\section{}| command, which
+% automatically numbers the sections. Sections will be numbered sequentially,
+% starting with the first section after the abstract, except for the
+% acknowledgments and references. (Note that numbering of section headings is not
+% required, but the numbering must be consistent if used.) All section headings
+% should be left justified.
 
-Main section headings are in 12-pt. bold font, left-justified and in title
-case, where important words are capitalized.
+% Main section headings are in 12-pt. bold font, left-justified and in title
+% case, where important words are capitalized.
 
-Paragraphs that immediately follow a section heading are leading paragraphs and
-should not be indented, according to standard publishing style. The same goes
-for leading paragraphs of subsections and sub-subsections. Subsequent
-paragraphs are standard paragraphs, with 0.2-in (5 mm) indentation. There is no
-additional space between paragraphs. In LaTeX, paragraphs are separated by
-blank lines in the source file. Indentation of the first line of a paragraph
-may be avoided by starting it with \verb|\noindent|.
+% Paragraphs that immediately follow a section heading are leading paragraphs and
+% should not be indented, according to standard publishing style. The same goes
+% for leading paragraphs of subsections and sub-subsections. Subsequent
+% paragraphs are standard paragraphs, with 0.2-in (5 mm) indentation. There is no
+% additional space between paragraphs. In LaTeX, paragraphs are separated by
+% blank lines in the source file. Indentation of the first line of a paragraph
+% may be avoided by starting it with \verb|\noindent|.
 
-\subsection{Subsection Headings}
-All important words in a subsection (level 1) header are capitalized.
-Subsection numbers consist of the section number, followed by a period, and the
-subsection number within that section, without a period at the end. The heading
-is left justified and its font is 12 pt. italic.
+% \subsection{Subsection Headings}
+% All important words in a subsection (level 1) header are capitalized.
+% Subsection numbers consist of the section number, followed by a period, and the
+% subsection number within that section, without a period at the end. The heading
+% is left justified and its font is 12 pt. italic.
 
-\subsubsection{Sub-subsection headings}
-The first word of a sub-subsection is capitalized. The rest of the text is not
-capitalized, except for proper names and acronyms (the latter should only be
-used if well known). The heading is left justified and its font is 11 pt.
-italic.
+% \subsubsection{Sub-subsection headings}
+% The first word of a sub-subsection is capitalized. The rest of the text is not
+% capitalized, except for proper names and acronyms (the latter should only be
+% used if well known). The heading is left justified and its font is 11 pt.
+% italic.
 
-\section{Figures and Tables}
+% \section{Figures and Tables}
 
-\subsection{Figures}
+% \subsection{Figures}
 
-Figures are numbered in the order in which they are called out in the text.
-They should appear in the document in numerical order and as close as possible
-to their first reference in the text. It may be necessary to move figures or
-tables around to enhance readability. LaTeX will attempt to place figures at
-the top or bottom of a page in which they are first referenced.
+% Figures are numbered in the order in which they are called out in the text.
+% They should appear in the document in numerical order and as close as possible
+% to their first reference in the text. It may be necessary to move figures or
+% tables around to enhance readability. LaTeX will attempt to place figures at
+% the top or bottom of a page in which they are first referenced.
 
-Figures, along with their captions, should be separated from the main text by
-0.2 in.\ or 5 mm and centered. Figure captions are centered below the figure or
-graph. Figure captions start with the abbreviation ``Fig'' in front of the
-figure number, followed by a period, and the text in 10-pt. font. See
-Fig.~\ref{fig:example} for an example.
+% Figures, along with their captions, should be separated from the main text by
+% 0.2 in.\ or 5 mm and centered. Figure captions are centered below the figure or
+% graph. Figure captions start with the abbreviation ``Fig'' in front of the
+% figure number, followed by a period, and the text in 10-pt. font. See
+% Fig.~\ref{fig:example} for an example.
 
 % \begin{figure}
 % \begin{center}

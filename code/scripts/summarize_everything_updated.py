@@ -10,10 +10,13 @@ from typing import Literal
 from warnings import simplefilter
 
 import matplotlib.pyplot as plt
+from numpy import ndarray
 import numpy as np
 import pandas as pd
 import seaborn as sbn
+from numba import njit
 from shutil import copyfile
+from warnings import simplefilter
 from joblib import Memory
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -32,6 +35,8 @@ from rmt.updated_features import (
     FEATURE_OUTFILES as PATHS,
     Unfolded,
     Eigenvalues,
+    Rigidities,
+    Levelvars,
 )
 from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
 from rmt.visualize import best_rect
@@ -56,6 +61,7 @@ DROPS = [
     "classifier_GradientBoostingClassifier",
 ]
 BLUE = "#004cc7"
+LBLUE = "#8dacfb"
 ORNG = "#f68a0e"
 GREEN = "#01f91e"
 GREY = "#5c5c5c"
@@ -2660,7 +2666,7 @@ def plot_unfolded_duloxetine() -> None:
             vals[vals <= 0] = np.nan
             ax.plot(
                 vals,
-                color=BLUE,
+                color=BLCK,
                 lw=0.5,
                 label="duloxetine" if k == 0 else None,
                 alpha=0.5,
@@ -2669,7 +2675,7 @@ def plot_unfolded_duloxetine() -> None:
             vals = nopain.iloc[k, :]
             vals[vals <= 0] = np.nan
             ax.plot(
-                vals, color=ORNG, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5
+                vals, color=BLUE, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5
             )
 
     ax = axes[0]
@@ -2682,7 +2688,7 @@ def plot_unfolded_duloxetine() -> None:
         vals[vals <= 1e-3] = np.nan
         ax.plot(
             vals,
-            color=BLUE,
+            color=BLCK,
             lw=0.5,
             label="duloxetine" if k == 0 else None,
             alpha=0.5,
@@ -2690,7 +2696,7 @@ def plot_unfolded_duloxetine() -> None:
     for k in range(len(nopain)):
         vals = nopain.iloc[k, :]
         vals[vals <= 1e-3] = np.nan
-        ax.plot(vals, color=ORNG, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5)
+        ax.plot(vals, color=BLUE, lw=0.5, label="nopain" if k == 0 else None, alpha=0.5)
 
     for ax in axes:
         ax.set_yticklabels(ax.get_yticklabels(), fontsize=8)
@@ -2709,18 +2715,21 @@ def plot_unfolded_duloxetine() -> None:
     savefig(fig, "unfolded_duloxetine_nopain.png")
 
 
-def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
+def plot_unfolded(
+    source: UpdatedDataset, preproc: PreprocLevel, group1: str, group2: str, degree: int
+) -> None:
     fig: Figure
     ax: Axes
     args = dict(
         source=source,
-        preproc=PreprocLevel.MotionCorrect,
+        preproc=preproc,
         norm=True,
     )
     deg = 9
     trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
     # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
-    unfs = [Unfolded(degree=deg, trim=trim, **args).data for trim in trims]
+
+    unfs = [Unfolded(degree=degree, trim=trim, **args).data for trim in trims]
     eigs = Eigenvalues(**args).data
     # smooths = [EigenvaluesSmoothed(degree=deg, **args).data for deg in degrees]
     # eigs = EigsMinMax20(**args).data
@@ -2741,7 +2750,7 @@ def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
             vals[vals <= 0] = np.nan
             ax.plot(
                 vals,
-                color=BLUE,
+                color=BLCK,
                 lw=0.5,
                 label=group1 if k == 0 else None,
                 alpha=0.5,
@@ -2749,7 +2758,9 @@ def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
         for k in range(len(g2)):
             vals = g2.iloc[k, :]
             vals[vals <= 0] = np.nan
-            ax.plot(vals, color=ORNG, lw=0.5, label=group2 if k == 0 else None, alpha=0.5)
+            ax.plot(
+                vals, color=LBLUE, lw=0.5, label=group2 if k == 0 else None, alpha=0.5
+            )
 
     ax = axes[0]
     ax.set_yscale("log")
@@ -2761,7 +2772,7 @@ def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
         vals[vals <= 1e-3] = np.nan
         ax.plot(
             vals,
-            color=BLUE,
+            color=BLCK,
             lw=0.5,
             label=group1 if k == 0 else None,
             alpha=0.5,
@@ -2769,11 +2780,12 @@ def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
     for k in range(len(g2)):
         vals = g2.iloc[k, :]
         vals[vals <= 1e-3] = np.nan
-        ax.plot(vals, color=ORNG, lw=0.5, label=group2 if k == 0 else None, alpha=0.5)
+        ax.plot(vals, color=LBLUE, lw=0.5, label=group2 if k == 0 else None, alpha=0.5)
 
     for ax in axes:
         ax.set_yticklabels(ax.get_yticklabels(), fontsize=8)
         ax.set_xticklabels(ax.get_xticklabels(), fontsize=8)
+    axes.flat[0].legend(frameon=False, fontsize=8).set_visible(True)
 
     fig.text(x=0.5, y=0.02, s="Feature Index", ha="center", fontsize=8)
     fig.text(
@@ -2787,20 +2799,184 @@ def plot_feature(source: UpdatedDataset, group1: str, group2: str) -> None:
     savefig(fig, f"unfolded_{source.value.lower()}_{group1}_v_{group2}.png")
 
 
+def plot_observables(
+    source: UpdatedDataset, preproc: PreprocLevel, group1: str, group2: str, degree: int
+) -> None:
+    fig: Figure
+    ax: Axes
+    args = dict(source=source, preproc=preproc, norm=True, degree=degree)
+    trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
+
+    rigs = [Rigidities(trim=trim, **args).data for trim in trims]
+    lvars = [Levelvars(trim=trim, **args).data for trim in trims]
+
+    fig, axes = plt.subplots(ncols=len(trims), nrows=2, sharex=True, sharey=False)
+    # fig.suptitle(
+    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
+    # )
+    for i, (rig, trim) in enumerate(zip(rigs, trims)):
+        ax = axes[0][i]
+        ax.set_title(f"trim = {trim.name}", fontsize=9)
+        if i == 0:
+            ax.set_ylabel("Rigidity", fontsize=9)
+        g1 = rig.drop(columns="y").loc[rig["y"] == group1]
+        g2 = rig.drop(columns="y").loc[rig["y"] == group2]
+        for k in range(len(g1)):
+            vals = g1.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals,
+                color=BLCK,
+                lw=0.5,
+                label=group1 if k == 0 else None,
+                alpha=0.5,
+            )
+        for k in range(len(g2)):
+            vals = g2.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals, color=LBLUE, lw=0.5, label=group2 if k == 0 else None, alpha=0.5
+            )
+
+    for i, (lvar, trim) in enumerate(zip(lvars, trims)):
+        ax = axes[1][i]
+        ax.set_title(f"trim = {trim.name}", fontsize=9)
+        if i == 0:
+            ax.set_ylabel("Level Variance", fontsize=9)
+        g1 = lvar.drop(columns="y").loc[lvar["y"] == group1]
+        g2 = lvar.drop(columns="y").loc[lvar["y"] == group2]
+        for k in range(len(g1)):
+            vals = g1.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals,
+                color=BLCK,
+                lw=0.5,
+                label=group1 if k == 0 else None,
+                alpha=0.5,
+            )
+        for k in range(len(g2)):
+            vals = g2.iloc[k, :]
+            vals[vals <= 0] = np.nan
+            ax.plot(
+                vals, color=LBLUE, lw=0.5, label=group2 if k == 0 else None, alpha=0.5
+            )
+
+    for ax in axes.flat:
+        ax.set_yticklabels(ax.get_yticklabels(), fontsize=8)
+        ax.set_xticklabels(ax.get_xticklabels(), fontsize=8)
+    axes[0][0].legend(frameon=False, fontsize=8).set_visible(True)
+
+    fig.text(x=0.5, y=0.02, s="L", ha="center", fontsize=8)
+    fig.text(
+        y=0.5, x=0.02, s="Feature Value", va="center", rotation="vertical", fontsize=8
+    )
+    fig.set_size_inches(w=6.5, h=4)
+    fig.tight_layout()
+    fig.subplots_adjust(
+        top=0.924, bottom=0.089, left=0.124, right=0.977, hspace=0.2, wspace=0.225
+    )
+    savefig(fig, f"observables_{source.value.lower()}_{group1}_v_{group2}.png")
+
+
+@njit(fastmath=True, cache=True)
+def paired_difference(arr1: ndarray, arr2: ndarray) -> tuple[float, float, float, float]:
+    distance = 0
+    count = 0
+    pos, neg, eq = 0, 0, 0
+    for i in range(len(arr1)):
+        for j in range(len(arr2)):
+            d = arr1[i] - arr2[j]
+            if d > 0:
+                pos += 1
+            elif d < 0:
+                neg += 1
+            else:
+                eq += 1
+            distance += (1 / (count + 1)) * (d - distance)
+    return distance, pos, neg, eq
+
+
+def feature_superiority() -> None:
+    df = load_combined()
+    unf = np.asarray(df[df.feature == "unfolded"]["auroc"])
+    results = []
+    for feature in tqdm(df[df.fine_feature == "rmt + eigs"].feature.unique()):
+        compare = np.asarray(df[df.feature == feature]["auroc"])
+        diff, pos, neg, eq = paired_difference(unf, compare)
+        total = pos + neg + eq
+        result = DataFrame(
+            {
+                "feature": feature,
+                "avg_diff": diff,
+                "unf_greater": pos / total,
+                "unf_lower": neg / total,
+            },
+            index=[0],
+        )
+        results.append(result)
+        print(result)
+
+    result = pd.concat(results, axis=0, ignore_index=True)
+    print(result)
+    """
+                              feature  avg_diff  unf_greater  unf_lower
+
+    0                        rigidity -0.070536     0.551810   0.448034
+    1                        levelvar  0.074107     0.545576   0.454281
+    2             rigidity + levelvar  0.038343     0.551635   0.448217
+    3                        unfolded  0.000000     0.499420   0.499420
+    4             unfolded + levelvar  0.000000     0.499180   0.499667
+    5             unfolded + rigidity  0.000000     0.498636   0.500209
+    6  unfolded + rigidity + levelvar  0.000000     0.498541   0.500299
+    0  eigs + rigidity + levelvar     -0.128571     0.514880   0.484008
+    1             eigs + levelvar     -0.135714     0.516269   0.482620
+    2             eigs + rigidity     -0.135714     0.516425   0.482465
+    3             eigs + unfolded     -0.135714     0.514644   0.484246
+    4  eigs + unfolded + levelvar     -0.135714     0.515045   0.483844
+    5  eigs + unfolded + rigidity     -0.128571     0.514770   0.484120
+    """
+
+
 if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
-    # df = load_combined()
+    df = load_combined()
+    # feature_superiority()
     # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
+    feature_summary = (
+        df[df.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        .groupby("feature")
+        .describe(percentiles=[0.05, 0.5, 0.95])["auroc"]
+        .sort_values(by=["95%", "feature"], ascending=[False, True])
+        .drop(columns=["count"])
+        .loc[:, ["mean", "min", "5%", "50%", "95%", "max", "std"]]
+        .round(3)
+    )
+    print(feature_summary.to_latex())
 
     # plot_unfolded_duloxetine()
     # plot_unfolded_aging()
-    plot_feature(UpdatedDataset.Vigilance, group1="vigilant", group2="nonvigilant")
-    plot_feature(UpdatedDataset.Older, group1="younger", group2="older")
-    plot_feature(UpdatedDataset.Osteo, group1="duloxetine", group2="nopain")
+    simplefilter("ignore", UserWarning)
+    # plot_unfolded(UpdatedDataset.Vigilance, group1="vigilant", group2="nonvigilant")
+    # plot_unfolded(UpdatedDataset.Older, group1="younger", group2="older")
+    plot_unfolded(
+        UpdatedDataset.Osteo,
+        preproc=PreprocLevel.SliceTimeAlign,
+        group1="duloxetine",
+        group2="nopain",
+        degree=9,
+    )
+    plot_observables(
+        UpdatedDataset.Older,
+        preproc=PreprocLevel.BrainExtract,
+        group1="younger",
+        group2="older",
+        degree=7,
+    )
     # summary_stats_and_tables()
     # make_kde_plots()
 
