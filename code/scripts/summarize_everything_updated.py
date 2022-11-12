@@ -2432,9 +2432,9 @@ def make_kde_plots() -> None:
         fig.set_size_inches(w=10, h=8)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.81, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
+            top=0.795, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
         )
-        sbn.move_legend(grid, loc=(0.01, 0.85))
+        sbn.move_legend(grid, loc=(0.01, 0.825))
         savefig(fig, "rmt_feature_auroc_by_trim.png")
 
     def plot_rmt_by_degree() -> None:
@@ -2561,11 +2561,11 @@ def make_kde_plots() -> None:
     # plot_by_coarse_predictive_feature_preproc_subgroup()
     # plot_by_fine_feature_group_predictive_norm_subgroup()
     # plot_by_fine_predictive_feature_preproc_subgroup()
-    plot_by_fine_feature_group_predictive_classifier_subgroup()
+    # plot_by_fine_feature_group_predictive_classifier_subgroup()
     # plot_largest_by_fine_feature_subgroup()
     # plot_smallest_by_fine_feature_subgroup()
     # plot_by_coarse_feature_group_predictive_classifier_subgroup()
-    # plot_rmt_by_trim()
+    plot_rmt_by_trim()
     # plot_rmt_by_degree()
     # plot_rmt_largest_by_degree()
     # plot_all_by_fine_feature_groups_best_params()
@@ -2947,6 +2947,8 @@ if __name__ == "__main__":
     # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
+    make_kde_plots()
+
     feature_summary = (
         df[df.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         .groupby("feature")
@@ -2963,22 +2965,21 @@ if __name__ == "__main__":
     simplefilter("ignore", UserWarning)
     # plot_unfolded(UpdatedDataset.Vigilance, group1="vigilant", group2="nonvigilant")
     # plot_unfolded(UpdatedDataset.Older, group1="younger", group2="older")
-    plot_unfolded(
-        UpdatedDataset.Osteo,
-        preproc=PreprocLevel.SliceTimeAlign,
-        group1="duloxetine",
-        group2="nopain",
-        degree=9,
-    )
-    plot_observables(
-        UpdatedDataset.Older,
-        preproc=PreprocLevel.BrainExtract,
-        group1="younger",
-        group2="older",
-        degree=7,
-    )
+    # plot_unfolded(
+    #     UpdatedDataset.Osteo,
+    #     preproc=PreprocLevel.SliceTimeAlign,
+    #     group1="duloxetine",
+    #     group2="nopain",
+    #     degree=9,
+    # )
+    # plot_observables(
+    #     UpdatedDataset.Older,
+    #     preproc=PreprocLevel.BrainExtract,
+    #     group1="younger",
+    #     group2="older",
+    #     degree=7,
+    # )
     # summary_stats_and_tables()
-    # make_kde_plots()
 
     # ts = load_tseries()
     # df = load_combined()

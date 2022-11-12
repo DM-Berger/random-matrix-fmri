@@ -220,7 +220,7 @@ wangRandomMatrixTheory2016, matharooSpontaneousBackpainAlters2020}.
 \subsection{RMT and Neurobiological Signals}
 
 In the human brain, each neuron, collection of neurons, or region of interest
-(ROI) is a potentially-interacting component in a highly complex system. RMT
+(ROI) is a potentially-interacting component in a complex system. RMT
 may have potential in describing the totality of these interactions, provided
 that measurements of functioning can be obtained with sufficient spatial and
 temporal resolution to speak to some neurobiological or neuropsychological
@@ -283,7 +283,7 @@ agrawalQuantifyingRandomnessProtein2014, raiRandomnessPreservedPatterns2015,
 sebaRandomMatrixAnalysis2003,wangSpectralPropertiesTemporal2015,
 wangRandomMatrixTheory2016} are the \textit{spectral rigidity} and
 \textit{level number variance} (``rigidity'' and ``level variance'' for short;
-details in Section \ref{sect:methods}).
+details in Section \ref{sec:methods}).
 
 However, from a predictive standpoint, these summary statistics may eliminate
 predictively-useful information. If the basic RMT insight is that the
@@ -298,61 +298,65 @@ all voxels is itself often computationally infeasible to work with, and thus is
 reduced in various ways prior to being used in analyses.
 
 Typical reductions include the use of a ``seed'' voxel or collection of voxels
-(i.e. ROI): the mean signal over that ROI is correlated with all other N ROIs
-of interest to generate a reduced functional connectivity matrix (or image)
-with one correlation value at each non-seed ROI. This sort of reduction reduces
-the functional connectivity to N values. This approach strongly biases the
-analysis to the seed ROI.
+(see e.g. \citenum{joelRelationshipSeedbasedICAbased2011,
+smithCharacterizingIndividualDifferences2014}): the mean signal over that ROI
+is correlated with all other N ROIs of interest to generate a reduced
+functional connectivity matrix (or image) with one correlation value at each
+non-seed ROI. This sort of reduction reduces the functional connectivity to N
+values, but necessarily biases the analysis to the seed ROI.
 
-Likewise, one can work with ROI mean signals, and work with the \(N \times N\)
-matrix of these ROI correlations. This analysis [maybe cite Poldrack book for
-this?] is, \textit{a priori}, sensitive to the choice of ROIs, and, in the case
-of anatomical atlases / parcellations, may also lack theoretical justification.
-
-A major disadvantage of both the above approaches, besides requiring
-parcellation into ROIs, is that most such parcellation methods are atlas-based,
-and thus require image registration, and, general, an entire preprocessing
-pipeline to ensure that registration is successful.
-
+Likewise, one can work with ROI mean signal reductions, or independent
+component analysis reductions\cite{joelRelationshipSeedbasedICAbased2011,
+smithCharacterizingIndividualDifferences2014}, and work with the \(N \times N\)
+matrix of the correlations of these reductions. This analysis is, \textit{a
+priori}, sensitive to the choice of ROIs, and, in the case of anatomical
+atlases / parcellations for ROIs, may also lack theoretical justification.
 
 RMT suggests a potentially useful reduction in the form of the eigenvalues of
 the voxelwise functional connectivity. An \(N \times t\) matrix \(\bf{A}\) of
 \(N\) time series of length \(t\), and where \(t \ll N\) will have a symmetric
 correlation (or covariance) matrix with \(t - 1\) non-zero, positive
-real-valued eigenvalues \(\Lambda\). These eigenvalues can be computed highly
+real-valued eigenvalues. These eigenvalues can be computed highly
 efficiently via transposition of the voxelwise correlation or covariance
 matrix.
 
-
 \subsection{Limitations of Previous Work}
 
-However, these previous studies took largely descriptive / explanatory
-approaches, noting only differences in RMT across subgroups and/or conditions,
-in many cases, with no formal statistical model nor formal testing of the
-significance and robustness of these differences. No code was provided to allow
-the reproduction of the results, and the extraction of the spectral rigidity
-and level variance is non-trivial, and computationally demanding. Computation
-of these spectral observables requires an \textit{unfolding}
+Previous studies applying RMT to functional connectivity
+data\cite{wangRandomMatrixTheory2016,
+wangSpectralPropertiesTemporal2015a,matharooSpontaneousBackpainAlters2020,
+guRandomMatrixTheory2020} took largely descriptive / explanatory approaches,
+noting only differences in RMT across subgroups and/or conditions. For example
+\citenum{wangRandomMatrixTheory2016,guRandomMatrixTheory2020} use a
+Kolmogorov-Smirnov test, and \citenum{wangSpectralPropertiesTemporal2015a} uses
+a t-test to provide evidence of differences in various RMT metrics. However,
+statistically significant differences in a metric do not imply practical
+significance or predictive utility \cite{loWhySignificantVariables2015}.
+
+In addition, the previous papers do not provide publicly-accessible code to
+reproduce results. The extraction of the spectral rigidity and level variance
+is computationally-demanding and non-trivial, requiring an \textit{unfolding}
 procedure\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004},
 which is, unfortunately, a poorly-documented fitting procedure that requires
-making a number of difficult-to-justify decisions, and these decisions can
+making a number of arguably subjective decisions. These fitting decisions can
 dramatically impact RMT conclusions
-\cite{abul-magdUnfoldingSpectrumChaotic2014,abueleninSpectralUnfoldingChaotic2018,fossionRandommatrixSpectraTime2013,abueleninEffectUnfoldingSpectral2012,moralesImprovedUnfoldingDetrending2011}.
+\cite{abul-magdUnfoldingSpectrumChaotic2014,
+abueleninSpectralUnfoldingChaotic2018, fossionRandommatrixSpectraTime2013,
+abueleninEffectUnfoldingSpectral2012, moralesImprovedUnfoldingDetrending2011}.
 On top of the flexibility in the implementation and application of RMT to
 empirical data, there is also the flexibility introduced by the choices in the
 complex preprocessing pipelines of fMRI\cite{parkerBenefitSliceTiming2019}.
-
-In addition these issues stemming from ``research degrees of freedom'' (cite
-Gelman), there is also a basic baseline comparison issue: RMT is mathematically
-non-trivial, the extraction of RMT spectral statistics is computationally
-demanding, and eigenvalues, while easy to understand mathematically, are
-difficult to interpret relative to simpler potential reductions of fMRI data.
+These "researcher degrees of
+freedom"\cite{simmonsFalsePositivePsychologyUndisclosed2011b} in combination
+with the absence of clear code, and exclusively descriptive/explanatory
+analytic approaches means that the practical utility of RMT for fMRI is largely
+uninvestigated.
 
 What is missing is a rigorous, systematic, reproducible investigation of the
-*predictice* value of RMT metrics across a wide variety of data, RMT analytic
-choices, choice of eigenfeature, and choice of preprocessing, and for these RMT
-eigenfeatures to be compared to simpler alternative baselines. The current
-study aims to do just this.
+predictive value of RMT metrics across a wide variety of data, analytic
+choices, RMT features, and preprocessing decisions, with RMT features being
+compared to simpler alternative baseline predictors. The current study aims to
+remedy this.
 
 
 \section{Datasets}
@@ -366,8 +370,7 @@ somewhat subjective, but we required (1), that all scans have the same spatial
 and temporal resolutions, (2), the the dataset comprise 10+ human subjects, and
 (3), that it was reasonable to classify at the level of an entire scan, i.e.
 neither task nor event timings were needed to determine class membership. This
-yielded seven datasets comprising XX total subjects, and over 5000 total fMRI
-volumes.
+yielded seven datasets.
 
 
 \begin{table}[h!]
@@ -485,7 +488,7 @@ Spanish-speaking monolinguals and multilinguals during a prolonged resting
 state. The original study grouped participants into three subgroups: early vs
 late bilinguals vs monolingual
 controls\cite{goldcarrieelizabethExploringRestingState2018}. For our analysis,
-we make the binary classification task be to classify \code{monolingual v
+we make the binary classification task \code{monolingual v
 bilingual}.
 
 % Resting state fMRI scans were performed using a T2*-weighted EPI sequence with the following
@@ -497,8 +500,8 @@ bilingual}.
 % \subsubsection{Depression Dataset}
 
 The \textit{Depression} dataset\cite{bezmaternykhddRestingStateClosed2021,
-bezmaternykhBrainNetworksConnectivity2021} includes rs-fMRI scans frmo
-non-depressed controls and mildy- or moderately-depressed subjects. The our analysis,
+bezmaternykhBrainNetworksConnectivity2021} includes rs-fMRI scans from
+non-depressed controls and mildy- or moderately-depressed subjects. In our analysis,
 the binary classification task is \code{depress v control}.
 
 % The intergroup study involved 21 healthy volunteers received a compensation
@@ -515,21 +518,21 @@ the binary classification task is \code{depress v control}.
 % \subsubsection{Learning Dataset}
 
 The \textit{Learning} dataset\cite{schapiroHumanHippocampalReplay2018,
-schapiroHumanHippocampalReplay2020} has both rs-fMRI and task fMRI scans were
+schapiroHumanHippocampalReplay2020} has both rs-fMRI and task fMRI scans
 available for all subjects, and \code{task v rest} is chosen as the binary
 classification task for our analysis.  The task is complex and difficult to
 summarize here adequately, but involved multiple phases where subjects were
 presented with various related abstract images, and then later tested for their
-memory of certain aspects of the learned images. Thus the classification task
+memory of certain aspects of the learned images. Thus, the classification task
 might also be considered learning vs. rest.
 
 
 
 % \subsubsection{Osteoarthritis Dataset}
 The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
-includes whiole-brain rs-fMRI scans of healthy, pain-free controls
+includes whole-brain rs-fMRI scans of healthy, pain-free controls
 (\code{nopain} condition), and individuals with knee osteoarthritis.
-Osteoarthritic patients were treated for 2 weeks with either placebo
+Osteoarthritic patients were treated for two weeks with either placebo
 (\code{pain} condition) or duloxetine (\code{duloxetine} condition).
 We use the three binary classification tasks \code{nopain v duloxetine},
 \code{nopain v pain}, and \code{pain v duloxetine} for our analysis.
@@ -540,7 +543,7 @@ We use the three binary classification tasks \code{nopain v duloxetine},
 The \textit{Park} dataset\cite{madhyasthaDynamicConnectivityRest2015} includes
 subjects with non-demented Parkinson's Disease (PD) and
 healthy controls performed a number of repetitions of the Attention Network
-Task (ANT; \cite{fanActivationAttentionalNetworks2005}) during scans.
+Task (ANT\cite{fanActivationAttentionalNetworks2005}) during scans.
 The classification task for this dataset is Parkinson's versus controls, i.e.
 \code{park v ctrl}.
 
@@ -560,7 +563,7 @@ questionnaire items involving
 \code{trait\_attend v trait\_nonattend} task was formed using PANAS-X
 \cite{watsonPANASXManualPositive1994} items related to self-reported
 wakefulness and attention over the past weeks. Finally, the
-\code{task\_attend v tas\_nonattent} classification task was constructed
+\code{task\_attend v tas\_nonattend} classification task was constructed
 using the scores of The Conjunctive Continuous Performance Task
 (CCPT\cite{shalevConjunctiveContinuousPerformance2011}). This is a behavioural
 performance task which requires the subject to quickly and selectively respond
@@ -588,7 +591,7 @@ registration to the MNI152
 
 We limited preprocessing methods to these steps sometimes because data required
 for other typical preprocessing steps (e.g. field intensity maps, physiological
-measurements), but also because we saved all pipelined intermediates to later
+measurements) was missing, but also because all pipelined intermediates were saved to later
 compare the effect of increasing degrees of pre-processing (see Section
 \ref{sec:multiverse}), and it was important to limit the number of
 preprocessing degrees to prevent excessive computational costs.
@@ -662,11 +665,11 @@ respect to all starting points \(c\), and where \(A\) and \(B\) denote the
 slope and intercept, respectively, of the least squares fit of a straight line
 to \(\eta(\lambda)\) on \([c, c+L]\)
 \cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
-as a timeseries, the spectral rigidty for a value \(L\) can be is thus the
+as a timeseries, the spectral rigidity for a value \(L\) is the
 \textit{average nonlinearity} of all intervals of length \(L\) over the series.
 
 
-The level number variance, \(\Sigma^2(L)\), or level variance, for short, is
+The level number variance, \(\Sigma^2(L)\), or \textit{level variance}, for short, is
 closely related to the spectral rigidity \cite{mehtaRandomMatrices2004}, and is
 calculated as:
 \begin{equation}
@@ -676,8 +679,8 @@ calculated as:
 where \(\eta(L, c)\) is the number of unfolded eigenvalues in \([c, c+ L]\),
 and where \(c\), \(L\), and \(\langle \cdot \rangle_c\) are as above
 \cite{guhrRandommatrixTheoriesQuantum1998a}. Viewing the unfolded eigenvalues
-as an \textit{irregular} timeseries, the level number variance is the
-variation of the number of samples of all intervals of length \(L\) over the
+as an irregular timeseries, the level number variance is the
+variation of the number of samples in all intervals of length \(L\) over the
 series.
 
 Both the spectral rigidity and level number variance are also computed and
@@ -691,17 +694,17 @@ statistics to user-specified tolerances.
 
 \textit{Trimming Variants}. As the unfolding procedure operates on the sorted
 eigenvalues, and involves fitting a smooth polynomial or exponential to these
-values, extreme values are often trimmed (or omitted from fitting)
+values, extreme values are often trimmed (omitted from fitting)
 \cite{moralesImprovedUnfoldingDetrending2011,
 abueleninEffectUnfoldingSpectral2012}. The number of eigenvalues to trim is
-highly subjective, and not usually well-documented. In addition, with a large
-number of different source matrices, it is too destructive to use the same hard
-criterion (e.g. largest 10\%, largest 3) for all unfoldings.
+highly subjective, and not usually well-documented, and unfortunately, with a
+large number of different source matrices, it is too destructive to naively use
+the same hard criterion (e.g. largest 10\%, largest 3) for all unfoldings.
 
 We develop and test four trimming variants: no trimming, precision-based,
-largest, and middle, with far less subjective criteria for determining trimming
-thresholds. However, we relegate the details of these trimming procedures to
-the Appendix \ref{sec:trimming}, or refer readers to the
+largest, and middle, with less subjective criteria for determining trimming
+thresholds. The details of these trimming procedures are straightforward, and
+can be found in Appendix \ref{sec:trimming}, or the
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated_dataset.py#L431-L444}{source
 code}.
 
@@ -717,37 +720,38 @@ trimming and unfolding polynomial degrees of 3, 5, 7, and 9.
 \subsubsection{Smoothed Eigenfeatures}
 \label{sec:eigs-only}
 
-When computing RMT eigenfeatures, the polynomial fitting during unfolding
-has a smoothing effect, as do the additional averaging \(\langle\;\rangle_c\)
-operations. However, it is possible other, simpler
-transformations of the eigenvalues (e.g. uniform or Savitsky-Golay smoothing)
-might have equal or greater predictive utility. We thus also test smoothed
-variants of the eigenvalues as predictive features: we smooth the sorted
-eigenvalues with a uniform (moving average) filter and Savitsky-Golay, using
-window sizes of 3, 5, 7, and 9 to yield 8 total ``smoothed eigenvalue'' features.
+When computing RMT eigenfeatures, the polynomial fitting during unfolding has a
+smoothing effect, as do the additional averaging \(\langle\;\rangle_c\)
+operations. However, it is possible other, simpler transformations of the
+eigenvalues (e.g. uniform or Savitsky-Golay smoothing) might have equal or
+greater predictive utility. We thus also test smoothed variants of the
+eigenvalues as predictive features: the sorted eigenvalues are smoothed with
+either a uniform (moving average) filter or Savitsky-Golay, using window sizes
+of 3, 5, 7, and 9 to yield 8 total ``smoothed eigenvalue'' features.
 
 \subsubsection{Feature Combinations}
 
-It could easily be the case that a combination of RMT and non-RMT eigenfeatures
-are more predictive than either alone. We thus test a variety of eigenfeature
-combinations, with the motivation for these particular combinations being to
-test whether RMT eigenfeatures add anything beyond smoothing. Combined features
-are formed by concatenation, so that if we have features \(f_1, \dots,  f_n\)
-with dimensions \(p_1, \dots, p_n\), then the combined feature is \([f_1;
-\dots; f_n]\) with \(\sum p_i\) dimensions.  The final combinations chosen can
-be found in Table \ref{tab:features}.
+A combination of RMT and non-RMT eigenfeatures
+could be more predictive than either alone. We test this with  a variety of eigenfeature
+combinations. The particular combinations are especially chosen to
+test whether RMT eigenfeatures add anything beyond smoothing.
+
+Combined features are formed by concatenation, so that if we have features
+\(f_1, \dots,  f_n\) with dimensions \(p_1, \dots, p_n\), then the combined
+feature is \([f_1; \dots; f_n]\) with \(\sum p_i\) dimensions.  The final
+combinations chosen can be found in Table \ref{tab:features}.
 
 
 \subsubsection{Slicing Variants}
 
-We might expect the largest, middle, or smallest eigenvalues to be most useful
+The largest, middle, or smallest eigenvalues could be most useful
 in characterizing some system. E.g. if the smallest eigenvalues correspond to
-random / noise aspects of a system, but it is differences in the nature of the
-noise that most differentiate between certain systems, then here the smallest
+random / noise aspects of a system, but differences in the nature of the
+system noise most differentiate between systems, then the smallest
 eigenvalues may have the most predictive utility.
 
 Likewise, the \(L\) value in each RMT eigenfeature defines the degree of
-locality at which we summarize the spectrum: at small \(L\)-values, the
+locality at which we summarize the spectrum: with small \(L\)-values, the
 spectral rigidity summarizes the non-linearity of eigenvalues that are
 relatively close to each other in magnitude. At large values of \(L\), the rigidity
 summarizes the long-range non-linearity of the spectrum.
@@ -783,31 +787,31 @@ Baseline reductions use as statistical summaries: robust measures of location
 percentile, \(5^{\text{th}}\) percentile); non-robust measures of scale
 (standard deviation, range); and robust measures of scale (interquartile range,
 difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
-percentile). These statistics are used to summarizing / reduce the fMRI data
-along the voxel dimension, yielding a feature of \(T\) dimensions. E.g. the ``mean''
-feature is just the global mean signal. Exact details can be found in the
+percentile). These statistics are used to reduce the fMRI data
+along the voxel dimension, yielding a feature of \(T\) dimensions (e.g. the ``mean''
+feature is just the global mean signal). Exact details can be found in the
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
 source code}.
 
 We do not take slice variants of these baseline features, since the baseline
 features are still time series. However, we do also evaluate a number of
 smoothing degrees of these features, to account for noise and to be somewhat
-similar to the various smoothing variants for the eigenfeatures. Each baseline
-feature thus has a uniformly smoothed variant, where the size of the smoothing
+similar to the various smoothing variants for the eigenfeatures: each baseline
+feature has a uniformly smoothed variant, where the size of the smoothing
 window is either 1 (no smoothing), 2, 4, 8, or 16.
 
 
 \subsection{Classifiers}
 
-We use a variety of stadard machine-learning classifiers available in the
+We use a variety of standard machine-learning classifiers available in the
 Scikit-learn\cite{pedregosaScikitlearnMachineLearning2011} Python library to
 solve each classification task. We use a gradient-boosted decision tree (GBDT),
 random forest (RF) classifier, support vector classifier (SVC) with radial
 basis function, and k-nearest neighbours classifiers with k equal to 3, 5, and
-9 (KNN3, KNN5, and KNN9, respectively). We originally also attempted to test a
-simple logistic regression classifier, but found that this model to frequently
-failed to converge for a number of features, even after increasing iterations
-significantly. In all cases the default hyperparameter values were used.
+9 (KNN3, KNN5, and KNN9, respectively). In all cases the default hyperparameter
+values were used. We originally also attempted to test a simple logistic
+regression classifier, but found that this model frequently failed to converge
+for a number of features, even after increasing iterations significantly.
 
 \subsection{Preprocessing Levels}
 
@@ -1071,7 +1075,7 @@ groupings (Figure S\ref{S-fig:coarse-classifier}, S\ref{S-fig:fine-classifier}).
 In the \textit{Attention} \code{task\_attend v task\_nonattend} condition, eigenfeatures were modally predictive only with
 the random forest classifier, whereas in the \textit{Aging} data, a SVC was least
 likely to have mAUROC \(<\) 0.5. Overall, however, differences in the mAUROC distributions
-were small.
+due to classifier were small.
 
 \subsection{Normalization}
 There was no visible effect of feature normalization on mAUROC distributions.
@@ -1085,7 +1089,7 @@ away the largest, or both largest and smallest eigenvalues, generally had a
 significant positive effect on the predictive quality of RMT features, most
 especially for RMT features involving the unfolded eigenvalues. When employing
 these trimming methods, these features were consistently more predictive than
-not.
+not (Figure S\ref{S-fig:fine-trim}).
 
 \subsection{Effect of Unfolding Degree}
 The choice of polynomial unfolding degree significantly impacted the mAUROC
@@ -1132,17 +1136,17 @@ classification task, brain extraction and slice time correction only. Median
 observed mAUROC = 0.643 (range = 0.346 - 0.925)}
 \end{figure}
 
-
-
 It is likely that the unfolded eigenvalues have predictive utility because of
-their smoothing and re-scaling effect. It is clear from Figure \ref{fig:unfolded},
-which depicts the raw eigenvalues and unfolded eigenvalues with different trimming
-procedures, that the raw eigenvalues have an extremely exponential distribution
-(Figure \ref{fig:unfolded} already uses a log-scale for plotting) due to the largest
-eigenvalues. The trimmed feature distributions are clearly far less pathologically distributed.
-Also, as is clear from Table \ref{tab:numerical} and Figure S\ref{S-fig:fine-classifier} that
+their smoothing and re-scaling effect. Figure \ref{fig:unfolded}, which depicts
+the raw eigenvalues and unfolded eigenvalues with different trimming
+procedures, shows how the raw eigenvalues have strongly exponential
+distributions, even with logarithmic axes. This is due to the
+magnitude of the largest eigenvalues, and the trimmed feature distributions in
+Figure \ref{fig:unfolded} are less pathologically distributed.
+
+Also, as is clear from Table \ref{tab:numerical} and Figure S\ref{S-fig:fine-classifier}, that
 a simple combination of the raw eigenvalues plus smoothed versions of them are the most
-generally-predictive features examined here.
+generally-predictive features examined.
 
 It was also sometimes the case that adding RMT-specific features (e.g. the spectral
 rigidity, or level variance) to either the unfolded eigenvalues, or raw
@@ -1189,9 +1193,7 @@ extraction methods can achieve near perfect accuracies at classifying task vs. r
 and with classical machine learning algorithms (such as SVM) we in general only expect large
 prediction accuracies (e.g. greater than 80\%) when the group functional connectivities are already
 strongly separated (e.g. Cohen’s \(d > 1.0\); \citenum{dansereauStatisticalPowerPrediction2017}).
-
-In this study, the median accuracy improvement upon guessing was 0 for all features, although
-eigenfeatures could improve upon guessing by 16.2\% - 33.7\% (\ref{S-tab:acc-numerical}).
+In this study eigenfeatures could improve upon guessing by 16.2\% - 33.7\% (\ref{S-tab:acc-numerical}).
 
 It is somewhat surprising that eigenfeatures are, on net, predictively-useful
 at all. The reduction of the functional connectivity matrix to \(T - 1\)
