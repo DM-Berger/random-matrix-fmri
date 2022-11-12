@@ -41,6 +41,36 @@ from rmt.updated_features import (
 from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
 from rmt.visualize import best_rect
 
+Metric = Literal["auroc", "f1", "acc+"]
+
+
+def s_title(summary: Metric) -> str:
+    return {"auroc": "AUROCs", "f1": "F1-Scores", "acc+": "Adjusted Accuracies"}[summary]
+
+
+def s_fnmae(summary: Metric) -> str:
+    return {"auroc": "aurocs", "f1": "f1s", "acc+": "accs"}[summary]
+
+
+def s_xlim(
+    summary: Metric, kind: Literal["all", "smallest", "largest"] = "all"
+) -> tuple[float, float]:
+    if summary == "auroc":
+        if kind == "all":
+            return (0.1, 0.9)
+        elif kind == "largest":
+            return (0.5, 1.0)
+        else:
+            return (0.1, 0.6)
+    elif summary == "acc+":
+        if kind == "all":
+            return (-0.4, 0.4)
+        elif kind == "largest":
+            return (-0.1, 0.3)
+        else:
+            return (-0.4, 0.1)
+
+
 PROJECT = ROOT.parent
 MEMORY = Memory(PROJECT / "__JOBLIB_CACHE__")
 SPIE_OUTDIR = PROJECT / "results/plots/figures/SPIE"
@@ -1352,15 +1382,21 @@ def rotate_labels(grid: FacetGrid, axis: Literal["x", "y"] = "x") -> None:
             plt.setp(ax.get_yticklabels(), rotation=40, ha="right")
 
 
-def add_auroc_lines(grid: FacetGrid, kind: Literal["vline", "hline"]) -> None:
+def add_auroc_lines(
+    grid: FacetGrid, kind: Literal["vline", "hline"], summary: Metric = "auroc"
+) -> None:
     fig: Figure
     fig = grid.fig
+    if summary == "f1":
+        return
+    guess = 0.5 if summary == "auroc" else 0.0
+
     for i, ax in enumerate(fig.axes):
         ymin, ymax = ax.get_ylim()
         xmin, xmax = ax.get_xlim()
         if kind == "vline":
             ax.vlines(
-                x=0.5,
+                x=guess,
                 ymin=ymin,
                 ymax=ymax,
                 colors=["black"],
@@ -1371,7 +1407,7 @@ def add_auroc_lines(grid: FacetGrid, kind: Literal["vline", "hline"]) -> None:
             )
         else:
             ax.hlines(
-                y=0.5,
+                y=guess,
                 xmin=xmin,
                 xmax=xmax,
                 colors=["black"],
@@ -1603,14 +1639,16 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.79, 0.09))
         savefig(fig, "coarse_feature_largest_by_subgroup.png")
 
-    def plot_largest_by_fine_feature_subgroup() -> None:
+    def plot_largest_by_fine_feature_subgroup(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nlargest(500, "auroc")
+            lambda grp: grp.nlargest(500, summary)
         )
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfg,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
@@ -1623,7 +1661,7 @@ def make_kde_plots() -> None:
             bw_adjust=1.2,
             alpha=0.8,
             # facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0), sharey=False),
-            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="largest"), sharey=False),
         )
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
@@ -1631,7 +1669,8 @@ def make_kde_plots() -> None:
         thinify_lines(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each Combination of Fine Feature Group and Dataset",
+            f"Distributions of Largest 500 {stitle} "
+            "for each Combination of Fine Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=10, h=8)
@@ -1640,7 +1679,7 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "fine_feature_largest_by_subgroup.png")
+        savefig(fig, f"fine_feature_largest_{sfname}_by_subgroup.png")
 
     def plot_smallest_by_coarse_feature_subgroup() -> None:
         print("Grouping...", end="", flush=True)
@@ -1683,16 +1722,18 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.79, 0.09))
         savefig(fig, "coarse_feature_smallest_by_subgroup.png")
 
-    def plot_smallest_by_fine_feature_subgroup() -> None:
+    def plot_smallest_by_fine_feature_subgroup(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nsmallest(500, "auroc")
+            lambda grp: grp.nsmallest(500, summary)
         )
         print("done")
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfg,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
@@ -1704,7 +1745,7 @@ def make_kde_plots() -> None:
             col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.1, 0.6), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, "smallest"), sharey=False),
         )
         print("done")
         clean_titles(grid, "classifier = ")
@@ -1713,7 +1754,8 @@ def make_kde_plots() -> None:
         thinify_lines(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Smallest 500 AUROCs for each Combination of Fine Feature Group and Dataset",
+            f"Distributions of Smallest 500 {stitle} "
+            "for each Combination of Fine Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=10, h=8)
@@ -1722,7 +1764,7 @@ def make_kde_plots() -> None:
             top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
         )
         sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "fine_feature_smallest_by_subgroup.png")
+        savefig(fig, f"fine_feature_smallest_{sfname}_by_subgroup.png")
 
     def plot_largest_by_fine_feature_groups() -> None:
         dfg = df.groupby(["subgroup", "fine_feature"]).apply(
@@ -1794,10 +1836,12 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.76, 0.11))
         savefig(fig, "fine_feature_group_smallest_by_subgroup.png")
 
-    def plot_all_by_fine_feature_groups() -> None:
+    def plot_all_by_fine_feature_groups(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         grid = sbn.displot(
             data=df,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
@@ -1809,20 +1853,20 @@ def make_kde_plots() -> None:
             col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=(0.1, 0.9)),
+            facet_kws=dict(sharey=False, xlim=s_xlim(summary, kind="all")),
         )
-        add_auroc_lines(grid, kind="vline")
+        add_auroc_lines(grid, kind="vline", summary=summary)
         despine(grid)
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
         fig = grid.fig
-        fig.suptitle("Overall Distribution of AUROCs for each Fine Feature Group")
+        fig.suptitle(f"Overall Distribution of {stitle}s for each Fine Feature Group")
         fig.tight_layout()
         fig.subplots_adjust(
             top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
         )
         sbn.move_legend(grid, loc=(0.76, 0.11))
-        savefig(fig, "all_by_fine_feature_groups.png")
+        savefig(fig, f"all_{sfname}_by_fine_feature_groups.png")
 
     def plot_all_by_fine_feature_groups_best_params() -> None:
         rmt = df.loc[df.coarse_feature.isin(["rmt"])]
@@ -1867,11 +1911,13 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.76, 0.09))
         savefig(fig, "best_rmt_params_by_subgroup.png")
 
-    def plot_all_by_fine_feature_groups_slice() -> None:
+    def plot_all_by_fine_feature_groups_slice(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         data = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
         grid = sbn.displot(
             data=data,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(NON_BASELINE_PALETTE.keys()),
@@ -1884,10 +1930,10 @@ def make_kde_plots() -> None:
             row_order=SLICE_ORDER,
             bw_adjust=0.8,
             alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
+            facet_kws=dict(sharey=False, xlim=s_xlim(summary, kind="all")),
         )
         thinify_lines(grid)
-        add_auroc_lines(grid, kind="vline")
+        add_auroc_lines(grid, kind="vline", summary=summary)
         despine(grid)
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
@@ -1897,7 +1943,7 @@ def make_kde_plots() -> None:
         )
         fig = grid.fig
         fig.suptitle(
-            "Overall Distribution of AUROCs for each Fine Feature Group by Slicing"
+            f"Overall Distribution of {stitle} for each Fine Feature Group by Slicing"
         )
         fig.set_size_inches(w=10, h=8)
         fig.tight_layout()
@@ -1905,7 +1951,7 @@ def make_kde_plots() -> None:
             top=0.82, bottom=0.07, left=0.036, right=0.99, hspace=1.0, wspace=0.128
         )
         sbn.move_legend(grid, loc=(0.01, 0.85))
-        savefig(fig, "rmt_eigs_aurocs_by_subgroup_and_slicing.png")
+        savefig(fig, f"rmt_eigs_{sfname}_by_subgroup_and_slicing.png")
 
     def plot_all_by_fine_feature_groups_best_params_best_slice() -> None:
         rmt = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
@@ -2146,12 +2192,16 @@ def make_kde_plots() -> None:
                 ax.set_title("")
         savefig(fig, "coarse_feature_by_preproc_predictive_subgroup.png")
 
-    def plot_by_fine_predictive_feature_preproc_subgroup() -> None:
+    def plot_by_fine_predictive_feature_preproc_subgroup(
+        summary: Metric = "auroc",
+    ) -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
@@ -2162,10 +2212,9 @@ def make_kde_plots() -> None:
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
             row="preproc",
             row_order=PREPROC_ORDER,
-            # col_wrap=4,
             bw_adjust=2.0,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
         )
         print("done")
         clean_titles(grid, "preproc = ", split_at="|")
@@ -2179,10 +2228,10 @@ def make_kde_plots() -> None:
         clean_titles(grid, "duloxetine", "dlxtn")
         despine(grid)
         thinify_lines(grid)
-        add_auroc_lines(grid, "vline")
+        add_auroc_lines(grid, "vline", summary=summary)
         fig = grid.fig
         fig.suptitle(
-            "AUROCs by Preprocessing for Predictable Data",
+            f"{stitle} by Preprocessing for Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=10, h=8)
@@ -2195,10 +2244,13 @@ def make_kde_plots() -> None:
             grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=PREPROC_ORDER
         )
         for i, ax in enumerate(fig.axes):
-            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if summary == "auroc":
+                ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            else:
+                pass
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "fine_feature_by_preproc_predictive_subgroup.png")
+        savefig(fig, f"fine_feature_{sfname}_by_preproc_predictive_subgroup.png")
 
     def plot_by_fine_feature_group_predictive_norm_subgroup() -> None:
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
@@ -2257,29 +2309,29 @@ def make_kde_plots() -> None:
                 ax.set_title("")
         savefig(fig, "fine_feature_group_by_norm_predictive_subgroup.png")
 
-    def plot_by_coarse_feature_group_predictive_classifier_subgroup() -> None:
+    def plot_by_coarse_feature_group_predictive_classifier_subgroup(
+        summary: Metric = "auroc",
+    ) -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="coarse_feature",
             hue_order=list(GROSS_FEATURE_PALETTE.keys()),
             palette=GROSS_FEATURE_PALETTE,
-            # hue="fine_feature",
-            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            # palette=FEATURE_GROUP_PALETTE,
             fill=False,
             common_norm=False,
             row="classifier",
             row_order=CLASSIFIER_ORDER,
             col="subgroup",
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            # col_wrap=4,
             bw_adjust=1.5,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
         )
         print("done")
         clean_titles(grid, "norm = ", split_at="|")
@@ -2296,10 +2348,10 @@ def make_kde_plots() -> None:
         )
         despine(grid)
         dashify_gross(grid)
-        add_auroc_lines(grid, "vline")
+        add_auroc_lines(grid, "vline", summary=summary)
         fig = grid.fig
         fig.suptitle(
-            "AUROCs by Classifier for Predictable Data",
+            f"{stitle} by Classifier for Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=20, h=15)
@@ -2309,23 +2361,24 @@ def make_kde_plots() -> None:
         )
         sbn.move_legend(grid, loc=(0.01, 0.88))
         for i, ax in enumerate(fig.axes):
-            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if summary == "auroc":
+                ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "coarse_feature_group_by_predictive_subgroup_classifier.png")
-
-        bulks = dfp.groupby(["subgroup", "classifier", "coarse_feature"]).apply(
-            lambda grp: grp.auroc.quantile([0.25, 0.50, 0.75]).T
+        savefig(
+            fig, f"coarse_feature_group_{sfname}_by_predictive_subgroup_classifier.png"
         )
-        bulks = bulks.reset_index()
-        predictive = bulks[0.5] > 0.5
 
-    def plot_by_fine_feature_group_predictive_classifier_subgroup() -> None:
+    def plot_by_fine_feature_group_predictive_classifier_subgroup(
+        summary: Metric = "auroc",
+    ) -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfp,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="fine_feature",
             hue_order=list(FEATURE_GROUP_PALETTE.keys()),
@@ -2338,7 +2391,7 @@ def make_kde_plots() -> None:
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
             bw_adjust=1.5,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
         )
         print("done")
         clean_titles(grid, "norm = ", split_at="|")
@@ -2355,10 +2408,10 @@ def make_kde_plots() -> None:
         )
         despine(grid)
         thinify_lines(grid)
-        add_auroc_lines(grid, "vline")
+        add_auroc_lines(grid, "vline", summary=summary)
         fig = grid.fig
         fig.suptitle(
-            "AUROCs by Classifier for Predictable Data",
+            f"{stitle} by Classifier for Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=20, h=15)
@@ -2368,12 +2421,15 @@ def make_kde_plots() -> None:
         )
         sbn.move_legend(grid, loc=(0.01, 0.88))
         for i, ax in enumerate(fig.axes):
-            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
+            if summary == "auroc":
+                ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
             if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
                 ax.set_title("")
-        savefig(fig, "fine_feature_group_by_predictive_subgroup_classifier.png")
+        savefig(fig, f"fine_feature_group_{sfname}_by_predictive_subgroup_classifier.png")
 
-    def plot_rmt_by_trim() -> None:
+    def plot_rmt_by_trim(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         data = df.loc[
             df.feature.apply(
                 lambda s: (("rigid" in s) or ("levelvar" in s) or ("unfolded" in s))
@@ -2383,7 +2439,7 @@ def make_kde_plots() -> None:
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=data,
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="feature",
             hue_order=RMT_FEATURE_ORDER,
@@ -2396,7 +2452,7 @@ def make_kde_plots() -> None:
             row_order=TRIM_ORDER,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
         )
         print("done")
         clean_titles(grid, "trim = ")
@@ -2409,7 +2465,7 @@ def make_kde_plots() -> None:
         despine(grid)
         # dashify_trims(grid)
         thinify_lines(grid)
-        add_auroc_lines(grid, "vline")
+        add_auroc_lines(grid, "vline", summary=summary)
         make_row_labels(
             grid,
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
@@ -2417,7 +2473,7 @@ def make_kde_plots() -> None:
         )
         fig = grid.fig
         fig.suptitle(
-            "RMT Feature AUROCs by Trimming on Predictable Data",
+            f"RMT Feature {stitle} by Trimming on Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=10, h=8)
@@ -2426,9 +2482,11 @@ def make_kde_plots() -> None:
             top=0.795, bottom=0.085, left=0.04, right=0.96, hspace=0.35, wspace=0.22
         )
         sbn.move_legend(grid, loc=(0.01, 0.825))
-        savefig(fig, "rmt_feature_auroc_by_trim.png")
+        savefig(fig, f"rmt_feature_{sfname}_by_trim.png")
 
-    def plot_rmt_by_degree() -> None:
+    def plot_rmt_by_degree(summary: Metric = "auroc") -> None:
+        stitle = s_title(summary)
+        sfname = s_fnmae(summary)
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=df.loc[
@@ -2437,7 +2495,7 @@ def make_kde_plots() -> None:
                     and ("eigs" not in s)
                 )
             ],
-            x="auroc",
+            x=summary,
             kind="kde",
             hue="feature",
             hue_order=RMT_FEATURE_ORDER,
@@ -2451,7 +2509,7 @@ def make_kde_plots() -> None:
             # col_wrap=4,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
         )
         print("done")
         # clean_titles(grid, " = ", split_at="|")
@@ -2460,10 +2518,10 @@ def make_kde_plots() -> None:
         clean_titles(grid, "feature = ", split_at="|")
         despine(grid)
         thinify_lines(grid)
-        add_auroc_lines(grid, "vline")
+        add_auroc_lines(grid, "vline", summary=summary)
         fig = grid.fig
         fig.suptitle(
-            "RMT Feature AUROCs by Degree on Predictable Data",
+            f"RMT Feature {stitle} by Degree on Predictable Data",
             fontsize=10,
         )
         fig.set_size_inches(w=10, h=8)
@@ -2477,7 +2535,7 @@ def make_kde_plots() -> None:
             col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
             row_order=[f"degree = {d}" for d in DEGREE_ORDER],
         )
-        savefig(fig, "rmt_feature_auroc_by_degree.png")
+        savefig(fig, f"rmt_feature_{sfname}_by_degree.png")
 
     def plot_rmt_largest_by_degree() -> None:
         print("Plotting...", end="", flush=True)
@@ -2543,7 +2601,6 @@ def make_kde_plots() -> None:
     # plot_smallest_by_coarse_feature_subgroup()
     # plot_largest_by_fine_feature_groups()
     # plot_smallest_by_fine_feature_groups()
-    # plot_all_by_fine_feature_groups()
 
     # plot_by_coarse_feature_preproc()
     # plot_largest_by_coarse_feature_preproc()
@@ -2551,19 +2608,35 @@ def make_kde_plots() -> None:
     # plot_by_coarse_feature_preproc_subgroup()
     # plot_by_coarse_predictive_feature_preproc_subgroup()
     # plot_by_fine_feature_group_predictive_norm_subgroup()
-    # plot_by_fine_predictive_feature_preproc_subgroup()
-    # plot_by_fine_feature_group_predictive_classifier_subgroup()
-    # plot_largest_by_fine_feature_subgroup()
-    # plot_smallest_by_fine_feature_subgroup()
-    # plot_by_coarse_feature_group_predictive_classifier_subgroup()
-    # plot_rmt_by_trim()
-    plot_all_by_fine_feature_groups_slice()
-    # plot_rmt_by_degree()
     # plot_rmt_largest_by_degree()
     # plot_all_by_fine_feature_groups_best_params()
     # plot_all_by_fine_feature_groups_best_params_slice()
     # plot_all_by_fine_feature_groups_best_params()
     # plot_all_by_fine_feature_groups_best_params_best_slice()
+
+    simplefilter("ignore", UserWarning)
+    ##########################################################################
+    # Supplementary Figures
+    ##########################################################################
+    # plot_all_by_fine_feature_groups(summary="auroc")
+    # plot_largest_by_fine_feature_subgroup(summary="auroc")
+    # plot_smallest_by_fine_feature_subgroup(summary="auroc")
+    # plot_by_fine_predictive_feature_preproc_subgroup(summary="auroc")
+    # plot_by_coarse_feature_group_predictive_classifier_subgroup(summary="auroc")
+    # plot_by_fine_feature_group_predictive_classifier_subgroup(summary="auroc")
+    # plot_rmt_by_trim(summary="auroc")
+    # plot_rmt_by_degree(summary="auroc")
+    # plot_all_by_fine_feature_groups_slice(summary="auroc")
+
+    # plot_all_by_fine_feature_groups(summary="acc+")
+    # plot_largest_by_fine_feature_subgroup(summary="acc+")
+    # plot_smallest_by_fine_feature_subgroup(summary="acc+")
+    # plot_by_fine_predictive_feature_preproc_subgroup(summary="acc+")
+    # plot_by_coarse_feature_group_predictive_classifier_subgroup(summary="acc+")
+    # plot_by_fine_feature_group_predictive_classifier_subgroup(summary="acc+")
+    # plot_rmt_by_trim(summary="acc+")
+    # plot_rmt_by_degree(summary="acc+")
+    # plot_all_by_fine_feature_groups_slice(summary="acc+")
 
 
 def summary_stats_and_tables() -> None:
