@@ -2947,18 +2947,18 @@ if __name__ == "__main__":
     # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
-    make_kde_plots()
+    # make_kde_plots()
 
     feature_summary = (
         df[df.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         .groupby("feature")
-        .describe(percentiles=[0.05, 0.5, 0.95])["auroc"]
+        .describe(percentiles=[0.05, 0.5, 0.95])["f1"]
         .sort_values(by=["95%", "feature"], ascending=[False, True])
         .drop(columns=["count"])
         .loc[:, ["mean", "min", "5%", "50%", "95%", "max", "std"]]
         .round(3)
     )
-    print(feature_summary.to_latex())
+    print(feature_summary.to_markdown(tablefmt="simple"))
 
     # plot_unfolded_duloxetine()
     # plot_unfolded_aging()
