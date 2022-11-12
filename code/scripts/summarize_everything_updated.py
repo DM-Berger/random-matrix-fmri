@@ -1867,17 +1867,8 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.76, 0.09))
         savefig(fig, "best_rmt_params_by_subgroup.png")
 
-    def plot_all_by_fine_feature_groups_best_params_slice() -> None:
-        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
-        # rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
-        # rmt = rmt.loc[rmt.deg.isin([3, 9])]
-        # rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
-        idx = rmt.feature.isin(["unfolded"])
-        rmt = rmt[idx]
-
-        other = df.loc[df.coarse_feature.isin(["eigs"])]
-        data = pd.concat([rmt, other], axis=0)
-
+    def plot_all_by_fine_feature_groups_slice() -> None:
+        data = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
         grid = sbn.displot(
             data=data,
             x="auroc",
@@ -1908,13 +1899,13 @@ def make_kde_plots() -> None:
         fig.suptitle(
             "Overall Distribution of AUROCs for each Fine Feature Group by Slicing"
         )
-        fig.set_size_inches(w=18, h=8)
+        fig.set_size_inches(w=10, h=8)
         fig.tight_layout()
         fig.subplots_adjust(
-            top=0.908, bottom=0.07, left=0.021, right=0.92, hspace=1.0, wspace=0.128
+            top=0.82, bottom=0.07, left=0.036, right=0.99, hspace=1.0, wspace=0.128
         )
-        sbn.move_legend(grid, loc=(0.93, 0.50))
-        savefig(fig, "best_rmt_params_by_subgroup_and_slicing.png")
+        sbn.move_legend(grid, loc=(0.01, 0.85))
+        savefig(fig, "rmt_eigs_aurocs_by_subgroup_and_slicing.png")
 
     def plot_all_by_fine_feature_groups_best_params_best_slice() -> None:
         rmt = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
@@ -2565,7 +2556,8 @@ def make_kde_plots() -> None:
     # plot_largest_by_fine_feature_subgroup()
     # plot_smallest_by_fine_feature_subgroup()
     # plot_by_coarse_feature_group_predictive_classifier_subgroup()
-    plot_rmt_by_trim()
+    # plot_rmt_by_trim()
+    plot_all_by_fine_feature_groups_slice()
     # plot_rmt_by_degree()
     # plot_rmt_largest_by_degree()
     # plot_all_by_fine_feature_groups_best_params()
@@ -2942,13 +2934,14 @@ if __name__ == "__main__":
     simplefilter(action="ignore", category=PerformanceWarning)
     pd.options.display.max_rows = 1000
     pd.options.display.max_info_rows = 1000
-    df = load_combined()
     # feature_superiority()
     # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
-    # make_kde_plots()
+    make_kde_plots()
+    sys.exit()
 
+    df = load_combined()
     feature_summary = (
         df[df.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
         .groupby("feature")

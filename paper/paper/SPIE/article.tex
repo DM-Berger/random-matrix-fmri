@@ -932,10 +932,9 @@ mAUROC \(<\) 0.5 indicates predictive performance worse than guessing, and
 mAUROC \(>\) 0.5 indicates positive predictive
 utility\cite{mandrekarReceiverOperatingCharacteristic2010}. However, we also
 collected as performance metrics the accuracy, adjusted accuracy (accuracy
-minus the proportion of the largest class), and the f1 score, and these metrics
-are available with all the raw data for this study \ref{sec:data-and-code}.
-
-the different
+minus the proportion of the largest class), and the F1 score, and a complete
+table with these additional metrics is available with the data for this study
+(Section \ref{sec:data-and-code}).
 
 Each non-baseline feature is evaluated, for each classification task and
 classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\) 2
@@ -951,20 +950,24 @@ slicing—to consider.
 \section{Results}
 \label{sec:results}
 
+\subsection{Overview}
+
 Summarizing this quantity of data requires some caution. Measures of location or
 scale, even when robust, are, for the most part, misleading and uninformative
 when distributions are skewed. In most cases we find skewed mAUROC
 distributions, and so have chosen primarily to present our findings visually,
-with kernel density estimates. However, we also provide overall numerical
-summaries of the feature performances in Table \ref{tab:numerical}.
+with kernel density estimates.
+
+Because aggregating across datasets with different class imbalances can
+be extremely misleading, even with a metric like the mAUROC\cite{brabecModelEvaluationNonconstant2020},
+we restrict such summaries to Table \ref{tab:numerical} only, and note that
+the table is intended as a \textit{supplement only} to the distribution plots: no conclusions
+should be drawn about feature performance from the table values alone.
 
 \begin{table}[h!]
 \caption{Numerical summaries of feature mAUROCs across predictable comparisons,
 and all combinations of analytic choices, sorted by 95\% percentile (robust
-max) value. Bold values indicate column "best" values, when reasonable. We
-note, however, that aggregating across datasets in this manner can be deeply
-misleading\cite{brabecModelEvaluationNonconstant2020}, and thus the values here
-are intended solely as supplements to distribution plots. }
+max) value. Bold values indicate column "best" values, when reasonable.}
 \label{tab:numerical}
 \small
 \centering
@@ -1011,19 +1014,21 @@ T-min                          &  0.504 &  0.321 &  0.426 &  0.500 &  0.582 &  0
 \end{tabular}
 \end{table}
 
-In addition, each analytic factor could produce an interaction. For example, it
-could be that trimming impacts the overall mAUROC distribution only at a
-certain preprocessing level and for certain feature slicing. However, there are
-too many potential interactions to present, so we limit our presentation to
-main effects.  As there are a large number of features, we also summarize
-patterns of results across two abstract groupings of similar features
-("coarse", and "fine") shown in Table \ref{tab:features}.
+In addition, a large number of interactions are possible between each analytic
+factor in this study. For example, it could be that trimming impacts the
+overall mAUROC distribution only at a certain preprocessing level and for
+certain feature slicing. However, as there are too many potential interactions
+to present, we limit our presentation to main effects.
 
-It is also important to exclude a classification task or an analytic factor
-from summaries if there is no evidence that the classification task is solvable
-in general, or for that factor. We take as lack of evidence of solvability an
-mAUROC distribution that is either (1) roughly symmetric and has mean and
-median close to 0.5, or (2) with median and mode less than 0.5.
+To aid in summarizing the performances of the large number of different
+features, we also summarize patterns of results across two abstract groupings
+of similar features ("coarse", and "fine") shown in Table \ref{tab:features}.
+Thus, for example, figures depicting the coarse feature grouping "eigs" in fact
+depict all observed mAUROC values for the the fine feature groupings of raw,
+max, middle, and smoothed eigenvalues, and the fine feature grouping "eigs
+smooth", for example, depicts all observed mAUROC values for both the
+\code{eigs\_savgol} and \code{eigs\_smooth} features.
+
 
 \begin{figure}
 \begin{center}
@@ -1039,6 +1044,14 @@ AUROC distributions across gross feature groupings and comparison tasks.}
 \subsection{Classification Tasks}
 
 \subsubsection{Non-Predictable Comparisons}
+
+It is important, to reduce figure clutter and complexity, to exclude a
+classification task or an analytic factor from summaries if there is no
+evidence that the classification task is solvable in general, or for that
+factor. We take as lack of evidence of solvability an mAUROC distribution that
+is either (1) roughly symmetric and has mean and median close to 0.5, i.e.
+performance appears random, or (2) with median and mode less than 0.5.
+
 Based on the mAUROC distributions for either coarsely-grouped (Figure
 \ref{fig:main-results}) or finely-grouped features (Figure
 S\ref{S-fig:feature-group-all}), neither bilinguality nor depression were
@@ -1061,16 +1074,6 @@ nonvigilant} comparison.
 
 
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[width=6.5in]{coarse_feature_by_preproc_predictive_subgroup.png}
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:preproc} mAUROC distributions by preprocessing degree.}
-\end{figure}
-
 \subsection{Largest mAUROCs}
 Considering the various analytic choices as tunable parameters, it makes sense
 to examine the \textit{largest} portion of mAUROCs as an indication of the
@@ -1078,16 +1081,18 @@ maximum predictive potential of the eigenfeatures. In this case, it is clear
 that eigenfeatures using RMT features almost always had the highest potential
 predictive utility (Figure \ref{fig:largest}). Figure S\ref{S-fig:fine-largest}
 shows that this was primarily due to either the "rmt only" or "rmt + eigs"
-features (see Table \ref{tab:features}). However, these features were also most
+features (see Table \ref{tab:features}). However, RMT eigenfeatures were also most
 likely to cause poor performance and overfitting (indicated by an mAUROC \(<\)
 0.5; Figure S\ref{S-fig:fine-smallest}).
 
-Examining these RMT features more closely (Figure S\ref{S-fig:fine-degree}),
-it is clear these features are more predictive mostly due to the unfolding
-procedure: the mAUROC distributions with largest medians and modes are due to
-features that include the unfolded eigenvalues. Combined features that use
-the unfolded eigenvalues plus some other RMT eigenfeature have identical
-mAUROC distributions to those using the unfolded eigenvalues alone.
+Examining these RMT features more closely, it is clear these features'
+performance distributions differ mostly due to the unfolding procedure. That
+is, combined features that used the unfolded eigenvalues plus some other RMT
+eigenfeature tended to have visually-indistinguishable mAUROC distributions to
+those using the unfolded eigenvalues alone (Figures
+S\ref{S-fig:fine-trim}-\ref{S-fig:fine-degree}). The mAUROC distributions of
+these features differed most strongly in the tails (Figures
+S\ref{S-fig:fine-largest}-\ref{S-fig:fine-smallest}).
 
 
 \begin{figure}
@@ -1101,24 +1106,43 @@ mAUROC distributions to those using the unfolded eigenvalues alone.
 \end{figure}
 
 \subsection{Effect of Preprocessing}
-At a coarse level, slice time correction followed by motion correction tended
-to slightly increase the predictive utility of the eigenfeatures (Figure
-\ref{fig:preproc}) relative to brain extraction only. Subsequent registration
-following these steps did not generally impact mAUROC distributions further,
-except in the \code{task\_attend v task\_nonattend} comparison, where
-registration reduced the predictive utility of the eigenfeatures (Figure
-\ref{fig:preproc}, second-last column). When examining features more finely, it
-is clear that preprocessing most impacts the mAUROC distribution of the largest
-and central eigenvalues ("eigs middle" and "eigs max" in Figure
-S\ref{S-fig:fine-preproc}).
+At a coarse level of feature grouping, slice time correction followed by motion
+correction tended to slightly increase the predictive utility of the
+eigenfeatures (Figure \ref{fig:preproc}) relative to brain extraction only.
+Subsequent registration following these steps did not generally impact mAUROC
+distributions further, except in the \code{task\_attend v task\_nonattend}
+comparison, where registration reduced the predictive utility of the
+eigenfeatures (Figure \ref{fig:preproc}, second-last column). When examining
+features more finely, it is clear that preprocessing most impacts the mAUROC
+distribution of the largest and central eigenvalues ("eigs middle" and "eigs
+max" in Figure S\ref{S-fig:fine-preproc}).
+
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{coarse_feature_by_preproc_predictive_subgroup.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:preproc} mAUROC distributions by preprocessing degree.}
+\end{figure}
 
 \subsection{Effect of Classifier}
-mAUROC distributions were generally similar across coarse or fine feature
-groupings (Figure S\ref{S-fig:coarse-classifier}, S\ref{S-fig:fine-classifier}).
-In the \textit{Attention} \code{task\_attend v task\_nonattend} condition, eigenfeatures were modally predictive only with
-the random forest classifier, whereas in the \textit{Aging} data, a SVC was least
-likely to have mAUROC \(<\) 0.5. Overall, however, differences in the mAUROC distributions
-due to classifier were small.
+Within any feature grouping (coarse or fine), and within a classification task,
+mAUROC distributions were generally similar across classifiers (Figure
+S\ref{S-fig:coarse-classifier}, S\ref{S-fig:fine-classifier}). Additionally,
+these figures also show that within each classification task, choice of
+classifier does not result in dramatic changes to the rough rank ordering of
+features. E.g. if features are ranked on predictive utility, using the median,
+modal, or bulk of the  mAUROC values, this rank ordering appears to remain
+similar across classifiers.
+
+In the \textit{Attention} \code{task\_attend v task\_nonattend} condition,
+eigenfeatures were modally predictive only with the random forest classifier,
+whereas in the \textit{Aging} data, a SVC was least likely to have mAUROC \(<\)
+0.5. Overall, however, differences in the mAUROC distributions due to
+classifier were small and inconsistent.
 
 \subsection{Normalization}
 There was no visible effect of feature normalization on mAUROC distributions.
@@ -1147,16 +1171,19 @@ largest unfolding degree of 9 produces the most favourable mAUROC
 distributions.
 
 \subsection{Effect of Slicing}
-Features were slightly more predictive when using either the largest 5 or 10\% or middle
-25\% ("max-05", "max-10" and "mid-25" in Figure
-\ref{S-fig:best-params-slicing}), and least predictive when features primarily
-involved the smallest eigenvalues.
+The best slice size and location depended complexly on the classification task
+and feature, and few general summaries can be made of these interactions.
+However, features including the full spectrum (e.g. raw eigenvalues, smoothed
+eigenvalues, and their combinations with RMT eigenfeatures) were slightly more
+predictive when using the largest portions ("max-XX", rows in Figure
+S\ref{S-fig:best-params-slicing}), and usually least predictive when features
+primarily involved the smallest or central portions.
 
 
 \section{Discussion}
 
 In this study, eigenfeatures inspired by RMT and derived from the eigenvalues
-of the full, whole-brain voxelwise fMRI correlation matrix, were found to have
+of the full, whole-brain voxelwise fMRI correlation matrix were found to have
 predictive utility across a wide variety of phenomena and analytic choices.
 Compared to simple baseline reductions of the fMRI data, these eigenfeatures
 had more consistent predictive utility, and a higher maximum predictive
@@ -1165,6 +1192,9 @@ evidence from previous studies
 \cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}
 this suggests RMT may be a useful analytic and theoretical tool for
 understanding functional connectivity.
+
+However, mAUROC values observed in this study were highly sensitive to , and mean and
+median mAUROC v
 
 \begin{figure}
 \begin{center}
