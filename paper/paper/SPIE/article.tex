@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \graphicspath{ {./figures/} }
 \usepackage{setspace}
+\usepackage{hyperref}
 \usepackage{tocloft}
 \usepackage{doi}
 \usepackage{csquotes}
@@ -126,9 +127,9 @@ distributions were wide, and often significantly affected by analytic choices.
 
 
 \section*{Conclusions}
-Eigenfeatures clearly have potential for understanding and reducing fMRI
-functional connectivity. However, the utility of these features is strongly
-dependent on analytic decisions, suggesting considerable caution when
+Eigenfeatures clearly have potential for understanding fMRI functional
+connectivity in a wide variety of scenarios. However, the utility of these
+features is strongly dependent on analytic decisions, suggesting caution when
 interpreting past and future studies applying RMT to fMRI.
 
 % This document shows the required format and appearance of a manuscript
@@ -197,7 +198,7 @@ interactions both in different species
 statistical decisions in principal components
 analyses\cite{franklinParallelAnalysisMethod1995,
 veraartDenoisingDiffusionMRI2016, ulfarssonDimensionEstimationNoisy2008}, and,
-even more recently, has provided insights into the behaviors of deep
+more recently, has provided insights into the behaviors of deep
 neural networks\cite{martinImplicitSelfRegularizationDeep2021,
 martinPredictingTrendsQuality2021}.
 
@@ -297,7 +298,7 @@ features collectively as \textit{eigenfeatures} in this study.
 
 \subsection{Functional Connectivity Reduction}
 
-The functional connectivity—the matrix of correlations of
+The functional connectivity—often, the matrix of correlations of
 various collections of voxels of an fMRI scan—is \textit{a priori} a useful
 representation of the fMRI data. However, the full correlation matrix between
 all voxels is itself often computationally infeasible to work with, and thus is
@@ -394,7 +395,7 @@ to make the scan classifiable). This yielded seven datasets total.
     Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
     indicate P horizontal / axial slices each with dimensions M x N.
 }
-\label{table:1}
+\label{tab:data-dimensions}
 \small
 \centering
 \begin{tabular}{ l c c c c c c }
@@ -422,15 +423,15 @@ limited relevance to our whole-brain, voxelwise, multiverse predictive
 approach.}, we refer the reader to the original publications and/or data
 releases when greater detail is needed, and highlight only the most basic
 aspects of each dataset here.  Dataset scan parameters and acquisition details
-are summarized in Table \ref{table:1}, and sample and subgroup sizes are
-summarized in Table \ref{table:2}.
+are summarized in Table \ref{tab:data-dimensions}, and sample and subgroup sizes are
+summarized in Table \ref{tab:data-subjects}.
 
 \begin{table}[h!]
 \caption{
     ID = Identifier for paper. Subgroup = name of subgroup. Subjects = Number of subjects.
     Task = fMRI task. ANT = Attention Network Task \cite{fanActivationAttentionalNetworks2005}
 }
-\label{table:2}
+\label{tab:data-subjects}
 \small
 \centering
 \begin{tabular}{ l r c c c }
@@ -691,7 +692,7 @@ tseries        & location      & \tcode{T-max}                          \\
 \label{sec:raw-eigs}
 
 The time and space complexities of computing the full \(N \times N\)
-correlation matrix of \(\mathbf{M}\) (and subsequent eigenvalues) are too
+\(\mathbf{M}\) of Pearson correlation coefficients (and subsequent eigenvalues) are too
 large to be tractable. However, since transposition does not change the
 eigenvalues, we can use the transpose to efficiently compute these eigenvalues
 (see Appendix \ref{sec:transpose}). These raw eigenvalues (feature \code{eigs}
@@ -845,8 +846,9 @@ performed first on each feature to be combined. E.g. if we have features \(f_1,
 \dots,  f_n\) with dimensions \(p_1, \dots, p_n\), then the sliced max 25\%
 feature for each component feature, \(\hat{f}_i\) is the last \(p_i / 4\)
 elements of \(f_i\), and the combined sliced feature is  \([\hat{f}_1;\;
-\dots;\; \hat{f}_n]\)\footnote{Exact implementation can be found in the
-\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source code}}.
+\dots;\; \hat{f}_n]\).
+% \footnote{Exact implementation can be found in the
+%\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source code}}.
 
 
 
@@ -869,9 +871,9 @@ difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
 percentile—\code{T-rrng} in Table \ref{tab:features}). Each statistic reduces
 the fMRI data along the voxel dimension, yielding a feature of \(T\) dimensions
 (e.g. the ``mean'' feature, \code{T-mean}, is the usual global mean signal).
-Exact details can be found in the
-\href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
-source code}.
+% Exact details can be found in the
+% \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
+% source code}.
 
 We do not take slice variants of these baseline features, since the baseline
 features are still time series. However, we do also evaluate a number of
@@ -931,12 +933,12 @@ various datasets, and is naturally normalized and interpretable such that
 mAUROC \(<\) 0.5 indicates predictive performance worse than guessing, and
 mAUROC \(>\) 0.5 indicates positive predictive
 utility\cite{mandrekarReceiverOperatingCharacteristic2010}. However, we also
-collected as performance metrics the accuracy, adjusted accuracy (proportion
-of samples in the entire dataset largest class minus accuracy), and the F1 score, and a complete
-table with these additional metrics is available with the data for this study
-(Section \ref{sec:data-and-code}).
+collected as performance metrics the accuracy, adjusted accuracy (proportion of
+samples in the entire dataset largest class minus accuracy), and the F1 score.
+A complete table with these additional metrics is available with the
+\hyperref[sec:data-and-code]{data for this study}.
 
-Each non-baseline feature is evaluated, for each classification task and
+Each non-baseline feature is thus evaluated, for each classification task and
 classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\) 2
 normalization methods \(\times\) 4 trimming choices \(\times\) 4 unfolding
 degrees  \(\times\) 10 slice choices. Each baseline feature is evaluated
@@ -952,17 +954,17 @@ slicing—to consider.
 
 \subsection{Overview}
 
-Summarizing this quantity of data requires some caution. Measures of location or
-scale, even when robust, are, for the most part, misleading and uninformative
-when distributions are skewed. In most cases we find skewed mAUROC
-distributions, and so have chosen primarily to present our findings visually,
-with kernel density estimates.
-
-Because aggregating across datasets with different class imbalances can
-be extremely misleading, even with a metric like the mAUROC\cite{brabecModelEvaluationNonconstant2020},
-we restrict such summaries to Table \ref{tab:numerical} only, and note that
-the table is intended as a \textit{supplement only} to the distribution plots: no conclusions
-should be drawn about feature performance from the table values alone.
+Summarizing this quantity of data requires some caution. Measures of location
+or scale, even when robust, are, for the most part, misleading and
+uninformative when distributions are skewed. In most cases we find skewed
+mAUROC distributions, and so have chosen primarily to present our findings
+visually, with kernel density estimates.  Because aggregating across datasets
+with different class imbalances can be extremely misleading, even with a metric
+like the mAUROC\cite{brabecModelEvaluationNonconstant2020}, we restrict such
+summaries to Table \ref{tab:numerical} only, and note that the table is
+intended as a \textit{supplement only} to the distribution plots: no
+conclusions should be drawn about feature performance from the table values
+alone.
 
 \begin{table}[h!]
 \caption{Numerical summaries of feature mAUROCs across predictable comparisons,
@@ -1062,6 +1064,7 @@ duloxetine} comparison in the \textit{Osteo} dataset, and the
 dataset were also not meaningfully predictable by any feature. As such, we exclude
 these classification tasks from further figures and discussion.
 
+
 \subsubsection{Predictable Comparisons}
 As visible in Figure \ref{fig:main-results}, when coarsely summarizing
 features, eigenfeatures were more likely to be predictively useful than not,
@@ -1071,7 +1074,6 @@ strongly and consistently demonstrated predictive utility in the \textit{Aging}
 dataset \code{older v younger} classification task, the \textit{Osteo} dataset
 \code{nopain v duloxetine} task, and in the \textit{Attention} \code{vigilant v
 nonvigilant} comparison.
-
 
 
 \subsection{Largest mAUROCs}
@@ -1091,8 +1093,8 @@ performance distributions differ mostly due to the unfolding procedure. That
 is, combined features that used the unfolded eigenvalues plus some other RMT
 eigenfeature tended to have visually-indistinguishable mAUROC distributions to
 those using the unfolded eigenvalues alone (Figures
-S\ref{S-fig:fine-trim}-\ref{S-fig:fine-degree}). The mAUROC distributions of
-these features differed most strongly in the tails (Figures
+S\ref{S-fig:fine-trim}-\ref{S-fig:fine-degree}). Instead, the mAUROC
+distributions of these features differed mostly in the tails (Figures
 S\ref{S-fig:fine-largest}-\ref{S-fig:fine-smallest}).
 
 
@@ -1210,13 +1212,14 @@ However, eigenfeature mAUROC values observed in this study were highly
 sensitive to the overall analytic procedure, and there was no single analytic
 choice (e.g. choice of trimming procedure, unfolding polynomial degree, number
 of preprocessing steps, or feature slicing) that ensured, for any combination
-of feature and classification task, that all mAUROC values were greater than
-0.5. In addition, the mean, median and modal mAUROCs were generally close to
-0.5, and adjusted mean and median accuracies also tended to be close to zero.
-Thus we find limited evidence that functional-connectivity-based eigenfeatures
-have general, "out of the box" predictive utility, with general
-utility likely requiring either careful tuning, or different preprocessing
-decisions and analytic choices than those examined here.
+of feature and classification task, that all all other analytic choices
+resulted in mAUROC values greater than 0.5. In addition, the mean, median and
+modal mAUROCs were generally close to 0.5, and adjusted mean and median
+accuracies also tended to be close to zero. Thus we find limited evidence that
+functional-connectivity-based eigenfeatures have general, "out of the box"
+predictive utility, with general utility likely requiring either careful
+tuning, or different preprocessing decisions and analytic choices than those
+examined here.
 
 
 
@@ -1295,13 +1298,17 @@ study, the (robust) maximum improvements upon guessing are shown in Table
 
 It is somewhat surprising that the eigenfeatures examined here ever have net
 cross-validated predictive utility. The reduction of the functional
-connectivity matrix to the sorted \(T - 1\) eigenvalues destroys a large amount
-of information (e.g. radically different matrices can have identical sorted
-eigenvalues), and the subsequent small-degree polynomial fit used in the
-unfolding procedure further reduces variance in the raw data.  All brain voxels
-(including grey matter voxels) are also used with equal importance in the
-computation of the correlation matrix, and the number of subjects involved in
-each dataset is generally quite small.
+connectivity matrix to the sorted \(T - 1\) eigenvalues uses all brain voxels
+(including grey matter voxels), and destroys a large amount of information
+(radically different matrices can have identical sorted eigenvalues). The
+subsequent small-degree polynomial fit used in the unfolding procedure further
+reduces variance in the raw data, and all eigenfeatures, due to the eigenvalue
+sorting, are monotonically increasing curves (or approximately monotonic). All
+such curves could likely be fit near-perfectly with 3-5 parameters, i.e. the
+inherent dimensionality of these features is quite small. Interpreting the eigenvalues
+as the magnitudes of the principal components of the standardized data, this
+suggests that a rough summary of the magnitudes of the principal components can
+often be surprisingly predictive in fMRI.
 
 We speculate that the unfolded eigenvalues may have predictive utility in part
 because of their smoothing and re-scaling effect (see also Section
@@ -1326,58 +1333,84 @@ and slice time correction only. Median observed mAUROC = 0.643 (range = 0.346 -
 0.925)}
 \end{figure}
 
-It was also sometimes the case that adding RMT-specific features (e.g. the spectral
-rigidity, or level variance) to either the unfolded eigenvalues, or raw
-eigenvalues, would allow for a higher maximum mAUROC (Tables
-\ref{tab:numerical}-\ref{tab:top3-fine}, and Figure S\ref{S-fig:fine-largest}). One case where these
-features yielded the largest predictions was in the \textit{Aging} dataset.
-This is depicted in Figure \ref{fig:observables}, where it is clear that, after
-trimming, at almost any \(L\) value, subgroups either cluster in bands, or tend to
-generally have lower or higher rigidity of level variance curves.
+% It was also sometimes the case that adding RMT-specific features (e.g. the spectral
+% rigidity, or level variance) to either the unfolded or raw
+% eigenvalues would allow for a higher maximum mAUROC (Tables
+% \ref{tab:numerical}-\ref{tab:top3-fine}, and Figure S\ref{S-fig:fine-largest}). One case where these
+% features yielded the largest predictions was in the \textit{Aging} dataset.
+% This is depicted in Figure \ref{fig:observables}, where it is clear that, after
+% trimming, at almost any \(L\) value, subgroups either cluster in bands, or tend to
+% generally have lower or higher rigidity of level variance curves.
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[width=6.5in]{observables_older_younger_v_older.png}
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:observables} Rigidity and level variance features (unfolding
-polynomial degree 3) for \textit{Aging} dataset \footnotesize\texttt{younger v
-older} classification task, brain extraction only. Median observed mAUROC =
-0.703 (range = 0.424 - 0.880). Horizontal axis L-values range from 1 to 20 in
-all subplots, as described in Section \ref{sec:methods}. Note banding / clusters
-related to classes.}
-\end{figure}
+% \begin{figure}
+% \begin{center}
+% \begin{tabular}{c}
+% \includegraphics[width=6.5in]{observables_older_younger_v_older.png}
+% \end{tabular}
+% \end{center}
+% \caption
+% { \label{fig:observables} Rigidity and level variance features (unfolding
+% polynomial degree 3) for \textit{Aging} dataset \footnotesize\texttt{younger v
+% older} classification task, brain extraction only. Median observed mAUROC =
+% 0.703 (range = 0.424 - 0.880). Horizontal axis L-values range from 1 to 20 in
+% all subplots, as described in Section \ref{sec:methods}. Note banding / clusters
+% related to classes.}
+% \end{figure}
 
-However, the range of mAUROCs observed in all cases in this study suggests
-caution. All eigenfeatures and baselines features were sensitive to analytic
-choices such as the amount of preprocessing, feature slicing (including trimming) and
-feature smoothing / unfolding, and this sensitivity was such that all features
-resulted in mAUROCs on either side of 0.5. Most of these analytic choices are benign enough that
-it is difficult to rigorously justify one choice over another, meaning RMT-based
-analyses may be susceptible to post-hoc justification \cite{kerrHARKingHypothesizingResults1998}.
+\subsection{Limitations}
+As is unfortunately typical of fMRI research\cite{turnerSmallSampleSizes2018},
+the number of subjects in each dataset was quite small (Table
+\ref{tab:data-subjects}). With such small numbers of subjects, randomization
+cannot be expected to effectively control group differences, and it is possible
+the predictive utility of the eigenfeatures was due to capitalization of such
+differences. For example, eigenfeatures were generally predictive in the
+\textit{Aging} dataset, and it is quite possible for randomization failures to
+introduce age confounding across classes.
+
+Likewise, one of the other more predictable classification tasks was the
+\code{duloxetine v nopain} task in the osteoarthritis dataset. An active drug
+could introduce any number of physiological confounds relevant to
+fMRI\cite{murphyRestingstateFMRIConfounds2013}, but we could not control for
+such effects do to the absence of physiological recording in most datasets.
+
+In general, much larger fMRI datasets are needed to adequately control for and test
+\textit{what} exactly the connectivity eigenvalues actually predict, and to test
+if these predictions generalize to larger, different populations.
 
 
-
-We believe that future studies using RMT to inform their examinations be more
-careful. In the absence of a cross-validated predictive framework that takes
-into account the strong impact of researcher analytic choices, any apparent
-explanatory utility of RMT should be treated with skepticism. RMT deals with
-highly-ideal \textit{iid} matrices, but almost no real-world systems involve
-\textit{iid} elements. The basic RMT insight that eigenvalues can be used to
-describe matrix-representable systems is certainly vindicated here, but the use
-of mathematically non-trivial RMT statistics (like the spectral rigidity or
-level number variance) should not be used if simpler statistical descriptions
-of the eigenvalues are equally informative.
 
 \section{Conclusion}
 
+Eigenvalue-based features inspired by RMT, and extracted from fMRI functional
+connectivity matrices were found to have predictive utility across a wide
+variety of datasets and classification tasks. However, the predictive utilities
+were modest, and highly dependent on preprocessing steps and other fitting and
+feature selection procedures. Future studies employing RMT should carefully
+investigate the sensitivity of any findings to such analytic decisions before
+drawing any conclusions.
+
+
 \section{Disclosures}
+The authors have no relevant financial interests in the manuscript and no other
+potential conflicts of interest to disclose.
 
-\section{Acknowledgments and Funding}
+% Conflicts of interest should be declared under a separate header, above
+% Acknowledgments. If the authors have no competing interests to declare, then a
+% statement should be included declaring no conflicts of interest. For assistance
+% generating a disclosure statement, see the form available from  the
+% International Committee of Medical Journal Editors website:
+% \linkable{http://www.icmje.org/conflicts-of-interest/}
 
-\section{Data, Materials, and Code Availability}
+\section*{Acknowledgments and Funding}
+This work was supported by the Natural Science and Engineering Research
+Council of Canada's Canada Research Chair grant (grant number 231266) to JL,
+Natural Science and Engineering Research Council of Canada Discovery Grant to
+JL, a Canada Foundation for Innovation and Nova Scotia Research and Innovation
+Trust infrastructure grant (R0176004) to JL, a St. Francis Xavier University
+research startup grant to JL (grant number R0168020), and a St. Francis Xavier
+University UCR grant to JL.
+
+\section*{Data, Materials, and Code Availability}
 \label{sec:data-and-code}
 
 All raw fMRI data used in this study is publicly available on the
@@ -1517,26 +1550,26 @@ library\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}.
 % appearing in appendices should continue sequential numbering from earlier in
 % the paper.
 
-\subsection{Disclosures}
-Conflicts of interest should be declared under a separate header, above
-Acknowledgments. If the authors have no competing interests to declare, then a
-statement should be included declaring no conflicts of interest. For assistance
-generating a disclosure statement, see the form available from  the
-International Committee of Medical Journal Editors website:
-\linkable{http://www.icmje.org/conflicts-of-interest/}
+% \subsection{Disclosures}
+% Conflicts of interest should be declared under a separate header, above
+% Acknowledgments. If the authors have no competing interests to declare, then a
+% statement should be included declaring no conflicts of interest. For assistance
+% generating a disclosure statement, see the form available from  the
+% International Committee of Medical Journal Editors website:
+% \linkable{http://www.icmje.org/conflicts-of-interest/}
 
-\subsection{Acknowledgments}
-Acknowledgments and funding information should be added after the conclusion,
-and before references. Include grant numbers and the full name of the funding
-body. The acknowledgments section does not have a section number.
+% \subsection{Acknowledgments}
+% Acknowledgments and funding information should be added after the conclusion,
+% and before references. Include grant numbers and the full name of the funding
+% body. The acknowledgments section does not have a section number.
 
-\subsection{Data, Materials, and Code Availability}
-Availability of data, materials, and/or code used in the research results
-reported in the manuscript may be declared under the heading ``Data, Materials,
-and Code Availability,'' following the Acknowledgments section. As relevant,
-provide specific access information or restrictions for data, materials, and
-computer code (i.e., links to repository access addresses with guidance on
-commercial or public access).
+% \subsection{Data, Materials, and Code Availability}
+% Availability of data, materials, and/or code used in the research results
+% reported in the manuscript may be declared under the heading ``Data, Materials,
+% and Code Availability,'' following the Acknowledgments section. As relevant,
+% provide specific access information or restrictions for data, materials, and
+% computer code (i.e., links to repository access addresses with guidance on
+% commercial or public access).
 
 % \subsection{References}
 % The References section lists books, articles, and reports that are cited in the
@@ -1572,28 +1605,28 @@ commercial or public access).
 % sequential references should be displayed with a dash between the first and
 % last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
 
-\subsubsection{Reference linking and DOIs}
-A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a
-digital object, such as a journal article or a book chapter, that provides a
-persistent link to its location on the internet. The use of DOIs allows readers
-to easily access cited articles. Authors should include the DOI at the end of
-each reference in brackets if a DOI is available. See examples at the end of
-this manuscript. A free DOI lookup service is available from CrossRef at
-\\\linkable{http://www.crossref.org/freeTextQuery/}. The inclusion of DOIs will
-facilitate reference linking and is highly recommended.
+% \subsubsection{Reference linking and DOIs}
+% A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a
+% digital object, such as a journal article or a book chapter, that provides a
+% persistent link to its location on the internet. The use of DOIs allows readers
+% to easily access cited articles. Authors should include the DOI at the end of
+% each reference in brackets if a DOI is available. See examples at the end of
+% this manuscript. A free DOI lookup service is available from CrossRef at
+% \\\linkable{http://www.crossref.org/freeTextQuery/}. The inclusion of DOIs will
+% facilitate reference linking and is highly recommended.
 
-In the present LaTeX template, the author needs to add the DOI reference by
-including it in a ``note'' in the bibliography file, as shown in the file
-{\verb+report.bib+}, for example, \\ {\verb+note = "[doi:10.1117/12.154577]"+}.
-The DOI may be used by the reader to locate that document with the link:
-{\verb+http://dx.doi.org10.1117/12.154577+}.
+% In the present LaTeX template, the author needs to add the DOI reference by
+% including it in a ``note'' in the bibliography file, as shown in the file
+% {\verb+report.bib+}, for example, \\ {\verb+note = "[doi:10.1117/12.154577]"+}.
+% The DOI may be used by the reader to locate that document with the link:
+% {\verb+http://dx.doi.org10.1117/12.154577+}.
 
-\subsection{Biographies}
-A brief professional biography of approximately 75 words may be provided for
-each author, if available. Biographies should be placed at the end of the
-paper, after the references. Personal information such as hobbies or
-birthplace/birthdate should not be included. Author photographs are not
-published.
+% \subsection{Biographies}
+% A brief professional biography of approximately 75 words may be provided for
+% each author, if available. Biographies should be placed at the end of the
+% paper, after the references. Personal information such as hobbies or
+% birthplace/birthdate should not be included. Author photographs are not
+% published.
 
 % \section{Section Formatting}
 % \label{sect:sections}
@@ -1697,7 +1730,7 @@ published.
 \section{Correlation Eigenvalues via Transposition}
 \label{sec:transpose}
 
-Let \(\mathbf{X}\) is a real \(n \times p\) matrix with \(n > p\). Let
+Let \(\mathbf{X}\) be a real \(n \times p\) matrix with \(n > p\). Let
 \[
 \mathbf{Z} = \text{norm}(\mathbf{X}) =
 \left(
@@ -1718,7 +1751,7 @@ Denote the covariance matrix of \(\mathbf{X}\) as \(\text{cov}(\mathbf{X})\).  T
 
 Denote the correlation matrix of \(\mathbf{X}\) as \(\text{corr}(\mathbf{X})\), and let
 \[
-\mathbf{Y} = \text{stand}(\mathbf{X}) =
+\mathbf{Y} = \text{standardize}(\mathbf{X}) =
 \left(
 (\mathbf{X}_1 - \bar{\mathbf{X}}_1) / \sigma_1 | \dots | (\mathbf{X}_p - \bar{\mathbf{X}}_p) / \sigma_p
 \right)
@@ -1794,11 +1827,11 @@ method\cite{liuOtsuMethodKmeans2009}.
 % \vspace{2ex}\noindent{\footnotesize\textbf{Theorem 1.} For any unbiased estimator...}
 
 % \disclosures
-\subsection*{Disclosures}
-Conflicts of interest should be declared under a separate header. If the authors have no relevant financial interests in the manuscript and no other potential conflicts of interest to disclose, a statement to this effect should also be included in the manuscript.
+% \subsection*{Disclosures}
+% Conflicts of interest should be declared under a separate header. If the authors have no relevant financial interests in the manuscript and no other potential conflicts of interest to disclose, a statement to this effect should also be included in the manuscript.
 
-\subsection* {Acknowledgments}
-This unnumbered section is used to identify those who have aided the authors in understanding or accomplishing the work presented and to acknowledge sources of funding.
+% \subsection* {Acknowledgments}
+% This unnumbered section is used to identify those who have aided the authors in understanding or accomplishing the work presented and to acknowledge sources of funding.
 
 \subsection* {Data, Materials, and Code Availability}
 As relevant, the availability of data, materials, and/or software code used in the research results reported in the manuscript may be declared in this section. (Note: this section is required for the \textit{Journal of Biomedical Optics} and \textit{Neurophotonics}.) Provide specific access information or restrictions for data, materials, and computer code (i.e., links to repository access addresses with guidance on commercial or public access).
@@ -1811,7 +1844,7 @@ As relevant, the availability of data, materials, and/or software code used in t
 
 %%%%% Biographies of authors %%%%%
 
-\vspace{2ex}\noindent\textbf{First Author} is an assistant professor at the University of Optical Engineering. He received his BS and MS degrees in physics from the University of Optics in 1985 and 1987, respectively, and his PhD degree in optics from the Institute of Technology in 1991.  He is the author of more than 50 journal papers and has written three book chapters. His current research interests include optical interconnects, holography, and optoelectronic systems. He is a member of SPIE.
+% \vspace{2ex}\noindent\textbf{First Author} is an assistant professor at the University of Optical Engineering. He received his BS and MS degrees in physics from the University of Optics in 1985 and 1987, respectively, and his PhD degree in optics from the Institute of Technology in 1991.  He is the author of more than 50 journal papers and has written three book chapters. His current research interests include optical interconnects, holography, and optoelectronic systems. He is a member of SPIE.
 
 \vspace{1ex}
 \noindent Biographies and photographs of the other authors are not available.
