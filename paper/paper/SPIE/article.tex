@@ -931,8 +931,8 @@ various datasets, and is naturally normalized and interpretable such that
 mAUROC \(<\) 0.5 indicates predictive performance worse than guessing, and
 mAUROC \(>\) 0.5 indicates positive predictive
 utility\cite{mandrekarReceiverOperatingCharacteristic2010}. However, we also
-collected as performance metrics the accuracy, adjusted accuracy (accuracy
-minus the proportion of the largest class), and the F1 score, and a complete
+collected as performance metrics the accuracy, adjusted accuracy (proportion
+of samples in the entire dataset largest class minus accuracy), and the F1 score, and a complete
 table with these additional metrics is available with the data for this study
 (Section \ref{sec:data-and-code}).
 
@@ -1075,6 +1075,7 @@ nonvigilant} comparison.
 
 
 \subsection{Largest mAUROCs}
+\label{sec:unfolding-importance}
 Considering the various analytic choices as tunable parameters, it makes sense
 to examine the \textit{largest} portion of mAUROCs as an indication of the
 maximum predictive potential of the eigenfeatures. In this case, it is clear
@@ -1179,8 +1180,20 @@ predictive when using the largest portions ("max-XX", rows in Figure
 S\ref{S-fig:best-params-slicing}), and usually least predictive when features
 primarily involved the smallest or central portions.
 
+\subsection{Choice of Summary Metric}
+We note briefly that most of the above findings regarding the impacts of
+analytic factors, and rank ordering of feature predictive utilities, are
+similar when using the adjusted accuracy (see Section \ref{sec:multiverse}),
+instead of the mAUROC (see Figures
+S\ref{S-fig:feature-group-all-acc}-\ref{S-fig:best-params-slicing-acc}).
+However, if comparison task predictability is defined as requiring adjusted
+accuracies to be more positive than negative, then the \textit{Learning} and
+\textit{Parkinson's} datasets do not appear to be predictable with any feature
+(Figure S\ref{S-fig:feature-group-all-acc}).
+
 
 \section{Discussion}
+\label{sec:discussion}
 
 In this study, eigenfeatures inspired by RMT and derived from the eigenvalues
 of the full, whole-brain voxelwise fMRI correlation matrix were found to have
@@ -1193,70 +1206,77 @@ evidence from previous studies
 this suggests RMT may be a useful analytic and theoretical tool for
 understanding functional connectivity.
 
-However, mAUROC values observed in this study were highly sensitive to , and mean and
-median mAUROC v
+However, eigenfeature mAUROC values observed in this study were highly
+sensitive to the overall analytic procedure, and there was no single analytic
+choice (e.g. choice of trimming procedure, unfolding polynomial degree, number
+of preprocessing steps, or feature slicing) that ensured, for any combination
+of feature and classification task, that all mAUROC values were greater than
+0.5. In addition, the mean, median and modal mAUROCs were generally close to
+0.5, and adjusted mean and median accuracies also tended to be close to zero.
+Thus we find limited evidence that functional-connectivity-based eigenfeatures
+have general, "out of the box" predictive utility, with general
+utility likely requiring either careful tuning, or different preprocessing
+decisions and analytic choices than those examined here.
 
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[width=6.5in]{unfolded_osteo_duloxetine_v_nopain.png}
+
+
+\begin{table}[h!]
+\caption{
+\label{tab:top3-fine}
+Top three robust maximum (\(95^{\text{th}}\) percentile) mAUROC and adjusted
+accuracy (acc+) values for each predictable classification task and fine
+feature grouping, sorted by mAUROC. A dash indicates that the fine feature
+grouping for that row was not in the top three, i.e., that the top three
+performing features differed depending the performance metric. }
+\small
+\centering
+\begin{tabular}{llcc}
+\hline
+                                   &               & mAUROC &   acc+ \\
+Classification Task                & Source Feature&        &        \\
+\hline
+Aging - younger v older            & eigs smooth   &  0.834 &  0.226 \\
+                                   & rmt + eigs    &  0.828 &  0.212 \\
+                                   & eigs          &  0.823 &  0.211 \\
+Learning - rest v task             & rmt + eigs    &  0.638 &  0.007 \\
+                                   & eigs          &  0.636 &  0.007 \\
+                                   & eigs max      &  0.631 &    –   \\
+                                   & eigs middle   &    –   &  0.012 \\
+Osteo - nopain v duloxetine        & rmt only      &  0.819 &  0.259 \\
+                                   & eigs max      &  0.812 &  0.226 \\
+                                   & rmt + eigs    &  0.806 &    –   \\
+                                   & eigs smooth   &    –   &  0.212 \\
+Osteo - nopain v pain              & tseries loc   &  0.762 &  0.104 \\
+                                   & tseries scale &  0.697 &    –   \\
+                                   & eigs smooth   &  0.684 &    –   \\
+                                   & eigs middle   &    –   &  0.069 \\
+                                   & eigs          &    –   &  0.034 \\
+Parkinsons - ctrl v park           & tseries scale &  0.687 &  0.107 \\
+                                   & tseries loc   &  0.657 &  0.063 \\
+                                   & rmt only      &  0.590 &  0.027 \\
+TaskAttention - task\_attend v task\_nonattend     & tseries loc &  0.666 &
+0.135 \\
+                                   & rmt only      &  0.660 &  0.121 \\
+                                   & tseries scale &  0.656 &  0.124 \\
+Vigilance - vigilant v nonvigilant & eigs middle   &  0.733 &  0.184 \\
+                                   & eigs smooth   &  0.726 &    –   \\
+                                   & rmt + eigs    &  0.719 &  0.162 \\
+                                   & eigs          &    –   &  0.162 \\
+\hline
 \end{tabular}
-\end{center}
-\caption
-{ \label{fig:unfolded} Raw eigenvalues and unfolded eigenvalues (polynomial
-degree 9) for \textit{Osteo} dataset \footnotesize\texttt{duloxetine v nopain}
-classification task, brain extraction and slice time correction only. Median
-observed mAUROC = 0.643 (range = 0.346 - 0.925)}
-\end{figure}
+\end{table}
 
-It is likely that the unfolded eigenvalues have predictive utility because of
-their smoothing and re-scaling effect. Figure \ref{fig:unfolded}, which depicts
-the raw eigenvalues and unfolded eigenvalues with different trimming
-procedures, shows how the raw eigenvalues have strongly exponential
-distributions, even with logarithmic axes. This is due to the
-magnitude of the largest eigenvalues, and the trimmed feature distributions in
-Figure \ref{fig:unfolded} are less pathologically distributed.
 
-Also, as is clear from Table \ref{tab:numerical} and Figure S\ref{S-fig:fine-classifier}, that
-a simple combination of the raw eigenvalues plus smoothed versions of them are the most
-generally-predictive features examined.
+Nevertheless, in all datasets, there were combinations of analytic choices that
+resulted in cross-validated mean prediction performances well beyond mere guessing
+(Figures S\ref{S-fig:fine-largest}, S\ref{S-fig:fine-largest-acc}, Table
+\ref{tab:top3-fine}). Whether or not these should be considered to have
+practical relevance depends on one's goals, however, we note that with small
+datasets of rs- or task-fMRI data, binary, subject-level classification using
+whole-brain features is generally challenging.
 
-It was also sometimes the case that adding RMT-specific features (e.g. the spectral
-rigidity, or level variance) to either the unfolded eigenvalues, or raw
-eigenvalues, would allow for a higher maximum mAUROC (Table
-\ref{tab:numerical}, Figure S\ref{S-fig:fine-largest}). One case where these
-features yielded the largest predictions was in the \textit{Aging} dataset.
-This is depicted in Figure \ref{fig:observables}, where it is clear that, after
-trimming, at almost any \(L\) value, subgroups are strongly and clearly
-visually-separable.
-
-\begin{figure}
-\begin{center}
-\begin{tabular}{c}
-\includegraphics[width=6.5in]{observables_older_younger_v_older.png}
-\end{tabular}
-\end{center}
-\caption
-{ \label{fig:observables} Rigidity and level variance features (unfolding
-polynomial degree 3) for \textit{Aging} dataset \footnotesize\texttt{younger v
-older} classification task, brain extraction only. Median observed mAUROC =
-0.703 (range = 0.424 - 0.880). Horizontal axis L-values range from 1 to 20 in
-all subplots, as described in the \ref{sec:methods}.}
-\end{figure}
-
-However, the range of mAUROCs observed in all cases in this study suggests
-caution. All eigenfeatures and baselines features were sensitive to analytic
-choices such as the amount of preprocessing, feature slicing (including trimming) and
-feature smoothing / unfolding, and this sensitivity was such that all features
-resulted in mAUROCs on either side of 0.5. Most of these analytic choices are benign enough that
-it is difficult to rigorously justify one choice over another, meaning RMT-based
-analyses may be susceptible to post-hoc justification \cite{kerrHARKingHypothesizingResults1998}.
-
-It is also difficult to quantify the practical significance of the observed
-mAUROC values. With small datasets of rs- or task-fMRI data, binary
-classification using whole-brain features is challenging. For subject level
-classification, state of the art deep learning methods improve upon guessing by
-17\% for autism \cite{bengs4DSpatioTemporalDeep2020} or 3-30\% for ADHD
+For example, deep learning methods improve upon guessing by 17\% for autism
+\cite{bengs4DSpatioTemporalDeep2020} or 3-30\% for ADHD
 \cite{riazDeepFMRIEndtoendDeep2020}, 16\% for severe depression
 \cite{ramasubbuAccuracyAutomatedClassification2016}, and 23\% for obsessive
 compulsive disorder \cite{takagiNeuralMarkerObsessiveCompulsive2017}. Manual
@@ -1269,16 +1289,76 @@ classifying task vs. rest
 connectivity data and with classical machine learning algorithms (such as SVM)
 we in general only expect large prediction accuracies (e.g. greater than 80\%)
 when the group functional connectivities are already strongly separated (e.g.
-Cohen’s \(d > 1.0\); \citenum{dansereauStatisticalPowerPrediction2017}). In
-this study eigenfeatures could improve upon guessing by 16.2\% - 33.7\%
-(\ref{S-tab:acc-numerical}).
+Cohen’s \(d > 1.0\))\cite{dansereauStatisticalPowerPrediction2017}. In this
+study, the (robust) maximum improvements upon guessing are shown in Table
+\ref{tab:top3-fine}), and vary from 3-26\%.
 
-It is somewhat surprising that eigenfeatures are, on net, predictively-useful
-at all. The reduction of the functional connectivity matrix to \(T - 1\)
-eigenvalues is aggressive, and the subsequent small-degree polynomial fit used
-in the unfolding procedure further reduces information in the raw data.
-Still, the subsequent features more often than not allow non-trivial 5-fold
-cross-validated mean prediction AUROCs or accuracies.
+It is somewhat surprising that the eigenfeatures examined here ever have net
+cross-validated predictive utility. The reduction of the functional
+connectivity matrix to the sorted \(T - 1\) eigenvalues destroys a large amount
+of information (e.g. radically different matrices can have identical sorted
+eigenvalues), and the subsequent small-degree polynomial fit used in the
+unfolding procedure further reduces variance in the raw data.  All brain voxels
+(including grey matter voxels) are also used with equal importance in the
+computation of the correlation matrix, and the number of subjects involved in
+each dataset is generally quite small.
+
+We speculate that the unfolded eigenvalues may have predictive utility in part
+because of their smoothing and re-scaling effect (see also Section
+\ref{sec:unfolding-importance}). Figure \ref{fig:unfolded}, which depicts the
+raw eigenvalues and unfolded eigenvalues with different trimming procedures,
+shows how the raw eigenvalues have strongly exponential distributions, even
+with logarithmic axes. This is due to the magnitude of the largest eigenvalues,
+and the unfolded and trimmed feature distribution in Figure \ref{fig:unfolded}
+are far less pathologically distributed.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{unfolded_osteo_duloxetine_v_nopain.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:unfolded} Raw eigenvalues (first subplot) and unfolded eigenvalues
+(polynomial degree 9; last 3 subplots) for \textit{Osteo} dataset
+\footnotesize\texttt{duloxetine v nopain} classification task, brain extraction
+and slice time correction only. Median observed mAUROC = 0.643 (range = 0.346 -
+0.925)}
+\end{figure}
+
+It was also sometimes the case that adding RMT-specific features (e.g. the spectral
+rigidity, or level variance) to either the unfolded eigenvalues, or raw
+eigenvalues, would allow for a higher maximum mAUROC (Tables
+\ref{tab:numerical}-\ref{tab:top3-fine}, and Figure S\ref{S-fig:fine-largest}). One case where these
+features yielded the largest predictions was in the \textit{Aging} dataset.
+This is depicted in Figure \ref{fig:observables}, where it is clear that, after
+trimming, at almost any \(L\) value, subgroups either cluster in bands, or tend to
+generally have lower or higher rigidity of level variance curves.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=6.5in]{observables_older_younger_v_older.png}
+\end{tabular}
+\end{center}
+\caption
+{ \label{fig:observables} Rigidity and level variance features (unfolding
+polynomial degree 3) for \textit{Aging} dataset \footnotesize\texttt{younger v
+older} classification task, brain extraction only. Median observed mAUROC =
+0.703 (range = 0.424 - 0.880). Horizontal axis L-values range from 1 to 20 in
+all subplots, as described in Section \ref{sec:methods}. Note banding / clusters
+related to classes.}
+\end{figure}
+
+However, the range of mAUROCs observed in all cases in this study suggests
+caution. All eigenfeatures and baselines features were sensitive to analytic
+choices such as the amount of preprocessing, feature slicing (including trimming) and
+feature smoothing / unfolding, and this sensitivity was such that all features
+resulted in mAUROCs on either side of 0.5. Most of these analytic choices are benign enough that
+it is difficult to rigorously justify one choice over another, meaning RMT-based
+analyses may be susceptible to post-hoc justification \cite{kerrHARKingHypothesizingResults1998}.
+
+
 
 We believe that future studies using RMT to inform their examinations be more
 careful. In the absence of a cross-validated predictive framework that takes

@@ -3011,8 +3011,9 @@ if __name__ == "__main__":
     # df_ses = load_combined(drop_ses=False)
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
-    make_kde_plots()
-    sys.exit()
+
+    # make_kde_plots()
+    # sys.exit()
 
     df = load_combined()
     feature_summary = (
@@ -3025,6 +3026,27 @@ if __name__ == "__main__":
         .round(3)
     )
     print(feature_summary.to_markdown(tablefmt="simple"))
+
+    preds = df[df.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)].copy()
+    largest_aurocs = (
+        preds.groupby(["subgroup", "fine_feature"])[["auroc"]]
+        .quantile(0.95)
+        .groupby("subgroup")
+        .apply(lambda grp: grp.nlargest(3, columns=["auroc"]))
+        .droplevel(1)
+    )
+    largest_accs = (
+        preds.groupby(["subgroup", "fine_feature"])[["acc+"]]
+        .quantile(0.95)
+        .groupby("subgroup")
+        .apply(lambda grp: grp.nlargest(3, columns=["acc+"]))
+        .droplevel(1)
+    )
+    largests = pd.concat([largest_aurocs, largest_accs], axis=1)
+    largests = largests.sort_values(
+        by=["subgroup", "auroc", "acc+"], ascending=[True, False, False]
+    )
+    print(largests.round(3).to_latex())
 
     # plot_unfolded_duloxetine()
     # plot_unfolded_aging()

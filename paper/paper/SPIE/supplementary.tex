@@ -104,6 +104,7 @@ tasks.}
 \end{figure}
 
 
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_by_preproc_predictive_subgroup.png}
@@ -178,7 +179,6 @@ eigenfeature values (first three columns) or middle values (Osteo nopain v pain
 condition, Vigilance classification task).}
 \end{figure}
 
-
 % \begin{figure}[H]
 % \begin{center}
 % \includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{best_rmt_params_by_subgroup.png}
@@ -190,9 +190,132 @@ condition, Vigilance classification task).}
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BEGIN ACC+ FIGURES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{all_accs_by_fine_feature_groups.png}
+\end{center}
+\caption
+{ \label{fig:feature-group-all-acc} Adjusted accuracy distributions across
+fine feature groupings and comparison tasks.}
+\end{figure}
+
+
+
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_largest_accs_by_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-largest-acc} Distributions of largest 500 mean adjusted
+accuracies across fine feature grouping, by comparison task. Note "rmt only"
+and "rmt + eigs" features tend to have the best possible performances across
+predictable tasks. }
+\end{figure}
+
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_smallest_accs_by_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-smallest-acc} Distributions of smallest 500 mean adjusted
+accuracies across fine feature groupings, by comparison task. Note "rmt only"
+and "rmt + eigs" features tend to have the worse possible performances across
+predictable tasks.}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_accs_by_preproc_predictive_subgroup.png}
+\end{center}
+\caption
+{ \label{fig:fine-preproc-acc} Adjusted accuracy distributions across fine
+feature groupings and predictable comparison tasks, with effect of
+preprocessing.}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{coarse_feature_group_accs_by_predictive_subgroup_classifier.png}
+\end{center}
+\caption
+{ \label{fig:coarse-classifier-acc} Adjusted accuracy distributions across
+coarse feature groupings and predictable comparison tasks, by classifier. Note
+the general similarity of each distribution within a particular classification
+task (column) and within each feature grouping.}
+\end{figure}
+
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{fine_feature_group_accs_by_predictive_subgroup_classifier.png}
+\end{center}
+\caption
+{ \label{fig:fine-classifier-acc} Adjusted accuracy distributions across fine
+feature groupings and predictable comparison tasks, by classifier. Note the
+general similarity of each distribution within a particular classification task
+(column) and within each feature grouping. Note also that, within a
+classification task (column), that the rank ordering of features, based on
+wither the median, mode, or mean, does not change dramatically or consistently
+from classifier to classifier. }
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{rmt_feature_accs_by_trim.png}
+\end{center}
+\caption
+{ \label{fig:fine-trim-acc} Distributions of mean adjusted accuracies for
+unfolding-dependent RMT features, by trimming. Note the tendency for a
+rightward shift in the distributions of the features involving the
+unfolded eigenvalues when using largest or middle trimming (most dramatic in
+the Osteo nopain v duloxetine condition). The impact of these trimming methods
+on the rigidity and level variance features, however, was mixed (compare
+Vigilance data to Osteo nopain v duloxetine condition.)}
+\end{figure}
+
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{rmt_feature_accs_by_degree.png}
+\end{center}
+\caption
+{ \label{fig:fine-degree-acc}
+Distributions of mean adjusted accuracies for unfolding-dependent RMT features, by degree.}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{rmt_eigs_accs_by_subgroup_and_slicing.png}
+\end{center}
+\caption
+{ \label{fig:best-params-slicing-acc} Distributions of mean adjusted accuracies
+by slicing. Features involving the full spectrum (raw eigenvalues, smoothed
+eigenvalues, and rmt + eigs) sometimes have most positive adjusted accuracy
+distributions when using the larger eigenfeature values (first two columns)
+or middle values (Osteo nopain v pain condition, Vigilance classification
+task).}
+\end{figure}
+
+
+
+
 \begin{table}[H]
-\caption{Numerical summaries of feature mean accuracy difference from guess across predictable comparisons, and all combinations of
-analytic choices, sorted by 95\% percentile (robust max) value.}
+\caption{Numerical summaries of feature mean accuracy difference from guess
+across predictable comparisons, and all combinations of analytic choices,
+sorted by 95\% percentile (robust max) value.}
 \label{tab:acc-numerical}
 \small
 \centering
