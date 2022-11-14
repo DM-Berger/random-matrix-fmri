@@ -109,7 +109,7 @@ def make_kde_plots() -> None:
     df = load_combined()
     print(" done")
 
-    def plot_by_coarse_feature(metric: Metric = "auroc", show: bool = False) -> None:
+    def plot_all_by_coarse_feature(metric: Metric = "auroc", show: bool = False) -> None:
         kde_plot(
             data=df,
             metric=metric,
@@ -128,6 +128,64 @@ def make_kde_plots() -> None:
                 top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
             ),
             legend_pos=(0.79, 0.09),
+            xlims="all",
+            facet_kwargs=dict(ylim=(0.0, 15.0)),
+            show=show,
+        )
+
+    def plot_all_by_fine_feature_groups(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        kde_plot(
+            data=df,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.Subgroup,
+            col_wrap=4,
+            bw_adjust=1.2,
+            add_lines="vlines",
+            suptitle_fmt="Distribution of {metric} by Fine Feature Group",
+            fname_modifier="overall",
+            title_clean=[dict(split_at="-")],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.08),
+            xlims="all",
+            facet_kwargs=dict(ylim=(0.0, 15.0)),
+            show=show,
+        )
+
+    def plot_all_by_fine_feature_groups_best_params(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
+        rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
+        rmt = rmt.loc[rmt.deg.isin([3, 9])]
+        rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
+        rmt = rmt.loc[rmt.slice.isin(["max-10", "mid-25"])]
+        idx = rmt.feature.isin(["unfolded"])
+        rmt = rmt[idx]
+        other = df.loc[df.coarse_feature.isin(["eigs", "tseries"])]
+        data = pd.concat([rmt, other], axis=0)
+
+        kde_plot(
+            data=data,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.Subgroup,
+            col_wrap=4,
+            bw_adjust=1.2,
+            add_lines="vlines",
+            suptitle_fmt="Distribution of {metric} by Fine Feature Group - Best Params",
+            fname_modifier="best_params",
+            title_clean=[dict(split_at="-")],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.08),
             xlims="all",
             facet_kwargs=dict(ylim=(0.0, 15.0)),
             show=show,
@@ -261,238 +319,85 @@ def make_kde_plots() -> None:
         )
         print("done")
 
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+        kde_plot(
             data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.Subgroup,
             col_wrap=4,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.1, 0.6), sharey=False),
+            suptitle_fmt=(
+                "Distributions of Smallest 500 {metric} for each combination "
+                "of Coarse Feature Group and Dataset"
+            ),
+            fname_modifier="smallest",
+            title_clean=[
+                dict(text="classifier = "),
+                dict(text="subgroup = ", split_at="-"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.09),
+            facet_kwargs=dict(sharey=False),
+            xlims="smallest",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle(
-            "Distributions of Smallest 500 AUROCs for each Combination "
-            "of Coarse Feature Group and Dataset",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "coarse_feature_smallest_by_subgroup.png")
 
-    def plot_smallest_by_fine_feature_subgroup(summary: Metric = "auroc") -> None:
-        stitle = s_title(summary)
-        sfname = s_fnmae(summary)
+    def plot_smallest_by_fine_feature_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nsmallest(500, summary)
+            lambda grp: grp.nsmallest(500, metric)
         )
         print("done")
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+
+        kde_plot(
             data=dfg,
-            x=summary,
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.Subgroup,
             col_wrap=4,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=s_xlim(summary, "smallest"), sharey=False),
+            suptitle_fmt=(
+                "Distributions of Smallest 500 {metric} for each combination "
+                "of Fine Feature Group and Dataset"
+            ),
+            fname_modifier="smallest",
+            title_clean=[
+                dict(text="classifier = "),
+                dict(text="subgroup = ", split_at="-"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.08),
+            facet_kwargs=dict(sharey=False),
+            xlims="smallest",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        thinify_lines(grid)
-        fig = grid.fig
-        fig.suptitle(
-            f"Distributions of Smallest 500 {stitle} "
-            "for each Combination of Fine Feature Group and Dataset",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=10, h=8)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, f"fine_feature_smallest_{sfname}_by_subgroup.png")
 
-    def plot_largest_by_fine_feature_groups() -> None:
-        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nlargest(500, "auroc")
-        )
-        grid = sbn.displot(
-            data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=(0.2, 1.0)),
-        )
-        add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        # dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle("Distribution of Largest 500 AUROCs for Fine Feature Groups")
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.985, hspace=0.3, wspace=0.091
-        )
-        sbn.move_legend(grid, loc=(0.72, 0.08))
-        savefig(fig, "fine_feature_group_largests_by_subgroup.png")
-
-    def plot_smallest_by_fine_feature_groups() -> None:
-        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nsmallest(500, "auroc")
-        )
-        grid = sbn.displot(
-            data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.1, 0.6)),
-        )
-        add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        # dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle("Distribution of Smallest 500 AUROCs for each Fine Feature Grouping")
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=10)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.05, right=0.985, hspace=0.3, wspace=0.091
-        )
-        sbn.move_legend(grid, loc=(0.76, 0.11))
-        savefig(fig, "fine_feature_group_smallest_by_subgroup.png")
-
-    def plot_all_by_fine_feature_groups(summary: Metric = "auroc") -> None:
-        stitle = s_title(summary)
-        sfname = s_fnmae(summary)
-        grid = sbn.displot(
-            data=df,
-            x=summary,
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=s_xlim(summary, kind="all")),
-        )
-        add_auroc_lines(grid, kind="vline", summary=summary)
-        despine(grid)
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        fig = grid.fig
-        fig.suptitle(f"Overall Distribution of {stitle}s for each Fine Feature Group")
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
-        )
-        sbn.move_legend(grid, loc=(0.76, 0.11))
-        savefig(fig, f"all_{sfname}_by_fine_feature_groups.png")
-
-    def plot_all_by_fine_feature_groups_best_params() -> None:
-        rmt = df.loc[df.coarse_feature.isin(["rmt"])]
-        rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
-        rmt = rmt.loc[rmt.deg.isin([3, 9])]
-        rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
-        rmt = rmt.loc[rmt.slice.isin(["max-10", "mid-25"])]
-        idx = rmt.feature.isin(["unfolded"])
-        rmt = rmt[idx]
-
-        other = df.loc[df.coarse_feature.isin(["eigs", "tseries"])]
-        data = pd.concat([rmt, other], axis=0)
+    def plot_all_by_fine_feature_groups_slice(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        data = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]  # sliceables
+        stitle = s_title(metric)
+        sfname = s_fnmae(metric)
 
         grid = sbn.displot(
             data=data,
-            x="auroc",
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
-        )
-        thinify_lines(grid)
-        add_auroc_lines(grid, kind="vline")
-        despine(grid)
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        fig = grid.fig
-        fig.suptitle("Overall Distribution of AUROCs for each Fine Feature Group")
-        fig.tight_layout()
-        fig.set_size_inches(w=10, h=8)
-        fig.subplots_adjust(
-            top=0.92, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
-        )
-        sbn.move_legend(grid, loc=(0.76, 0.09))
-        savefig(fig, "best_rmt_params_by_subgroup.png")
-
-    def plot_all_by_fine_feature_groups_slice(summary: Metric = "auroc") -> None:
-        stitle = s_title(summary)
-        sfname = s_fnmae(summary)
-        data = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
-        grid = sbn.displot(
-            data=data,
-            x=summary,
+            x=metric,
             kind="kde",
             hue="fine_feature",
             hue_order=list(NON_BASELINE_PALETTE.keys()),
@@ -505,10 +410,10 @@ def make_kde_plots() -> None:
             row_order=SLICE_ORDER,
             bw_adjust=0.8,
             alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=s_xlim(summary, kind="all")),
+            facet_kws=dict(sharey=False, xlim=s_xlim(metric, kind="all")),
         )
         thinify_lines(grid)
-        add_auroc_lines(grid, kind="vline", summary=summary)
+        add_auroc_lines(grid, kind="vline", summary=metric)
         despine(grid)
         clean_titles(grid, "classifier = ")
         clean_titles(grid, "subgroup = ", split_at="-")
@@ -528,363 +433,260 @@ def make_kde_plots() -> None:
         sbn.move_legend(grid, loc=(0.01, 0.85))
         savefig(fig, f"rmt_eigs_{sfname}_by_subgroup_and_slicing.png")
 
-    def plot_all_by_fine_feature_groups_best_params_best_slice() -> None:
-        rmt = df.loc[df.coarse_feature.isin(["rmt", "eigs"])]
-        rmt = rmt.loc[rmt.trim.isin(["middle", "largest"])]
-        rmt = rmt.loc[rmt.deg.isin([3, 9])]
-        rmt = rmt.loc[rmt.preproc.isin(["MotionCorrect", "MNIRegister"])]
-        rmt = rmt.loc[rmt.slice.isin(["max-05", "max-10", "mid-25"])]
-        idx = rmt.feature.isin(["unfolded"])
-        rmt = rmt[idx]
-
-        # other = df.loc[df.coarse_feature.isin(["eigs"])]
-        # data = pd.concat([rmt, other], axis=0)
-        data = rmt
-
-        palette = {**FEATURE_GROUP_PALETTE}
-        palette.pop("tseries loc")
-        palette.pop("tseries scale")
-
-        grid = sbn.displot(
-            data=data,
-            x="auroc",
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(palette.keys()),
-            palette=palette,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            # col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            col_order=SUBGROUP_ORDER,
-            col_wrap=3,
-            # row="slice",
-            # row_order=SLICE_ORDER,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(sharey=False, xlim=(0.1, 1.0)),
-        )
-        thinify_lines(grid)
-        add_auroc_lines(grid, kind="vline")
-        despine(grid)
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        clean_titles(grid, r"slice = .+\| ")
-        # make_row_labels(
-        #     grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=SLICE_ORDER
-        # )
-        fig = grid.fig
-        fig.suptitle("Overall Distribution of AUROCs Using Best Analytic Choices")
-        fig.tight_layout()
-        fig.set_size_inches(w=10, h=8)
-        fig.subplots_adjust(
-            top=0.892, bottom=0.05, left=0.03, right=0.995, hspace=0.3, wspace=0.091
-        )
-        sbn.move_legend(grid, loc=(0.70, 0.04))
-        savefig(fig, "best_rmt_params_by_subgroup.png")
-
-    def plot_largest_by_coarse_feature_preproc() -> None:
+    def plot_largest_by_coarse_feature_preproc(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["preproc", "coarse_feature"]).apply(
-            lambda grp: grp.nlargest(500, "auroc")
+            lambda grp: grp.nlargest(2000, "auroc")
         )
         print("done")
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+
+        kde_plot(
             data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            # col="subgroup",
-            # col_order=SUBGROUP_ORDER,
-            row="preproc",
-            row_order=PREPROC_ORDER,
-            # col_wrap=4,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.PredictiveSubgroup,
+            row=Grouping.Preprocessing,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
+            suptitle_fmt="Largest 500 {metric} by Preprocessing Degree",
+            fname_modifier="largest_predictive",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text=r"BrainExtract \| "),
+                dict(text=r"SliceTimeAlign \| "),
+                dict(text=r"MotionCorrect \| "),
+                dict(text=r"MNIRegister \| "),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.05, 0.75),
+            facet_kwargs=dict(sharey=False),
+            xlims="largest",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "preproc = ")
-        despine(grid)
-        dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle(
-            "Largest 500 AUROCs by Preprocessing Degree",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_COL_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.05, 0.75))
-        for ax in fig.axes:
-            ax.set_ylabel("")
-        savefig(fig, "coarse_feature_largest_by_preproc.png")
 
-    def plot_smallest_by_coarse_feature_preproc() -> None:
+    def plot_smallest_by_coarse_feature_preproc(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["preproc", "coarse_feature"]).apply(
-            lambda grp: grp.nsmallest(500, "auroc")
+            lambda grp: grp.nsmallest(500, metric)
         )
         print("done")
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+
+        kde_plot(
             data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            # col="subgroup",
-            # col_order=SUBGROUP_ORDER,
-            row="preproc",
-            row_order=PREPROC_ORDER,
-            # col_wrap=4,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.PredictiveSubgroup,
+            row=Grouping.Preprocessing,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 0.5), sharey=False),
+            suptitle_fmt="Smallest 500 {metric} by Preprocessing Degree",
+            fname_modifier="smallest_predictive",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text=r"BrainExtract \| "),
+                dict(text=r"SliceTimeAlign \| "),
+                dict(text=r"MotionCorrect \| "),
+                dict(text=r"MNIRegister \| "),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.05, 0.75),
+            facet_kwargs=dict(sharey=False),
+            xlims="smallest",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "preproc = ")
-        despine(grid)
-        dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle(
-            "Smallest 500 AUROCs by Preprocessing Degree",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.05, 0.75))
-        for ax in fig.axes:
-            ax.set_ylabel("")
-        savefig(fig, "coarse_feature_smallest_by_preproc.png")
 
-    def plot_by_coarse_feature_preproc_subgroup() -> None:
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+    def plot_by_coarse_feature_preproc_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        kde_plot(
             data=df,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            row="preproc",
-            row_order=PREPROC_ORDER,
-            # col_wrap=4,
-            bw_adjust=2.0,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.Subgroup,
+            row=Grouping.Preprocessing,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
+            bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            suptitle_fmt="{metric} by Preprocessing Degree",
+            fname_modifier="all",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text=r"BrainExtract \| "),
+                dict(text=r"SliceTimeAlign \| "),
+                dict(text=r"MotionCorrect \| "),
+                dict(text=r"MNIRegister \| "),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.00, 0.90),
+            facet_kwargs=dict(sharey=False),
+            xlims="all",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "preproc = ", split_at="|")
-        clean_titles(grid, "subgroup = ")
-        despine(grid)
-        dashify_gross(grid)
-        add_auroc_lines(grid, "vline")
-        fig = grid.fig
-        fig.suptitle(
-            "AUROCs by Preprocessing Degree",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=11, h=8.5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.05, 0.75))
-        for ax in fig.axes:
-            ax.set_ylabel("")
-        plt.show()
-        savefig(fig, "coarse_feature_by_preproc_subgroup.png")
 
-    def plot_by_coarse_predictive_feature_preproc_subgroup() -> None:
-        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=dfp,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            row="preproc",
-            row_order=PREPROC_ORDER,
-            # col_wrap=4,
-            bw_adjust=2.0,
+    def plot_by_coarse_predictive_feature_preproc_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        kde_plot(
+            data=df,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.PredictiveSubgroup,
+            row=Grouping.Preprocessing,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
+            bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            suptitle_fmt="{metric} by Preprocessing Degree",
+            fname_modifier="predictive",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text=r"BrainExtract \| "),
+                dict(text=r"SliceTimeAlign \| "),
+                dict(text=r"MotionCorrect \| "),
+                dict(text=r"MNIRegister \| "),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.085, left=0.055, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.00, 0.90),
+            facet_kwargs=dict(sharey=False),
+            xlims="all",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "preproc = ", split_at="|")
-        clean_titles(grid, ".*\n")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        clean_titles(grid, "task_attend", "high")
-        clean_titles(grid, "task_nonattend", "low")
-        clean_titles(grid, "nonvigilant", "low")
-        clean_titles(grid, "vigilant", "high")
-        clean_titles(grid, "younger", "young")
-        clean_titles(grid, "duloxetine", "dlxtn")
-        despine(grid)
-        dashify_gross(grid)
-        add_auroc_lines(grid, "vline")
-        fig = grid.fig
-        fig.suptitle(
-            "AUROCs by Preprocessing for Predictable Data",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.01, 0.88))
-        make_row_labels(
-            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=PREPROC_ORDER
-        )
-        for i, ax in enumerate(fig.axes):
-            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
-            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
-                ax.set_title("")
-        savefig(fig, "coarse_feature_by_preproc_predictive_subgroup.png")
 
     def plot_by_fine_predictive_feature_preproc_subgroup(
-        summary: Metric = "auroc",
+        metric: Metric = "auroc", show: bool = False
     ) -> None:
-        stitle = s_title(summary)
-        sfname = s_fnmae(summary)
-        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=dfp,
-            x=summary,
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            row="preproc",
-            row_order=PREPROC_ORDER,
-            bw_adjust=2.0,
+        kde_plot(
+            data=df,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.PredictiveSubgroup,
+            row=Grouping.Preprocessing,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
+            bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=s_xlim(summary, kind="all"), sharey=False),
+            suptitle_fmt="{metric} by Preprocessing Degree",
+            fname_modifier="predictive",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text=r"BrainExtract \| "),
+                dict(text=r"SliceTimeAlign \| "),
+                dict(text=r"MotionCorrect \| "),
+                dict(text=r"MNIRegister \| "),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.82, bottom=0.085, left=0.09, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.00, 0.80),
+            facet_kwargs=dict(sharey=False),
+            xlims="all",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "preproc = ", split_at="|")
-        clean_titles(grid, ".*\n")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        clean_titles(grid, "task_attend", "high")
-        clean_titles(grid, "task_nonattend", "low")
-        clean_titles(grid, "nonvigilant", "low")
-        clean_titles(grid, "vigilant", "high")
-        clean_titles(grid, "younger", "young")
-        clean_titles(grid, "duloxetine", "dlxtn")
-        despine(grid)
-        thinify_lines(grid)
-        add_auroc_lines(grid, "vline", summary=summary)
-        fig = grid.fig
-        fig.suptitle(
-            f"{stitle} by Preprocessing for Predictable Data",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=10, h=8)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.82, bottom=0.085, left=0.1, right=0.98, hspace=0.2, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.01, 0.80))
-        make_row_labels(
-            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=PREPROC_ORDER
-        )
-        for i, ax in enumerate(fig.axes):
-            if summary == "auroc":
-                ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
-            else:
-                pass
-            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
-                ax.set_title("")
-        savefig(fig, f"fine_feature_{sfname}_by_preproc_predictive_subgroup.png")
 
-    def plot_by_fine_feature_group_predictive_norm_subgroup() -> None:
-        dfp = df.loc[df["subgroup"].isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=dfp,
-            x="auroc",
-            kind="kde",
-            # hue="coarse_feature",
-            # hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            # palette=GROSS_FEATURE_PALETTE,
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=OVERALL_PREDICTIVE_GROUP_ORDER,
-            row="norm",
-            row_order=NORM_ORDER,
-            # col_wrap=4,
-            bw_adjust=1.5,
+    def plot_by_fine_feature_group_predictive_norm_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        kde_plot(
+            data=df,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.PredictiveSubgroup,
+            row=Grouping.Norm,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            add_row_labels=True,
+            bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(xlim=(0.0, 1.0), sharey=False),
+            suptitle_fmt="{metric} by Normaliztion",
+            fname_modifier="predictive",
+            title_clean=[
+                dict(text="preproc = "),
+                dict(text="subgroup = ", split_at="-"),
+                dict(text="task_attend", replace="high"),
+                dict(text="task_nonattend", replace="low"),
+                dict(text="nonvigilant", replace="low"),
+                dict(text="vigilant", replace="high"),
+                dict(text="younger", replace="young"),
+                dict(text="duloxetine", replace="dlxtn"),
+                dict(text=r"norm = .+\|"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.91, bottom=0.085, left=0.09, right=0.955, hspace=0.35, wspace=0.3
+            ),
+            legend_pos=(0.00, 0.80),
+            facet_kwargs=dict(sharey=False),
+            xlims="all",
+            show=show,
         )
-        print("done")
-        clean_titles(grid, "norm = ", split_at="|")
-        clean_titles(grid, ".*\n")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        clean_titles(grid, "task_attend", "high")
-        clean_titles(grid, "task_nonattend", "low")
-        clean_titles(grid, "nonvigilant", "low")
-        clean_titles(grid, "vigilant", "high")
-        clean_titles(grid, "younger", "young")
-        clean_titles(grid, "duloxetine", "dlxtn")
-        make_row_labels(
-            grid,
-            col_order=list(FEATURE_GROUP_PALETTE.keys()),
-            row_order=NORM_ORDER,  # type: ignore
-        )
-        despine(grid)
-        dashify_gross(grid)
-        add_auroc_lines(grid, "vline")
-        fig = grid.fig
-        fig.suptitle(
-            "AUROCs by Normalization for Predictable Data",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=10, h=8)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.82, bottom=0.085, left=0.055, right=0.98, hspace=0.2, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.01, 0.88))
-        for i, ax in enumerate(fig.axes):
-            ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
-            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
-                ax.set_title("")
-        savefig(fig, "fine_feature_group_by_norm_predictive_subgroup.png")
 
     def plot_by_coarse_feature_group_predictive_classifier_subgroup(
         summary: Metric = "auroc",
@@ -1171,18 +973,26 @@ def make_kde_plots() -> None:
 
     # these are not great
 
+    # plot_all_by_coarse_feature(metric="auroc", show=True)
+    # plot_all_by_fine_feature_groups(metric="auroc", show=True)
+    # plot_all_by_fine_feature_groups_best_params(metric="auroc", show=True)
+
     # plot_largest_by_coarse_feature(metric="auroc", show=True)
-    # plot_by_coarse_feature(metric="auroc", show=True)
     # plot_largest_by_coarse_feature_subgroup(metric="auroc", show=True)
+    # plot_largest_by_fine_feature_subgroup(metric="auroc", show=True)
     # plot_smallest_by_coarse_feature_subgroup(metric="auroc", show=True)
-    plot_largest_by_fine_feature_subgroup(metric="auroc", show=True)
-    # plot_largest_by_fine_feature_groups()
-    # plot_smallest_by_fine_feature_groups()
+    # plot_smallest_by_fine_feature_subgroup(metric="auroc", show=True)
+
+    # plot_all_by_fine_feature_groups_slice(metric="auroc", show=True)
+    # plot_largest_by_coarse_feature_preproc(metric="auroc", show=True)
+    # plot_smallest_by_coarse_feature_preproc(metric="auroc", show=True)
+    # plot_by_coarse_feature_preproc_subgroup(metric="auroc", show=True)
+    # plot_by_coarse_predictive_feature_preproc_subgroup(metric="auroc", show=True)
+    # plot_by_fine_predictive_feature_preproc_subgroup(metric="auroc", show=True)
+
+    plot_by_fine_feature_group_predictive_norm_subgroup(metric="auroc", show=True)
 
     # plot_by_coarse_feature_preproc()
-    # plot_largest_by_coarse_feature_preproc()
-    # plot_smallest_by_coarse_feature_preproc()
-    # plot_by_coarse_feature_preproc_subgroup()
     # plot_by_coarse_predictive_feature_preproc_subgroup()
     # plot_by_fine_feature_group_predictive_norm_subgroup()
     # plot_rmt_largest_by_degree()

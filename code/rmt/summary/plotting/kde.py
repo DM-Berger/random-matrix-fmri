@@ -101,6 +101,7 @@ class Grouping(Enum):
     Classifier = "classifier"
     Subgroup = "subgroup"
     PredictiveSubgroup = "predictive_subgroup"
+    Norm = "norm"
     Degree = "deg"
     Trim = "trim"
     Preprocessing = "preproc"
@@ -113,6 +114,7 @@ class Grouping(Enum):
             Grouping.Classifier: CLASSIFIER_ORDER,
             Grouping.Subgroup: SUBGROUP_ORDER,
             Grouping.PredictiveSubgroup: OVERALL_PREDICTIVE_GROUP_ORDER,
+            Grouping.Norm: NORM_ORDER,
             Grouping.Degree: DEGREE_ORDER,
             Grouping.Trim: TRIM_ORDER,
             Grouping.Preprocessing: PREPROC_ORDER,
@@ -177,6 +179,11 @@ def kde_plot(
         add_row_labels = False
 
     print("Plotting...", end="", flush=True)
+    column = col.value if col is not None else None
+    if "predictive" in column:
+        data = data[data.subgroup.isin(OVERALL_PREDICTIVE_GROUP_ORDER)]
+        column = "subgroup"
+
     grid = sbn.displot(
         data=data,
         x=metric,
@@ -188,7 +195,7 @@ def kde_plot(
         common_norm=False,
         row=row.value if row is not None else None,
         row_order=row.order() if row is not None else None,
-        col=col.value if col is not None else None,
+        col=column,
         col_order=col.order() if col is not None else None,
         col_wrap=col_wrap,
         bw_adjust=bw_adjust,
@@ -213,9 +220,7 @@ def kde_plot(
     if add_row_labels:
         if row is None:
             raise ValueError("`row` must not be none if you want row labels")
-        make_row_labels(
-            grid, col_order=col.order(), row_order=row.order()
-        )
+        make_row_labels(grid, col_order=col.order(), row_order=row.order())
     if thinify:
         thinify_lines(grid)
     if dashify:
