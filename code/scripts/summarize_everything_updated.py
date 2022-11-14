@@ -59,6 +59,8 @@ def s_xlim(
             return (-0.1, 0.3)
         else:
             return (-0.4, 0.1)
+    else:
+        raise NotImplementedError()
 
 
 PROJECT = ROOT.parent
@@ -247,7 +249,7 @@ AGGREGATES = get_aggregates(SUBGROUPERS)
 def topk_outdir(k: int) -> Path:
     outdir = PLOT_OUTDIR / f"top-{k}_plots"
     outdir.mkdir(exist_ok=True, parents=True)
-    return outdir
+    return Path(outdir)
 
 
 def corr_renamer(s: str) -> str:
@@ -438,6 +440,7 @@ def fine_feature_grouping(s: str) -> str:
         return "rmt only"
     if is_rmt_plus(s):
         return "rmt + eigs"
+    raise ValueError(f"Invalid feature: {s}")
 
 
 def coarse_feature_grouping(s: str) -> str:
@@ -752,38 +755,6 @@ def summarize_performance_by_aggregation(
     resize_fig()
     fig.subplots_adjust(top=0.93, right=0.945, bottom=0.105)
     plt.show()
-    # """
-
-    return
-    """
-    # The more levels we include, the less we "generalize" our claims
-    for grouper, aggregates in zip(SUBGROUPERS, AGGREGATES):
-        min_summarized_per_feature = np.unique(df.groupby(grouper + ["feature"]).count())[
-            0
-        ]
-        grouped = df.groupby(grouper)
-        # if you do:
-        #   grouped.hist()
-        # here, you get a plot for each sub-frame induced by "grouper"
-        # I think if you reset_index, or just leave it as is, seaborn is also
-        # going to be able to do a decent job here
-        if summarizer == "median":
-            summary = df.groupby(grouper + ["feature"]).median(numeric_only=True)
-
-        else:
-            summary = df.groupby(grouper + ["feature"]).max(numeric_only=True)
-
-        summary.hist(color="black")
-        plt.gcf().suptitle(f"Grouping by {grouper}\n(aggregating across: {aggregates})")
-        plt.show()
-
-        print()
-        # bests = (
-        #     summary.reset_index()
-        #     .groupby(grouper)
-        #     .apply(lambda g: g.nlargest(k, columns="auroc"))
-        # )
-    """
 
 
 def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
@@ -816,10 +787,16 @@ def plot_topk_features_by_aggregation(sorter: str, k: int = 5) -> None:
             ax=ax,
         )
         Sorter = sorter.capitalize() if sorter == "median" else "Max"
-        suptitle = f"Total Number of Instances where Feature Yields One of the Top-{k} {Sorter} AUROCs"
+        suptitle = (
+            "Total Number of Instances where Feature Yields "
+            f"One of the Top-{k} {Sorter} AUROCs"
+        )
         title = f"Summarizing / Grouping at level of: {grouper}"
         if len(aggregates) > 0:
-            title += f"\n(i.e. expected {sorter} performance across all variations of choice of {aggregates})"
+            title += (
+                f"\n(i.e. expected {sorter} performance across "
+                f"all variations of choice of {aggregates})"
+            )
         title += (
             f"\n[Number of 5-fold runs summarized by {Sorter} "
             f"per feature grouping: {min_summarized_per_feature}+]"
@@ -846,8 +823,6 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
     for agg in aggregates:  # since we split the visuals to cover this
         if "preproc" in agg:
             agg.remove("preproc")
-    df_nopre = df.loc[df.preproc == "minimal"]
-    df_pre = df.loc[df.preproc != "minimal"]
     df_brain = df.loc[df.preproc == "BrainExtract"]
     df_slice = df.loc[df.preproc == "SliceTimeAlign"]
     df_motion = df.loc[df.preproc == "MotionCorrect"]
@@ -873,18 +848,12 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
                 df_.groupby(grouper + ["feature"]).median(numeric_only=True)
                 for df_ in preproc_dfs
             ]
-            # summary_pre = df_pre.groupby(grouper + ["feature"]).median(numeric_only=True)
-            # summary_nopre = df_nopre.groupby(grouper + ["feature"]).median(
-            #     numeric_only=True
-            # )
 
         else:
             summaries = [
                 df_.groupby(grouper + ["feature"]).max(numeric_only=True)
                 for df_ in preproc_dfs
             ]
-            # summary_pre = df_pre.groupby(grouper + ["feature"]).max(numeric_only=True)
-            # summary_nopre = df_nopre.groupby(grouper + ["feature"]).max(numeric_only=True)
         bests = [
             (
                 summary.reset_index()
@@ -893,20 +862,8 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
             )
             for summary in summaries
         ]
-        # bests_pre = (
-        #     summary_pre.reset_index()
-        #     .groupby(grouper)
-        #     .apply(lambda g: g.nlargest(k, columns="auroc"))
-        # )
-        # bests_nopre = (
-        #     summary_nopre.reset_index()
-        #     .groupby(grouper)
-        #     .apply(lambda g: g.nlargest(k, columns="auroc"))
-        # )
 
         best_feats = [best["feature"] for best in bests]
-        # best_feats_pre = bests_pre["feature"]
-        # best_feats_nopre = bests_nopre["feature"]
 
         sbn.set_style("darkgrid")
         fig, axes = plt.subplots(nrows=len(preproc_dfs), sharex=True, sharey=True)
@@ -920,11 +877,17 @@ def plot_topk_features_by_preproc(sorter: str, k: int = 5) -> None:
                 ax=ax,
             )
         Sorter = sorter.capitalize() if sorter == "median" else "Max"
-        suptitle = f"Total Number of Instances where Feature Yields One of the Top-{k} {Sorter} AUROCs"
+        suptitle = (
+            "Total Number of Instances where Feature Yields "
+            f"One of the Top-{k} {Sorter} AUROCs"
+        )
         title = f"Summarizing / Grouping at level of: {grouper}"
 
         if len(aggregate) > 0:
-            title += f"\n(i.e. expected {sorter} performance across all variations of choices of {aggregate})"
+            title += (
+                f"\n(i.e. expected {sorter} performance across "
+                f"all variations of choices of {aggregate})"
+            )
 
         title += (
             f"\n[Number of 5-fold runs summarized by {Sorter} "
@@ -994,7 +957,10 @@ def plot_topk_features_by_grouping(
         ax.set_title(f"{str(instance)}")
     for i in range(len(instances), len(axes.flat)):  # remove dangling axes
         fig.delaxes(axes.flat[i])
-    suptitle = f"Overall Frequency of Feature Producing one of Top {k} {sorter.capitalize()} AUROCs"
+    suptitle = (
+        f"Overall Frequency of Feature Producing one of Top {k} "
+        f"{sorter.capitalize()} AUROCs"
+    )
 
     fig.suptitle(suptitle)
     make_legend(fig, position)
@@ -1036,7 +1002,8 @@ def plot_feature_counts_grouped(
         ax.set_title(str(group))
     make_legend(fig)
     fig.suptitle(
-        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} AUROCs by {by.capitalize()}"
+        f"Frequency of Feature Producing one of Top 3 {sorter.capitalize()} "
+        f"AUROCs by {by.capitalize()}"
     )
     fig.set_size_inches(w=16, h=16)
     fig.tight_layout()
@@ -1139,7 +1106,7 @@ def feature_dataset_aurocs(sorter: str = "best") -> DataFrame:
         .loc[:, ["feature", "slice", sorter]]
     )
     print(bests3)
-    plot_topk_features_by_aggregation(bests3, sorter)
+    plot_topk_features_by_aggregation(sorter=sorter)
 
     # CORRELATIONS
     print(f"{HEADER}Correlations of Top 3 {summary} AUROCs by {groupers}:{FOOTER}")
@@ -1212,24 +1179,6 @@ def naive_describe(df: DataFrame) -> None:
     feature_dataset_classifier_aurocs(sorter="best")
     feature_dataset_aurocs(sorter="median")
     feature_dataset_classifier_aurocs(sorter="median")
-
-    # osteo = (
-    #     df.loc[df.data == "Osteo"]
-    #     .loc[df.comparison == "nopain v duloxetine"]
-    #     .drop(columns=["data", "comparison"])
-    # )
-    # print(
-    #     f"{HEADER}Summary stats of AUROCs for 'nopain v duloxetine' comparison (max-sorted):{FOOTER}"
-    # )
-    # print(
-    #     osteo.groupby(["feature"])
-    #     .describe()
-    #     .loc[:, "auroc"]
-    #     .round(3)
-    #     .rename(columns={"50%": "median"})  # type: ignore
-    #     .loc[:, ["mean", "median", "min", "max", "std"]]
-    #     .sort_values(by=["max", "median"], ascending=False)
-    # )
 
 
 def generate_all_topk_plots() -> None:
@@ -1304,7 +1253,7 @@ def get_overfit_scores() -> None:
     )
     corrs = corrs[corrs.classifier != "overfit_score"]
 
-    grid: FacetGrid = sbn.catplot(
+    sbn.catplot(
         data=corrs,
         y="correlation",
         x="classifier",
@@ -1324,26 +1273,6 @@ def get_overfit_scores() -> None:
         .describe()["is_overfit"]
         .drop(columns=["std", "min", "max", "25%", "75%", "count"])
     )
-
-
-def print_correlations(by: list[str]) -> None:
-    # df = load_all_renamed()
-    df = load_combined()
-    df.drop(columns=["acc+", "acc", "f1"], inplace=True)
-    corrs = df.groupby(by).apply(
-        lambda grp: pd.get_dummies(grp.drop(columns=["auroc"] + by)).corrwith(
-            grp["auroc"], method="spearman"
-        )
-    )
-    print(corrs)
-    print(corrs.reset_index().groupby(by).describe())
-
-    # spearman = dummies.corrwith(df.auroc, method="spearman")
-    # spearman.name = "spearman"
-    # pearson = dummies.corrwith(df.auroc, method="pearson")
-    # pearson.name = "pearson"
-    # corrs = pd.concat([spearman, pearson]).sort_values(by="spearman", ascending=False)
-    # print(corrs)
 
 
 def clean_titles(
@@ -1576,7 +1505,8 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each combination of Coarse Feature Group, Dataset, and Classifier",
+            "Distributions of Largest 500 AUROCs for each combination "
+            "of Coarse Feature Group, Dataset, and Classifier",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1618,7 +1548,8 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each Combination of Coarse Feature Group and Dataset",
+            "Distributions of Largest 500 AUROCs for each Combination "
+            "of Coarse Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -1701,7 +1632,8 @@ def make_kde_plots() -> None:
         dashify_gross(grid)
         fig = grid.fig
         fig.suptitle(
-            "Distributions of Smallest 500 AUROCs for each Combination of Coarse Feature Group and Dataset",
+            "Distributions of Smallest 500 AUROCs for each Combination "
+            "of Coarse Feature Group and Dataset",
             fontsize=10,
         )
         fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
@@ -2277,7 +2209,9 @@ def make_kde_plots() -> None:
         clean_titles(grid, "younger", "young")
         clean_titles(grid, "duloxetine", "dlxtn")
         make_row_labels(
-            grid, col_order=list(FEATURE_GROUP_PALETTE.keys()), row_order=NORM_ORDER
+            grid,
+            col_order=list(FEATURE_GROUP_PALETTE.keys()),
+            row_order=NORM_ORDER,  # type: ignore
         )
         despine(grid)
         dashify_gross(grid)
@@ -2641,18 +2575,18 @@ def summary_stats_and_tables() -> None:
     meds = df.groupby(["subgroup", "mega_feature"])["auroc"].median().unstack()
     meds_ses = df_ses.groupby(["subgroup", "mega_feature"])["auroc"].median().unstack()
 
-    print(f"Medians excluding Ses- subgroups:")
+    print("Medians excluding Ses- subgroups:")
     print(meds.round(3))
-    print(f"Medians including Ses- subgroups:")
+    print("Medians including Ses- subgroups:")
     print(meds_ses.round(3))
 
-    print(f"Medians > 0.5 for Ses- subgroups:")
+    print("Medians > 0.5 for Ses- subgroups:")
     print((meds > 0.5).mean(axis=0).round(3))
-    print(f"Range:")
+    print("Range:")
     print(meds.quantile([0, 1]).round(2).T)
-    print(f"Medians > 0.5 including Ses- subgroups:")
+    print("Medians > 0.5 including Ses- subgroups:")
     print((meds_ses > 0.5).mean(axis=0).round(3))
-    print(f"Range:")
+    print("Range:")
     print(meds_ses.quantile([0, 1]).round(2).T)
 
     print("Proportion of AUROCs greater than 0.5 (Excluding Ses)")
@@ -2675,11 +2609,6 @@ def summary_stats_and_tables() -> None:
     print("Proportion of AUROCs greater than 0.5 (Including Ses)")
     print(g05_ses.describe().T)
 
-    df.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
-    p90_ses = (
-        df_ses.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
-    )
-
 
 def make_feature_table() -> None:
     df = load_combined()
@@ -2700,16 +2629,10 @@ def plot_unfolded_duloxetine() -> None:
     )
     deg = 9
     trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
-    # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
     unfs = [Unfolded(degree=deg, trim=trim, **args).data for trim in trims]
     eigs = Eigenvalues(**args).data
-    # smooths = [EigenvaluesSmoothed(degree=deg, **args).data for deg in degrees]
-    # eigs = EigsMinMax20(**args).data
 
     fig, axes = plt.subplots(ncols=len(unfs) + 1, nrows=1, sharex=True, sharey=False)
-    # fig.suptitle(
-    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
-    # )
     for i, (unf, trim) in enumerate(zip(unfs, trims)):
         ax = axes[i + 1]
         ax.set_yscale("log")
@@ -2781,17 +2704,10 @@ def plot_unfolded(
         norm=True,
     )
     trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
-    # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
-
     unfs = [Unfolded(degree=degree, trim=trim, **args).data for trim in trims]
     eigs = Eigenvalues(**args).data
-    # smooths = [EigenvaluesSmoothed(degree=deg, **args).data for deg in degrees]
-    # eigs = EigsMinMax20(**args).data
 
     fig, axes = plt.subplots(ncols=len(unfs) + 1, nrows=1, sharex=True, sharey=False)
-    # fig.suptitle(
-    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
-    # )
     for i, (unf, trim) in enumerate(zip(unfs, trims)):
         ax = axes[i + 1]
         ax.set_yscale("log")
@@ -2865,9 +2781,6 @@ def plot_observables(
     lvars = [Levelvars(trim=trim, **args).data for trim in trims]
 
     fig, axes = plt.subplots(ncols=len(trims), nrows=2, sharex=True, sharey=False)
-    # fig.suptitle(
-    #     "Eigenvalues Unfolded with Polynomial Degree 9\nduloxetine v nopain", fontsize=10
-    # )
     for i, (rig, trim) in enumerate(zip(rigs, trims)):
         ax = axes[0][i]
         ax.set_title(f"trim = {trim.name}", fontsize=9)
