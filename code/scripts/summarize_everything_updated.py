@@ -28,7 +28,7 @@ from tqdm import tqdm
 from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
 from rmt.updated_features import Eigenvalues, Levelvars, Rigidities, Unfolded
 from rmt.summary.tables import print_correlations
-from rmt.summary.plotting.kde import kde_plot
+from rmt.summary.plotting.kde import kde_plot, Grouping
 from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
 from rmt.visualize import best_rect
 from rmt.summary.plotting.utils import (
@@ -109,7 +109,26 @@ def make_kde_plots() -> None:
     df = load_combined()
     print(" done")
 
-    def plot_by_coarse_feature() -> None:
+    def plot_by_coarse_feature(metric: Metric = "auroc") -> None:
+        kde_plot(
+            data=df,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            column=Grouping.Subgroup,
+            col_wrap=4,
+            bw_adjust=1.2,
+            add_lines="vlines",
+            suptitle_fmt= "Distribution of {metric} by Coarse Feature Group",
+            title_clean=[dict(split_at="-")],
+            fix_xticks=False,
+            w=SPIE_JMI_MAX_WIDTH_INCHES,
+            h=5,
+            subplots_adjust=dict(top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086),
+            legend_pos=(0.79, 0.09),
+            xlims="all",
+            facet_kwargs=dict(ylim=(0.0, 15.0)),
+        )
+        return
         ax: Axes
         fig: Figure
         print("Plotting...", end="", flush=True)

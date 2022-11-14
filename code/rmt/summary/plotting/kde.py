@@ -8,7 +8,7 @@ sys.path.append(str(ROOT))
 import re
 from shutil import copyfile
 from enum import Enum
-from typing import Literal
+from typing import Literal, Mapping
 from warnings import simplefilter
 
 import matplotlib.pyplot as plt
@@ -141,18 +141,23 @@ def kde_plot(
     # xlims: tuple[float, float] | None = None,
     # ylims: tuple[float, float] | None = None,
     add_lines: Literal["hlines", "vlines", False] | None = None,
-    suptitle_desc: str = "",
+    suptitle_fmt: str = "",
     title_clean: list[dict[str, str]] | None = None,
     add_row_labels: bool = True,
     fix_xticks: bool = False,
     thinify: bool = True,
+    dashify: bool = False,
     w: float = LETTER_WIDTH,
     h: float = LETTER_HEIGHT,
     subplots_adjust: dict[str, float] | None = None,
     legend_pos: tuple[float, float] | str = "lower right",
+    xlims: Literal["all", "smallest", "largest"] = "all",
+    facet_kwargs: Mapping | None = None,
 ) -> None:
     stitle = s_title(metric)
     sfname = s_fnmae(metric)
+    if row is None:
+        add_row_labels = False
 
     print("Plotting...", end="", flush=True)
     grid = sbn.displot(
@@ -172,7 +177,7 @@ def kde_plot(
         col_wrap=col_wrap,
         bw_adjust=bw_adjust,
         alpha=alpha,
-        facet_kws=dict(xlim=s_xlim(metric, kind="all"), sharey=False),
+        facet_kws=dict(xlim=s_xlim(metric, kind=xlims), **facet_kwargs),
     )
     print("done")
 
@@ -195,11 +200,14 @@ def kde_plot(
         )
     if thinify:
         thinify_lines(grid)
+    if dashify:
+        # add condition for feature or trims
+        dashify_gross(grid)
     if add_lines:
         add_auroc_lines(grid, "vline", summary=metric)
 
     fig = grid.fig
-    fig.suptitle(f"{stitle} {suptitle_desc}", fontsize=10)
+    fig.suptitle(suptitle_fmt.format(stitle), fontsize=10)
     fig.set_size_inches(w=w, h=h)
     fig.tight_layout()
     fig.subplots_adjust(**subplots_adjust)
