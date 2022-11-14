@@ -7,7 +7,6 @@ sys.path.append(str(ROOT))
 
 from joblib import Memory
 
-
 PROJECT = ROOT.parent
 MEMORY = Memory(PROJECT / "__JOBLIB_CACHE__")
 

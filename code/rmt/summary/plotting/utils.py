@@ -5,38 +5,24 @@ ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.patches import Patch
-
 import re
 from shutil import copyfile
 from typing import Literal
-from warnings import simplefilter
 
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import seaborn as sbn
-from joblib import Memory
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
-from numba import njit
-from numpy import ndarray
-from pandas import DataFrame
-from pandas.errors import PerformanceWarning
 from seaborn import FacetGrid
-from tqdm import tqdm
 
 from rmt.summary.constants import (
-    BLUE,
-    ORNG,
-    GREY,
     BLCK,
+    BLUE,
+    GREY,
+    ORNG,
+    PINK,
     PURP,
     RED,
-    PINK,
     SPIE_MIN_LINE_WEIGHT,
     SPIE_OUTDIR,
     SPIE_PAPER_OUTDIR,

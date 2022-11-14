@@ -7,18 +7,17 @@ sys.path.append(str(ROOT))
 
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
-from numpy import ndarray
+import pandas as pd
 from numba import njit
-from tqdm import tqdm
+from numpy import ndarray
 from pandas import DataFrame
+from tqdm import tqdm
 from typing_extensions import Literal
 
-from rmt.summary.loading import get_described, get_described_w_classifier, load_combined
-from rmt.summary.groupings import fine_feature_grouping, slice_grouping
 from rmt.summary.constants import DROPS
-
+from rmt.summary.groupings import fine_feature_grouping, slice_grouping
+from rmt.summary.loading import get_described, get_described_w_classifier, load_combined
 
 HEADER = "=" * 80 + "\n"
 FOOTER = "\n" + ("=" * 80)

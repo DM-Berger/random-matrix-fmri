@@ -5,102 +5,41 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
 # fmt: on
 
-import re
-from shutil import copyfile
-from typing import Literal
 from warnings import simplefilter
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sbn
 from joblib import Memory
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.patches import Patch
-from numba import njit
-from numpy import ndarray
-from pandas import DataFrame
 from pandas.errors import PerformanceWarning
-from seaborn import FacetGrid
-from tqdm import tqdm
 
-from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
-from rmt.updated_features import Eigenvalues, Levelvars, Rigidities, Unfolded
-from rmt.summary.tables import print_correlations
-from rmt.summary.plotting.kde import kde_plot, Grouping
+from rmt.enumerables import PreprocLevel, UpdatedDataset
+from rmt.summary.constants import (
+    NON_BASELINE_PALETTE,
+    OVERALL_PREDICTIVE_GROUP_ORDER,
+    SLICE_ORDER,
+    SPIE_JMI_MAX_WIDTH_INCHES,
+)
+from rmt.summary.loading import load_combined
 from rmt.summary.plotting.features import (
     plot_observables,
     plot_unfolded,
     plot_unfolded_duloxetine,
-    plt,
 )
-from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
-from rmt.visualize import best_rect
+from rmt.summary.plotting.kde import Grouping, kde_plot
 from rmt.summary.plotting.utils import (
     Metric,
+    add_auroc_lines,
+    clean_titles,
+    despine,
+    make_row_labels,
     s_fnmae,
     s_title,
     s_xlim,
-    make_legend,
-    clean_titles,
-    rotate_labels,
-    add_auroc_lines,
-    despine,
-    thinify_lines,
-    dashify_gross,
-    dashify_trims,
-    make_row_labels,
     savefig,
-    resize_fig,
+    thinify_lines,
 )
-from rmt.summary.loading import (
-    load_combined,
-    get_described,
-    get_described_w_classifier,
-)
-from rmt.summary.groupings import (
-    fine_feature_grouping,
-    slice_grouping,
-    get_feature_ordering,
-    make_palette,
-    is_rmt,
-)
-from rmt.summary.constants import (
-    get_aggregates,
-    BLUE,
-    LBLUE,
-    ORNG,
-    GREY,
-    BLCK,
-    PURP,
-    RED,
-    PINK,
-    SPIE_OUTDIR,
-    SPIE_PAPER_OUTDIR,
-    SPIE_MIN_LINE_WEIGHT,
-    SPIE_JMI_MAX_COL_WIDTH_INCHES,
-    SPIE_JMI_MAX_WIDTH_INCHES,
-    HEADER,
-    FOOTER,
-    DROPS,
-    SUBGROUPERS,
-    RMT_FEATURE_PALETTE,
-    RMT_FEATURE_ORDER,
-    FEATURE_GROUP_PALETTE,
-    NON_BASELINE_PALETTE,
-    GROSS_FEATURE_PALETTE,
-    TRIM_ORDER,
-    SLICE_ORDER,
-    DEGREE_ORDER,
-    SUBGROUP_ORDER,
-    OVERALL_PREDICTIVE_GROUP_ORDER,
-    CLASSIFIER_ORDER,
-    PREPROC_ORDER,
-    NORM_ORDER,
-    AGGREGATES,
-)
-
 
 PROJECT = ROOT.parent
 MEMORY = Memory(PROJECT / "__JOBLIB_CACHE__")

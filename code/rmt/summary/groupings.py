@@ -6,15 +6,8 @@ sys.path.append(str(ROOT))
 # fmt: on
 
 import numpy as np
-from rmt.summary.constants import (
-    BLUE,
-    ORNG,
-    GREY,
-    BLCK,
-    PURP,
-    RED,
-    PINK,
-)
+
+from rmt.summary.constants import BLCK, BLUE, GREY, ORNG, PINK, PURP, RED
 
 
 def is_tseries(s: str) -> bool:
