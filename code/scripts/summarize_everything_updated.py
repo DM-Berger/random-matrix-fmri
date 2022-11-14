@@ -6,38 +6,28 @@ sys.path.append(str(ROOT))
 # fmt: on
 
 import re
+from shutil import copyfile
 from typing import Literal
 from warnings import simplefilter
 
 import matplotlib.pyplot as plt
-from numpy import ndarray
 import numpy as np
 import pandas as pd
 import seaborn as sbn
-from numba import njit
-from shutil import copyfile
-from warnings import simplefilter
 from joblib import Memory
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from numba import njit
+from numpy import ndarray
 from pandas import DataFrame
 from pandas.errors import PerformanceWarning
-from scipy.optimize import NonlinearConstraint, minimize, minimize_scalar
 from seaborn import FacetGrid
-from statsmodels.distributions.empirical_distribution import ECDF
 from tqdm import tqdm
 
-from rmt.updated_dataset import UpdatedProcessedDataset
-from rmt.enumerables import UpdatedDataset, PreprocLevel, TrimMethod
-from rmt.updated_features import (
-    FEATURE_OUTFILES as PATHS,
-    Unfolded,
-    Eigenvalues,
-    Rigidities,
-    Levelvars,
-)
+from rmt.enumerables import PreprocLevel, TrimMethod, UpdatedDataset
+from rmt.updated_features import FEATURE_OUTFILES as PATHS
+from rmt.updated_features import Eigenvalues, Levelvars, Rigidities, Unfolded
 from rmt.visualize import UPDATED_PLOT_OUTDIR as PLOT_OUTDIR
 from rmt.visualize import best_rect
 
@@ -2685,7 +2675,7 @@ def summary_stats_and_tables() -> None:
     print("Proportion of AUROCs greater than 0.5 (Including Ses)")
     print(g05_ses.describe().T)
 
-    p90 = df.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
+    df.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
     p90_ses = (
         df_ses.groupby(["subgroup", "mega_feature"])["auroc"].quantile(0.90).unstack()
     )
@@ -2790,7 +2780,6 @@ def plot_unfolded(
         preproc=preproc,
         norm=True,
     )
-    deg = 9
     trims = [TrimMethod.Precision, TrimMethod.Largest, TrimMethod.Middle]
     # unfs = [Unfolded(degree=deg, trim=TrimMethod.Largest, **args).data for deg in degrees]
 
