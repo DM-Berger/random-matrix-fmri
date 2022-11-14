@@ -109,200 +109,158 @@ def make_kde_plots() -> None:
     df = load_combined()
     print(" done")
 
-    def plot_by_coarse_feature(metric: Metric = "auroc") -> None:
+    def plot_by_coarse_feature(metric: Metric = "auroc", show: bool = False) -> None:
         kde_plot(
             data=df,
             metric=metric,
             hue=Grouping.CoarseFeature,
-            column=Grouping.Subgroup,
+            col=Grouping.Subgroup,
             col_wrap=4,
             bw_adjust=1.2,
             add_lines="vlines",
-            suptitle_fmt= "Distribution of {metric} by Coarse Feature Group",
+            suptitle_fmt="Distribution of {metric} by Coarse Feature Group",
+            fname_modifier="overall",
             title_clean=[dict(split_at="-")],
             fix_xticks=False,
             w=SPIE_JMI_MAX_WIDTH_INCHES,
             h=5,
-            subplots_adjust=dict(top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086),
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
             legend_pos=(0.79, 0.09),
             xlims="all",
             facet_kwargs=dict(ylim=(0.0, 15.0)),
+            show=show,
         )
-        return
-        ax: Axes
-        fig: Figure
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=df,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            fill=False,
-            common_norm=False,
-            palette=GROSS_FEATURE_PALETTE,
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 15.0), xlim=(0.2, 0.9)),
-        )
-        add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, split_at="-")
-        fig = grid.fig
-        fig.suptitle(
-            "Distribution of AUROCs by Coarse Feature Group",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        despine(grid)
-        dashify_gross(grid)
-        savefig(fig, "coarse_feature_overall_by_subgroup.png")
 
-    def plot_largest_by_coarse_feature() -> None:
+    def plot_largest_by_coarse_feature(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
         """Too big / complicated"""
+
+        print("Grouping...", end="", flush=True)
         dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
-            lambda grp: grp.nlargest(500, "auroc")
+            lambda grp: grp.nlargest(500, metric)
         )
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
+        print("done")
+        kde_plot(
             data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            # hue="fine_feature",
-            # hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            # palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            row="classifier",
-            row_order=CLASSIFIER_ORDER,
-            # row_order=[PREPROC_ORDER[0], PREPROC_ORDER[-1]],
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            # col_wrap=5,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.Subgroup,
+            row=Grouping.Classifier,
+            add_lines=True,
+            dashify=True,
             bw_adjust=1.2,
             alpha=0.8,
-            facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0)),
+            suptitle_fmt=(
+                "Distributions of Largest 500 {metric} for each combination "
+                "of Coarse Feature Group, Dataset, and Classifier"
+            ),
+            fname_modifier="largest",
+            title_clean=[
+                dict(text="classifier = "),
+                dict(text="subgroup = ", split_at="-"),
+            ],
+            fix_xticks=True,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.09),
+            facet_kwargs=dict(ylim=(0.0, 75.0)),
+            xlims="largest",
+            show=show,
         )
-        add_auroc_lines(grid, kind="vline")
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each combination "
-            "of Coarse Feature Group, Dataset, and Classifier",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "coarse_feature_largest_by_subgroup_data.png")
 
-    def plot_largest_by_coarse_feature_subgroup() -> None:
+    def plot_largest_by_coarse_feature_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
         """THIS IS GOOD. LOOK AT MODES. In only ony case are eigs or rmt mode auroc
         worse than tseries alone, i.e. modally, RMT or eigs are better than tseries.
         """
-        dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
-            lambda grp: grp.nlargest(500, "auroc")
-        )
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=dfg,
-            x="auroc",
-            kind="kde",
-            hue="coarse_feature",
-            hue_order=list(GROSS_FEATURE_PALETTE.keys()),
-            palette=GROSS_FEATURE_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            # facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0), sharey=False),
-            facet_kws=dict(xlim=(0.5, 1.0), sharey=False),
-        )
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        dashify_gross(grid)
-        fig = grid.fig
-        fig.suptitle(
-            "Distributions of Largest 500 AUROCs for each Combination "
-            "of Coarse Feature Group and Dataset",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=SPIE_JMI_MAX_WIDTH_INCHES, h=5)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, "coarse_feature_largest_by_subgroup.png")
-
-    def plot_largest_by_fine_feature_subgroup(summary: Metric = "auroc") -> None:
-        stitle = s_title(summary)
-        sfname = s_fnmae(summary)
-        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
-            lambda grp: grp.nlargest(500, summary)
-        )
-        print("Plotting...", end="", flush=True)
-        grid = sbn.displot(
-            data=dfg,
-            x=summary,
-            kind="kde",
-            hue="fine_feature",
-            hue_order=list(FEATURE_GROUP_PALETTE.keys()),
-            palette=FEATURE_GROUP_PALETTE,
-            fill=False,
-            common_norm=False,
-            col="subgroup",
-            col_order=SUBGROUP_ORDER,
-            col_wrap=4,
-            bw_adjust=1.2,
-            alpha=0.8,
-            # facet_kws=dict(ylim=(0.0, 75.0), xlim=(0.5, 1.0), sharey=False),
-            facet_kws=dict(xlim=s_xlim(summary, kind="largest"), sharey=False),
-        )
-        clean_titles(grid, "classifier = ")
-        clean_titles(grid, "subgroup = ", split_at="-")
-        despine(grid)
-        thinify_lines(grid)
-        fig = grid.fig
-        fig.suptitle(
-            f"Distributions of Largest 500 {stitle} "
-            "for each Combination of Fine Feature Group and Dataset",
-            fontsize=10,
-        )
-        fig.set_size_inches(w=10, h=8)
-        fig.tight_layout()
-        fig.subplots_adjust(
-            top=0.87, bottom=0.08, left=0.04, right=0.98, hspace=0.35, wspace=0.086
-        )
-        sbn.move_legend(grid, loc=(0.79, 0.09))
-        savefig(fig, f"fine_feature_largest_{sfname}_by_subgroup.png")
-
-    def plot_smallest_by_coarse_feature_subgroup() -> None:
         print("Grouping...", end="", flush=True)
         dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
-            lambda grp: grp.nsmallest(500, "auroc")
+            lambda grp: grp.nlargest(500, metric)
         )
         print("done")
+
+        kde_plot(
+            data=dfg,
+            metric=metric,
+            hue=Grouping.CoarseFeature,
+            col=Grouping.Subgroup,
+            col_wrap=4,
+            add_lines=True,
+            dashify=True,
+            bw_adjust=1.2,
+            alpha=0.8,
+            suptitle_fmt=(
+                "Distributions of Largest 500 {metric} for each combination "
+                "of Coarse Feature Group and Dataset"
+            ),
+            fname_modifier="largest",
+            title_clean=[
+                dict(text="classifier = "),
+                dict(text="subgroup = ", split_at="-"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.09),
+            facet_kwargs=dict(sharey=False),
+            xlims="largest",
+            show=show,
+        )
+
+    def plot_largest_by_fine_feature_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["subgroup", "fine_feature"]).apply(
+            lambda grp: grp.nlargest(500, metric)
+        )
+        print("done")
+
+        kde_plot(
+            data=dfg,
+            metric=metric,
+            hue=Grouping.FineFeature,
+            col=Grouping.Subgroup,
+            col_wrap=4,
+            add_lines=True,
+            dashify=False,
+            thinify=True,
+            bw_adjust=1.2,
+            alpha=0.8,
+            suptitle_fmt=(
+                "Distributions of Largest 500 {metric} for each combination "
+                "of Fine Feature Group and Dataset"
+            ),
+            fname_modifier="largest",
+            title_clean=[
+                dict(text="classifier = "),
+                dict(text="subgroup = ", split_at="-"),
+            ],
+            fix_xticks=False,
+            subplots_adjust=dict(
+                top=0.87, bottom=0.08, left=0.04, right=0.992, hspace=0.35, wspace=0.086
+            ),
+            legend_pos=(0.79, 0.09),
+            facet_kwargs=dict(sharey=False),
+            xlims="largest",
+            show=show,
+        )
+
+    def plot_smallest_by_coarse_feature_subgroup(
+        metric: Metric = "auroc", show: bool = False
+    ) -> None:
+        print("Grouping...", end="", flush=True)
+        dfg = df.groupby(["subgroup", "coarse_feature"]).apply(
+            lambda grp: grp.nsmallest(500, metric)
+        )
+        print("done")
+
         print("Plotting...", end="", flush=True)
         grid = sbn.displot(
             data=dfg,
@@ -1212,12 +1170,12 @@ def make_kde_plots() -> None:
         savefig(fig, "rmt_feature_auroc_largest_by_degree.png")
 
     # these are not great
-    # plot_overall()
 
-    # plot_largest_by_coarse_feature()
-    # plot_by_coarse_feature()
-    # plot_largest_by_coarse_feature_subgroup()
-    # plot_smallest_by_coarse_feature_subgroup()
+    # plot_largest_by_coarse_feature(metric="auroc", show=True)
+    # plot_by_coarse_feature(metric="auroc", show=True)
+    # plot_largest_by_coarse_feature_subgroup(metric="auroc", show=True)
+    # plot_smallest_by_coarse_feature_subgroup(metric="auroc", show=True)
+    plot_largest_by_fine_feature_subgroup(metric="auroc", show=True)
     # plot_largest_by_fine_feature_groups()
     # plot_smallest_by_fine_feature_groups()
 
@@ -1494,8 +1452,8 @@ if __name__ == "__main__":
     # df.to_json(PROJECT / "EVERYTHING.json")
     # print(f"Saved all combined data to {PROJECT / 'EVERYTHING.json'}")
 
-    # make_kde_plots()
-    # sys.exit()
+    make_kde_plots()
+    sys.exit()
 
     df = load_combined()
     feature_summary = (

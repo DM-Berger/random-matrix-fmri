@@ -100,6 +100,7 @@ class Grouping(Enum):
     FineFeature = "fine_feature"
     Classifier = "classifier"
     Subgroup = "subgroup"
+    PredictiveSubgroup = "predictive_subgroup"
     Degree = "deg"
     Trim = "trim"
     Preprocessing = "preproc"
@@ -111,6 +112,7 @@ class Grouping(Enum):
             Grouping.FineFeature: list(FEATURE_GROUP_PALETTE.keys()),
             Grouping.Classifier: CLASSIFIER_ORDER,
             Grouping.Subgroup: SUBGROUP_ORDER,
+            Grouping.PredictiveSubgroup: OVERALL_PREDICTIVE_GROUP_ORDER,
             Grouping.Degree: DEGREE_ORDER,
             Grouping.Trim: TRIM_ORDER,
             Grouping.Preprocessing: PREPROC_ORDER,
@@ -128,20 +130,35 @@ class Grouping(Enum):
         return palettes[self]
 
 
+def get_fname(
+    metric: Metric,
+    modifier: str,
+    hue: Grouping | None,
+    column: Grouping | None,
+    row: Grouping | None = None,
+) -> str:
+    metricname = s_fnmae(metric)
+    colname = "" if column is None else f"_{column.value}"
+    rowname = "" if row is None else f"_{row.value}"
+    if colname == "" and rowname == "":
+        return f"{hue.value}_{modifier}_{metricname}.png"
+    return f"{hue.value}_{modifier}_{metricname}_by{colname}{rowname}.png"
+
+
 def kde_plot(
     data: DataFrame,
     metric: Metric,
     hue: Grouping | None,
-    column: Grouping | None,
-    row: Grouping | None,
-    col_wrap: int | None,
-    row_wrap: int | None,
+    col: Grouping | None,
+    row: Grouping | None = None,
+    col_wrap: int | None = None,
     bw_adjust: float = 1.0,
     alpha: float = 0.8,
     # xlims: tuple[float, float] | None = None,
     # ylims: tuple[float, float] | None = None,
     add_lines: Literal["hlines", "vlines", False] | None = None,
-    suptitle_fmt: str = "",
+    suptitle_fmt: str | None = None,
+    fname_modifier: str = "",
     title_clean: list[dict[str, str]] | None = None,
     add_row_labels: bool = True,
     fix_xticks: bool = False,
@@ -149,13 +166,13 @@ def kde_plot(
     dashify: bool = False,
     w: float = LETTER_WIDTH,
     h: float = LETTER_HEIGHT,
+    xlims: Literal["all", "smallest", "largest"] = "all",
     subplots_adjust: dict[str, float] | None = None,
     legend_pos: tuple[float, float] | str = "lower right",
-    xlims: Literal["all", "smallest", "largest"] = "all",
     facet_kwargs: Mapping | None = None,
+    show: bool = False,
 ) -> None:
     stitle = s_title(metric)
-    sfname = s_fnmae(metric)
     if row is None:
         add_row_labels = False
 
@@ -171,9 +188,8 @@ def kde_plot(
         common_norm=False,
         row=row.value if row is not None else None,
         row_order=row.order() if row is not None else None,
-        row_wrap=row_wrap,
-        col=column.value if column is not None else None,
-        col_order=column.order() if column is not None else None,
+        col=col.value if col is not None else None,
+        col_order=col.order() if col is not None else None,
         col_wrap=col_wrap,
         bw_adjust=bw_adjust,
         alpha=alpha,
@@ -195,8 +211,10 @@ def kde_plot(
             # clean_titles(grid, "younger", "young")
             # clean_titles(grid, "duloxetine", "dlxtn")
     if add_row_labels:
+        if row is None:
+            raise ValueError("`row` must not be none if you want row labels")
         make_row_labels(
-            grid, col_order=OVERALL_PREDICTIVE_GROUP_ORDER, row_order=CLASSIFIER_ORDER
+            grid, col_order=col.order(), row_order=row.order()
         )
     if thinify:
         thinify_lines(grid)
@@ -207,7 +225,8 @@ def kde_plot(
         add_auroc_lines(grid, "vline", summary=metric)
 
     fig = grid.fig
-    fig.suptitle(suptitle_fmt.format(stitle), fontsize=10)
+    if suptitle_fmt is not None:
+        fig.suptitle(suptitle_fmt.format(metric=stitle), fontsize=10)
     fig.set_size_inches(w=w, h=h)
     fig.tight_layout()
     fig.subplots_adjust(**subplots_adjust)
@@ -217,7 +236,12 @@ def kde_plot(
         for i, ax in enumerate(fig.axes):
             if metric == "auroc":
                 ax.set_xticks([0.25, 0.5, 0.75], [0.25, "", 0.75], fontsize=8)
-            if i >= len(OVERALL_PREDICTIVE_GROUP_ORDER):
-                ax.set_title("")
+            if col_wrap is None:
+                if i >= len(col.order()):
+                    ax.set_title("")
 
-    savefig(fig, f"fine_feature_group_{sfname}_by_predictive_subgroup_classifier.png")
+    savefig(
+        fig,
+        get_fname(metric, modifier=fname_modifier, hue=hue, column=col, row=row),
+        show=show,
+    )

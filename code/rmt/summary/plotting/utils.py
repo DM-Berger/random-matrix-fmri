@@ -37,6 +37,9 @@ from rmt.summary.constants import (
     PURP,
     RED,
     PINK,
+    SPIE_MIN_LINE_WEIGHT,
+    SPIE_OUTDIR,
+    SPIE_PAPER_OUTDIR,
 )
 
 Metric = Literal["auroc", "f1", "acc+"]
@@ -57,7 +60,7 @@ def s_xlim(
         if kind == "all":
             return (0.1, 0.9)
         elif kind == "largest":
-            return (0.5, 1.0)
+            return (0.4, 1.0)
         else:
             return (0.1, 0.6)
     elif summary == "acc+":
@@ -223,7 +226,11 @@ def make_row_labels(grid: FacetGrid, col_order: list[str], row_order: list[str])
             ax.set_ylabel("")
 
 
-def savefig(fig: Figure, filename: str) -> None:
+def savefig(fig: Figure, filename: str, show: bool = False) -> None:
+    if show:
+        print(f"Would have saved figure to file named: {filename}")
+        plt.show()
+        return
     print("Saving...", end="", flush=True)
     outfile = SPIE_OUTDIR / filename
     paper_outfile = SPIE_PAPER_OUTDIR / filename
