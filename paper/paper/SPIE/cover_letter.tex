@@ -1,4 +1,4 @@
-\documentclass[10pt,a4paper]{article}
+\documentclass[10pt,letter]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{csquotes}
 \usepackage[british]{babel}
@@ -6,6 +6,11 @@
 \usepackage{graphicx}
 \graphicspath{ {figures/} }
 \usepackage{geometry}
+\geometry{
+  lmargin=2cm,
+  rmargin=2cm,
+  bmargin=2cm,
+}
 \usepackage{amsmath}
 \usepackage{graphicx}
 % \usepackage[square,numbers]{natbib}
@@ -70,7 +75,10 @@ the Predictive Analysis of Functional Magnetic Resonance Imaging Examinations}
 for publication in SPIE Journal of Medical Imaging.
 
 We confirm that this work is original and has not been published elsewhere nor
-is it currently under consideration for publication elsewhere.
+is it currently under consideration for publication elsewhere. However, a
+poster of limited preliminary results related to this study was presented at
+the International Symposium for Magnetic Resonance in Medicine 2021 annual
+conference, and is available in abstract form \citep{bergerOpenSourceRandom2021}.
 
 In this paper, we extract a number of eigenvalue-based features inspired by
 Random Matrix Theory (RMT) from a wide variety of functional magnetic resonance
@@ -91,7 +99,7 @@ This paper is most unique in that it:
         framework, instead of the more typical descriptive or explanatory
         frameworks
   \item systematically investigates the impact of the various methodological
-        decisions involved in the findings
+        decisions that affect the findings
   \item makes all code used in the paper publicly available, including the release of a
         separate, general, open-source RMT
         library \citep{dm-bergerStfxecutablesEmpyricalRMTV12022} that will allow
@@ -171,14 +179,35 @@ Sincerely, \\
 \noindent
 \textbf{Corresponding Author}\\
 Jacob Levman, PhD (jlevman@stfx.ca) \\
-% Canada Research Chair in Bioinformatics \\
-Department of Computer Science \\
-St. Francis Xavier University \\
+\footnotesize
+\hspace*{0.25cm}St. Francis Xavier University, Department of Computer Science  \\
+\hspace*{0.25cm}Martinos Center for Biomedical Imaging, Massachusetts General Hospital \\
+\hspace*{0.25cm}Harvard Medical School, Department of Radiology (jlevman@mgh.harvard.edu) \\
+\hspace*{0.25cm}Nova Scotia Health Authority, Research Affiliate (jacob.levman@nshealth.ca) \\
+\normalsize
 
+\small
 \noindent
 \textbf{Additional Contacts} [should the corresponding author be unavailable]\\
-Derek Berger (dberger@stfx.ca), Department of Computer Science, St. Francis Xavier University\\
-Gurpreet S. Matharoo (gmatharo@stfx.ca), Department of Physics, St. Francis Xavier University
+Derek Berger (dberger@stfx.ca)\\
+\footnotesize
+\hspace*{0.25cm} St. Francis Xavier University, Department of Computer Science \\
+\small
+Gurpreet S. Matharoo (gmatharo@stfx.ca) \\
+\footnotesize
+\hspace*{0.25cm} St. Francis Xavier University, Department of Physics \\
+\hspace*{0.25cm} St. Francis Xavier University, ACENET
+\normalsize
+
+
+
+% \affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+% \affil[c]{St. Francis Xavier University, Department of Physics, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+% \affil[d]{Martinos Center for Biomedical Imaging, 149 Thirteenth Street, Suite 2301, Charlestown, Massachusetts, United States, 02129}
+% \affil[e]{Harvard Medical School, Department of Radiology, 25 Shattuck Street Boston, Massachusetts 02115, United States, 02129}
+% \affil[f]{Nova Scotia Health Authority, Research Affiliate, Nova Scotia, Canada}
 
 % \printbibliography % biblatex
 % \renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
