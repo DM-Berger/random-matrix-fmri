@@ -18,10 +18,17 @@
 \title{Random Matrix Theory Tools for the Predictive Analysis of Functional Magnetic Resonance Imaging Examinations}
 
 \author[a]{Derek Berger}
-\author[a,*]{Jacob Levman}
-\author[b]{Gurpreet S. Matharoo}
-\affil[a]{St. Francis Xavier University, Department of Computer Science, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
-\affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Canada, B2G 2W5}
+\author[b,c]{Gurpreet S. Matharoo}
+\author[a*,d,e,f]{Jacob Levman}
+
+\affil[a]{St. Francis Xavier University, Department of Computer Science, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+\affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+\affil[c]{St. Francis Xavier University, Department of Physics, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+\affil[d]{Martinos Center for Biomedical Imaging, 149 Thirteenth Street, Suite 2301, Charlestown, Massachusetts, United States, 02129}
+\affil[e]{Harvard Medical School, Department of Radiology, 25 Shattuck Street Boston, Massachusetts 02115, United States, 02129}
+\affil[f]{Nova Scotia Health Authority, Research Affiliate, Nova Scotia, Canada}
 
 
 \renewcommand{\cftdotsep}{\cftnodots}
@@ -30,67 +37,6 @@
 \begin{document}
 \maketitle
 
-% \begin{abstract} This document shows the required format and appearance of a
-% manuscript prepared for SPIE journals. It is prepared using LaTeX2e with the
-% class file \texttt{spieman.cls}. Please note that the following journals
-% require the use of structured abstracts in manuscript submissions:
-% \textit{Neurophotonics}, the \textit{Journal of Biomedical Optics}, and the
-% \textit{Journal of Medical Imaging}. Structured abstracts are encouraged for
-% the \textit{Journal of Micro/Nanolithography, MEMS, and MOEMS}. Guidelines
-% are available on the journal website. Whether structured or single-paragraph,
-% the abstract should be a summary of the paper and not an introduction.
-% Because the abstract may be used in abstracting and indexing databases, it
-% should be self-contained (i.e., no numerical references) and substantive in
-% nature, presenting concisely the objectives, methodology used, results
-% obtained, and their significance. A list of up to six keywords should
-% immediately follow. \end{abstract}
-
-% See
-% https://www.spiedigitallibrary.org/journals/journal-of-medical-imaging/volume-7/issue-01/010101/Integrating-structured-abstracts-in-the-Journal-of-Medical-Imaging/10.1117/1.JMI.7.1.010101.full
-% for info on the structured abstract
-%
-% Purpose: This section presents the significance and aims, stating the broad
-% impact and the rationale or motivation of the work, including potentially
-% some background.
-%
-% Approach: This section briefly describes the materials and methods, including
-% the statistical analyses, used in the research.
-%
-% Results: This section provides a core summary of the findings from the work,
-% including study numbers, quantitative analyses, or discoveries.
-%
-% Conclusions: This section summarizes and interprets the approach and findings
-% from the work, stating also the importance or impact of the findings.
-
-% Purpose: Data-intensive modeling could provide insight on the broad
-% variability in outcomes in spine surgery. Previous studies were limited to
-% analysis of demographic and clinical characteristics. We report an analytic
-% framework called “SpineCloud” that incorporates quantitative features
-% extracted from perioperative images to predict spine surgery outcome.
-
-% Approach: A retrospective study was conducted in which patient demographics,
-% imaging, and outcome data were collected. Image features were automatically
-% computed from perioperative CT. Postoperative 3- and 12-month functional and
-% pain outcomes were analyzed in terms of improvement relative to the
-% preoperative state. A boosted decision tree classifier was trained to predict
-% outcome using demographic and image features as predictor variables.
-% Predictions were computed based on SpineCloud and conventional demographic
-% models, and features associated with poor outcome were identified from
-% weighting terms evident in the boosted tree.
-
-% Results Neither approach was predictive of 3- or 12-month outcomes based on
-% preoperative data alone in the current, preliminary study. However,
-% SpineCloud predictions incorporating image features obtained during and
-% immediately following surgery (i.e., intraoperative and immediate
-% postoperative images) exhibited significant improvement in area under the
-% receiver operating characteristic (AUC): AUC=0.72 (CI95=0.59 to 0.83) at 3
-% months and AUC=0.69 (CI95=0.55 to 0.82) at 12 months.
-
-% Conclusions Predictive modeling of lumbar spine surgery outcomes was improved
-% by incorporation of image-based features compared to analysis based on
-% conventional demographic data. The SpineCloud framework could improve
-% understanding of factors underlying outcome variability and warrants further
-% investigation and validation in a larger patient cohort.
 \begin{abstract}
 
 \section*{Purpose}
@@ -111,7 +57,7 @@ procedures, RMT unfolding procedures, and feature selection, and compare the
 impact of these analytic choices on the distributions of cross-validated
 prediction performance for each combination of dataset binary classification
 task, classifier, and feature. To deal with class imbalance, we use the
-area under the receiver operating characteristic (AUROC) as the main
+area under the receiver operating characteristic curve (AUROC) as the main
 performance metric.
 
 \section*{Results}
@@ -128,42 +74,27 @@ distributions were wide, and often significantly affected by analytic choices.
 
 \section*{Conclusions}
 Eigenfeatures clearly have potential for understanding fMRI functional
-connectivity in a wide variety of scenarios. However, the utility of these
-features is strongly dependent on analytic decisions, suggesting caution when
-interpreting past and future studies applying RMT to fMRI.
+connectivity in a wide variety of scenarios. The utility of these features is
+strongly dependent on analytic decisions, suggesting caution when interpreting
+past and future studies applying RMT to fMRI. However, this study demonstrates
+that the inclusion of RMT statistics in fMRI investigations could improve
+prediction performances across a wide variety of phenomena.
 
-% This document shows the required format and appearance of a manuscript
-% prepared for SPIE journals. It is prepared using LaTeX2e with the class file
-% \texttt{spieman.cls}. Please note that the following journals require the use
-% of structured abstracts in manuscript submissions: \textit{Neurophotonics},
-% the \textit{Journal of Biomedical Optics}, and the \textit{Journal of Medical
-% Imaging}. Structured abstracts are encouraged for the \textit{Journal of
-% Micro/Nanolithography, MEMS, and MOEMS}. Guidelines are available on the
-% journal website. Whether structured or single-paragraph, the abstract should
-% be a summary of the paper and not an introduction. Because the abstract may
-% be used in abstracting and indexing databases, it should be self-contained
-% (i.e., no numerical references) and substantive in nature, presenting
-% concisely the objectives, methodology used, results obtained, and their
-% significance. A list of up to six keywords should immediately follow.
 \end{abstract}
 
-% Include a list of up to six keywords after the abstract
 \keywords{random matrix, spectral rigidity, level number variance, fMRI, classification, machine-learning}
 
-% Include email contact information for corresponding author
-{\noindent \footnotesize\textbf{*}Jacob Levman,  \linkable{jlevman@stfx.ca} }
+{
+\noindent
+\footnotesize
+\textbf{*}Jacob Levman,  \linkable{jlevman@stfx.ca}
+(primary), \linkable{jlevman@mgh.harvard.edu}
+}
 
-\begin{spacing}{2}   % use double spacing for rest of manuscript
+\begin{spacing}{2}
 
 \section{Introduction}
-\label{sect:intro}  % \label{} allows reference to this section
-% This document shows the format and appearance of a manuscript prepared for
-% submission to an SPIE journal. Note that this template is only intended to be
-% used as a guideline for author convenience. It is designed for optimum
-% clarity and ease of reading for editors and reviewers, but the template does
-% not reflect the final page layout of a published journal paper. Accepted
-% papers are professionally typeset in XML according to the layout and design
-% of the journal.
+\label{sect:intro}
 
 At its most rudimentary, RMT describes the expected behavior of the
 eigenvalues—also often called levels—of a number of classes of random
@@ -173,33 +104,34 @@ simplifying somewhat, a matrix in which the entries are drawn from
 independently and identically distributed (\textit{iid}) distributions. Though
 first developed to describe the fluctuation of nuclei energy levels in quantum
 physics \cite{mehtaRandomMatrices2004, guhrRandommatrixTheoriesQuantum1998a},
-RMT has been shown have extremely broad potential.
-
-In small-scale physical systems, RMT universalities have been observed in
-quantum chaotic systems, complex nuclei, atoms, molecules and disordered
-mesoscopic systems
-\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004,brodyRandommatrixPhysicsSpectrum1981,beenakkerRandommatrixTheoryQuantum1997,bohigasHigherOrderCorrelationsSpectra1985,wintgenLevelStatisticsQuantized1988,pandeySkewOrthogonalPolynomialsUniversality2001},
-and at larger scales, RMT has been applied to atmospheric physics
+RMT has been shown to have extremely broad potential. In small-scale physical
+systems, RMT universalities have been observed in quantum chaotic systems,
+complex nuclei, atoms, molecules and disordered mesoscopic systems
+\cite{guhrRandommatrixTheoriesQuantum1998a, mehtaRandomMatrices2004,
+brodyRandommatrixPhysicsSpectrum1981, beenakkerRandommatrixTheoryQuantum1997,
+bohigasHigherOrderCorrelationsSpectra1985, wintgenLevelStatisticsQuantized1988,
+pandeySkewOrthogonalPolynomialsUniversality2001}, and at larger scales, RMT has
+been applied to atmospheric physics
 \cite{santhanamStatisticsAtmosphericCorrelations2001}, stock cross-correlations
-\cite{plerouRandomMatrixApproach2002} , social networks
+\cite{plerouRandomMatrixApproach2002}, social networks
 \cite{jalanUncoveringRandomnessSuccess2014}, random networks
 \cite{bandyopadhyayUniversalityComplexNetworks2007}, network-formation in
-liquids
-\cite{sastrySpectralStatisticsInstantaneous2001,matharooSpectralStatisticsQuenched2009}
-and amorphous clusters
-\cite{sarkarUniversalityVibrationalSpectra2004,matharooVibrationalSpectraAmorphous2005,matharooUniversalityVibrationalSpectra2008}.
-Within biological systems, RMT has also been used to successfully model aspects
-of  amino acid functional relationships
-\cite{bhadolaTargetingFunctionalMotifs2016}, synchrony in epileptic seizures
-\cite{osorioPhasesynchronizationRandommatrixBased2011}, and in protein-protein
-interactions both in different species
+liquids\cite{sastrySpectralStatisticsInstantaneous2001,
+matharooSpectralStatisticsQuenched2009} and amorphous clusters
+\cite{sarkarUniversalityVibrationalSpectra2004,
+matharooVibrationalSpectraAmorphous2005,
+matharooUniversalityVibrationalSpectra2008}. Within biological systems, RMT has
+also been used to successfully model aspects of  amino acid functional
+relationships \cite{bhadolaTargetingFunctionalMotifs2016}, synchrony in
+epileptic seizures \cite{osorioPhasesynchronizationRandommatrixBased2011}, and
+in protein-protein interactions both in different species
 \cite{agrawalQuantifyingRandomnessProtein2014} and breast cancer
 \cite{raiRandomnessPreservedPatterns2015}. RMT has also been used to guide
 statistical decisions in principal components
 analyses\cite{franklinParallelAnalysisMethod1995,
 veraartDenoisingDiffusionMRI2016, ulfarssonDimensionEstimationNoisy2008}, and,
-more recently, has provided insights into the behaviors of deep
-neural networks\cite{martinImplicitSelfRegularizationDeep2021,
+more recently, has provided insights into the behaviors of deep neural
+networks\cite{martinImplicitSelfRegularizationDeep2021,
 martinPredictingTrendsQuality2021}.
 
 RMT likely has the most real-world explanatory potential when dealing with a
@@ -229,10 +161,10 @@ phenomenon of interest.
 For an imaging modality like fMRI, where changes in the
 blood-oxygenation-level-dependent (BOLD) signals are related to neural
 activity, RMT may be an ideal starting point, as each voxel time course (or
-collection of such time sources - i.e. ROIs) can be considered an interacting
+collection of such time sources, i.e. ROIs) can be considered an interacting
 component of the system. Likewise, in functional connectivity
 analyses, statistical relationships of the BOLD ROI time-courses are
-investigated in the hope of gaining insights into brain functioning (see
+investigated in the hope of gaining insights into brain function (see
 \citenum{bastosTutorialReviewFunctional2016,
 vandenheuvelExploringBrainNetwork2010} for reviews, but also
 \citenum{nobleDecadeTestretestReliability2019} and
@@ -241,15 +173,16 @@ connectivity analyses). In this framework, each connection or correlation can
 be considered a system component, and the eigenvalues of such a correlation
 matrix can be examined from the perspective of RMT.
 
-The earliest study taking this approach
-demonstrated that spectra of the correlations between electroencephalographic
-(EEG) signals closely resemble those of the Gaussian Orthogonal Ensemble (GOE)
-\cite{sebaRandomMatrixAnalysis2003}. In fMRI, RMT has been used to
-evaluate the quality of whole brain features extracted from fMRI data
-\cite{voultsidouFeatureEvaluationFMRI2007,verganiRestingStateFMRI2019}, and in
-diffusion MRI to aid in the selection of the number of
-components to employ in principal-component reduction analysis and denoising
-\cite{veraartDenoisingDiffusionMRI2016,verganiRestingStateFMRI2019,ulfarssonDimensionEstimationNoisy2008}.
+The earliest study taking this approach demonstrated that spectra of the
+correlations between electroencephalographic (EEG) signals closely resemble
+those of the Gaussian Orthogonal Ensemble (GOE)
+\cite{sebaRandomMatrixAnalysis2003}. In fMRI, RMT has been used to evaluate the
+quality of whole brain features extracted from fMRI data
+\cite{voultsidouFeatureEvaluationFMRI2007, verganiRestingStateFMRI2019}, and in
+diffusion MRI to aid in the selection of the number of components to employ in
+principal-component reduction analysis and denoising
+\cite{veraartDenoisingDiffusionMRI2016, verganiRestingStateFMRI2019,
+ulfarssonDimensionEstimationNoisy2008}.
 
 RMT has also been used in ROI-based fMRI functional connectivity studies to
 investigate differences between rest and task states
@@ -307,10 +240,10 @@ reduced in various ways prior to being used in analyses.
 Typical reductions include the use of a ``seed'' voxel or collection of voxels
 (see e.g. \citenum{joelRelationshipSeedbasedICAbased2011,
 smithCharacterizingIndividualDifferences2014}): the mean signal over that ROI
-is correlated with all other N ROIs of interest to generate a reduced
+is correlated with all other \(N\) ROIs of interest to generate a reduced
 functional connectivity matrix (or image) with one correlation value at each
-non-seed ROI. This sort of reduction reduces the functional connectivity to N
-values, but necessarily biases the analysis to the seed ROI.
+non-seed ROI. This sort of reduction reduces the functional connectivity to
+\(N\) values, but necessarily biases the analysis to the seed ROI.
 
 Likewise, one can work with ROI mean signal reductions, or independent
 component analysis reductions\cite{joelRelationshipSeedbasedICAbased2011,
@@ -330,25 +263,25 @@ matrix.
 \subsection{Limitations of Previous Work}
 
 Previous studies applying RMT to functional connectivity
-data\cite{wangRandomMatrixTheory2016,
-wangSpectralPropertiesTemporal2015a,matharooSpontaneousBackpainAlters2020,
-guRandomMatrixTheory2020} took largely descriptive / explanatory approaches,
-noting only differences in RMT across subgroups and/or conditions. For example
-\citenum{wangRandomMatrixTheory2016} and \citenum{guRandomMatrixTheory2020} use
-a Kolmogorov-Smirnov test, and \citenum{wangSpectralPropertiesTemporal2015a}
-uses a t-test to provide evidence of differences in various RMT metrics.
-However, statistically significant differences in a metric do not imply
-practical significance or predictive utility
-\cite{loWhySignificantVariables2015}, nor do they imply generalization or
-replicability \cite{amrheinEarthFlat052017}. Cross-validation, by contrast,
-attempts to more directly assess these properties
-\cite{yarkoniChoosingPredictionExplanation2017}.
+data\cite{wangRandomMatrixTheory2016, wangSpectralPropertiesTemporal2015a,
+matharooSpontaneousBackpainAlters2020, guRandomMatrixTheory2020} took largely
+descriptive / explanatory approaches, noting only differences in RMT across
+subgroups and/or conditions. For example Wang et al.
+(2016)\cite{wangRandomMatrixTheory2016} and Gu et al.
+(2020)\cite{guRandomMatrixTheory2020} use a Kolmogorov-Smirnov test, and Wang
+et al. (2015)\cite{wangSpectralPropertiesTemporal2015a} uses a t-test to
+provide evidence of differences in various RMT metrics. However, statistically
+significant differences in a metric do not necessarily imply practical
+significance or predictive utility \cite{loWhySignificantVariables2015}, nor do
+they imply generalization or replicability \cite{amrheinEarthFlat052017}.
+Cross-validation, by contrast, attempts to more directly assess these
+properties \cite{yarkoniChoosingPredictionExplanation2017}.
 
 In addition, the previous papers do not provide publicly-accessible code to
 reproduce results. The extraction of the spectral rigidity and level variance
 is computationally-demanding and mathematically and algorithmically
 non-trivial, and additionally requires an \textit{unfolding}
-procedure\cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}.
+procedure\cite{guhrRandommatrixTheoriesQuantum1998a, mehtaRandomMatrices2004}.
 Unfolding is an exponential fitting procedure that involves a number of highly
 subjective decisions regarding outliers and the flexibility of the fitting
 function. These decisions are, unfortunately, often poorly or even entirely
@@ -357,14 +290,14 @@ undocumented, but are known to often dramatically impact RMT conclusions
 abueleninSpectralUnfoldingChaotic2018, fossionRandommatrixSpectraTime2013,
 abueleninEffectUnfoldingSpectral2012, moralesImprovedUnfoldingDetrending2011}.
 
-On top of the flexibility in the implementation and application of RMT to
-empirical data, there is also the flexibility introduced by the choices in the
-complex preprocessing pipelines of fMRI\cite{parkerBenefitSliceTiming2019}.
-These "researcher degrees of
-freedom"\cite{simmonsFalsePositivePsychologyUndisclosed2011b} in combination
+In addition to the flexibility in the implementation and application of RMT to
+empirical data, there is also flexibility introduced by analytic choices made
+in the complex preprocessing pipelines of
+fMRI\cite{parkerBenefitSliceTiming2019}. These "researcher degrees of
+freedom"\cite{simmonsFalsePositivePsychologyUndisclosed2011b}, in combination
 with the absence of reproducible code and data availability, and predominance
-of descriptive and explanatory approaches, raise doubts about the basic robustness
-and practical utility of RMT-based functional connectivity analyses.
+of descriptive and explanatory approaches, raise doubts about the basic
+robustness and practical utility of RMT-based functional connectivity analyses.
 
 What is missing is a rigorous, systematic, reproducible investigation of the
 predictive value of RMT metrics across a wide variety of data, analytic
@@ -379,23 +312,26 @@ remedy this.
 \subsection{Overview}
 
 We selected fMRI data publicly available on the
-\href{https://openneuro.org/}{OpenNeuro} platform (36). Selection criteria was
-somewhat subjective, but we required (1), the dataset comprise 10+ human
-subjects, (2) that all fMRI scans have the same spatial and temporal
-resolutions, (3) that the fMRI images could be split into various classes for a
-number of binary classification tasks, and (4), that it was reasonable to
-classify each scan in its entirety, (i.e. neither task nor event timings
-were needed to determine class membership, nor did any scan volumes need to be removed
-to make the scan classifiable). This yielded seven datasets total.
+\href{https://openneuro.org/}{OpenNeuro}
+platform\cite{markiewiczOpenNeuroResourceSharing2021}. Selection criteria was
+somewhat subjective, but we required each dataset to (1) comprise 10 or more
+human subjects, (2) have all fMRI scans have the same spatial and temporal
+resolutions, (3) have fMRI images that can be split into various classes for a
+number of binary classification tasks, and (4), allow reasonably classifying
+each scan in its entirety (i.e. neither task nor event timings are needed to
+determine class membership, nor do any scan volumes need to be removed to make
+the scan classifiable). This yielded seven datasets total.
 
 
 \begin{table}[h!]
 \caption{
-    ID = Identifier for paper. TR = Time of Repetition (seconds).
-    Time = total duration (minutes) of each scan. Dimensions listed as M x N x P,
-    indicate P horizontal / axial slices each with dimensions M x N.
+    \label{tab:data-dimensions}
+    Included fMRI dataset details.
+    Name = Identifier for paper.
+    Dimensions listed as M x N x P, indicate P axial slices each with dimensions M x N.
+    TR = Time of Repetition (seconds).
+    n\_scans = Total number of images in dataset.
 }
-\label{tab:data-dimensions}
 \small
 \centering
 \begin{tabular}{ l c c c c c c }
@@ -423,15 +359,16 @@ limited relevance to our whole-brain, voxelwise, multiverse predictive
 approach.}, we refer the reader to the original publications and/or data
 releases when greater detail is needed, and highlight only the most basic
 aspects of each dataset here.  Dataset scan parameters and acquisition details
-are summarized in Table \ref{tab:data-dimensions}, and sample and subgroup sizes are
-summarized in Table \ref{tab:data-subjects}.
+are summarized in Table \ref{tab:data-dimensions}, and sample and subgroup
+sizes are summarized in Table \ref{tab:data-subjects}.
 
 \begin{table}[h!]
 \caption{
-    ID = Identifier for paper. Subgroup = name of subgroup. Subjects = Number of subjects.
+    \label{tab:data-subjects}
+    Sizes and other details for classification task subgroups.
+    ID = Identifier for paper. Subgroup = name of subgroup used in classification task. Subjects = Number of subjects.
     Task = fMRI task. ANT = Attention Network Task \cite{fanActivationAttentionalNetworks2005}
 }
-\label{tab:data-subjects}
 \small
 \centering
 \begin{tabular}{ l r c c c }
@@ -507,18 +444,19 @@ controls\cite{goldcarrieelizabethExploringRestingState2018}. For our analysis,
 we make the binary classification task \code{monolingual v
 bilingual}.
 
-% Resting state fMRI scans were performed using a T2*-weighted EPI sequence with the following
-% parameters: TR=875ms; TE=43.6ms; slice thickness=1.8mm; acquisition matrix=100 × 100; flip
-% angle=55°; number of slices=72; field of view=180 × 180mm; voxel size=1.8 × 1.8 × 1.8mm;
-% multi-band factor=8; volumes per run=823 (total scan time=12min). EPI scans were oriented
-% parallel to the long axis of the hippocampus.
+% Resting state fMRI scans were performed using a T2*-weighted EPI sequence
+% with the following parameters: TR=875ms; TE=43.6ms; slice thickness=1.8mm;
+% acquisition matrix=100 × 100; flip angle=55°; number of slices=72; field of
+% view=180 × 180mm; voxel size=1.8 × 1.8 × 1.8mm; multi-band factor=8; volumes
+% per run=823 (total scan time=12min). EPI scans were oriented parallel to the
+% long axis of the hippocampus.
 
 % \subsubsection{Depression Dataset}
 
 The \textit{Depression} dataset\cite{bezmaternykhddRestingStateClosed2021,
 bezmaternykhBrainNetworksConnectivity2021} includes rs-fMRI scans from
-non-depressed controls and mildly- or moderately-depressed subjects. In our analysis,
-the binary classification task is \code{depress v control}.
+non-depressed controls and mildly- or moderately-depressed subjects. In our
+analysis, the binary classification task is \code{depress v control}.
 
 % The intergroup study involved 21 healthy volunteers received a compensation
 % for a participation and 51 participants featuring mild depression (F32.0),
@@ -531,8 +469,6 @@ the binary classification task is \code{depress v control}.
 % turbo field echo method with a voxel size of 1×1×1mm. The instruction for
 % participants was to lie still with eyes closed for 6 minutes.
 
-% \subsubsection{Learning Dataset}
-
 The \textit{Learning} dataset\cite{schapiroHumanHippocampalReplay2018,
 schapiroHumanHippocampalReplay2020} has both rs-fMRI and task fMRI scans
 available for all subjects, and \code{task v rest} is chosen as the binary
@@ -542,9 +478,6 @@ presented with various related abstract images, and then later tested for their
 memory of certain aspects of the learned images. Thus, the classification task
 might also be considered learning vs. rest.
 
-
-
-% \subsubsection{Osteoarthritis Dataset}
 The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
 includes whole-brain rs-fMRI scans of healthy, pain-free controls
 (\code{nopain} condition), and individuals with knee osteoarthritis.
@@ -553,17 +486,12 @@ Osteoarthritic patients were treated for two weeks with either placebo
 We use the three binary classification tasks \code{nopain v duloxetine},
 \code{nopain v pain}, and \code{pain v duloxetine} for our analysis.
 
-
-
-% \subsubsection{Parkinson's Dataset}
 The \textit{Park} dataset\cite{madhyasthaDynamicConnectivityRest2015} includes
 subjects with non-demented Parkinson's Disease (PD) and
 healthy controls performed a number of repetitions of the Attention Network
 Task (ANT\cite{fanActivationAttentionalNetworks2005}) during scans.
 The classification task for this dataset is Parkinson's versus controls, i.e.
 \code{park v ctrl}.
-
-% \subsubsection{Attention Dataset}
 
 The \textit{Attention} dataset\cite{gorgolewskiHighResolution7Tesla2015} is a
 high-resolution rs-fMRI dataset including a battery of psychological measures
@@ -573,7 +501,7 @@ their findings with respect to attentional processes
 divided subjects into various high vs. low attention binary classification
 tasks based on median splits of subsets of the metrics available in this study.
 
-The \code{viglant v nonvigilant} task was formed based on self-report
+The \code{vigilant v nonvigilant} task was formed based on self-report
 questionnaire items involving
 "vigilance"\cite{gorgolewskiCorrespondenceIndividualDifferences2014}. The
 \code{trait\_attend v trait\_nonattend} task was formed using PANAS-X
@@ -596,28 +524,27 @@ code}.
 \subsection{fMRI Preprocessing}
 \label{sec:preproc}
 
-
 We limited preprocessing to a simple pipeline of, in order: (1) brain
 extraction, (2) slice timing correction, (3), motion correction, and (4),
 registration to the MNI152
-\cite{fonovUnbiasedAverageAgeappropriate2011,fonovUnbiasedNonlinearAverage2009}
+\cite{fonovUnbiasedAverageAgeappropriate2011, fonovUnbiasedNonlinearAverage2009}
 2mm isotropic, asymmetric template version C made available through
 \href{https://www.templateflow.org/}{TemplateFlow}
 \cite{ciricTemplateFlowFAIRsharingMultiscale2021}.
 
 Brain extraction was performed first with BET
-\cite{smithFastRobustAutomated2002}, and then with with
+\cite{smithFastRobustAutomated2002}, and then with
 ANTs\cite{avantsReproducibleEvaluationANTs2011} to clean up residue left behind
 by BET. BET results were visually inspected for each image in each dataset, and
 BET fractional anisotropy values were modified to ensure brain extraction was
 acceptable. Motion-correction was performed with FSL's MCFLIRT
-\cite{jenkinsonImprovedOptimizationRobust2002}, and slicetime correction also
-with FSL's \code{slicetimer}\cite{jenkinsonFSL2012} tool. Finally, functional
+\cite{jenkinsonImprovedOptimizationRobust2002}, and slice time correction
+with FSL's slicetimer\cite{jenkinsonFSL2012} tool. Finally, functional
 images were registered directly to the MNI152 template via
 ANTs\cite{avantsReproducibleEvaluationANTs2011}.
 
-We limited preprocessing methods to these steps sometimes because data required
-for other typical preprocessing steps (e.g. field intensity maps, physiological
+We limited preprocessing methods to these steps because data required for other
+typical preprocessing steps (e.g. field intensity maps, physiological
 measurements) was missing, but also because all pipeline intermediates were
 saved to later compare the effect of increasing degrees of preprocessing on
 feature predictive utility (see Section \ref{sec:multiverse}), and it was
@@ -628,25 +555,24 @@ computational costs and comparisons.
 
 \subsection{Feature Extraction}
 
-
 For each preprocessing degree and fMRI image, features were extracted from all
 \(N\) non-constant brain voxels, where \(N\) may differ for each image. After
-this process, each scan yields an \(N \times T\) matrix \(\mathbf{M}\), where
-\(T\) is the number of volumes acquired. All features summarize this matrix
-of brain voxels \(\mathbf{M}\) in some manner.
+this process, each scan yields an \(N \times t\) matrix \(\mathbf{M}\), where
+\(t\) is the number of volumes acquired. All features extracted summarize
+this matrix \(\mathbf{M}\).
 
 \begin{table}[h!]
 \caption{
 \label{tab:features}
-Feature groupings for summarization. eigs = non-RMT eigenfeatures and their combinations with
-other non-RMT eigenfeatures. rmt = RMT eigenfeatures and their combinations. tseries = baseline
-timeseries reductions.\\
+Feature groupings for summarization. eigs = non-RMT eigenfeatures and their
+combinations with other non-RMT eigenfeatures. rmt = RMT eigenfeatures and
+their combinations. tseries = baseline timeseries reductions.\\
 }
 \small
 \centering
 \begin{tabular}{lllr}
 \hline
-\textbf{Coarse Grouping} & \textbf{Fine Grouping} & \textbf{Feature id}   \\
+\textbf{Coarse Grouping} & \textbf{Fine Grouping} & \textbf{Feature id} \\
 \hline
 eigs           & eigs          & \tcode{eigs}                           \\
                & eigs max      & \tcode{eigsminmax10}                   \\
@@ -692,12 +618,12 @@ tseries        & location      & \tcode{T-max}                          \\
 \label{sec:raw-eigs}
 
 The time and space complexities of computing the full \(N \times N\)
-\(\mathbf{M}\) of Pearson correlation coefficients (and subsequent eigenvalues) are too
-large to be tractable. However, since transposition does not change the
-eigenvalues, we can use the transpose to efficiently compute these eigenvalues
-(see Appendix \ref{sec:transpose}). These raw eigenvalues (feature \code{eigs}
-in Table \ref{tab:features}), most directly test the idea that eigenvalues
-alone are useful functional connectivity features.
+\(\mathbf{M}\) matrix of Pearson correlation coefficients (and subsequent
+eigenvalues) are too large to be tractable. However, since transposition does
+not change the eigenvalues, we can use the transpose to efficiently compute
+these eigenvalues (see Appendix \ref{sec:transpose}). These raw eigenvalues
+(feature \code{eigs} in Table \ref{tab:features}), most directly test the idea
+that eigenvalues alone are useful functional connectivity features.
 
 However, not all eigenvalues may have predictive utility. We also examine as
 features the central eigenvalues (defined as the middle 10\%, 20\%, or 40\% of
@@ -713,13 +639,13 @@ tail of the spectrum, \code{eigsminmax} in Table \ref{tab:features}).
 To compare the observed eigenvalue distribution to some RMT theoretical
 predictions, the eigenvalues must be unfolded
 \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. The
-details and motivation behind the unfolding procedure are well documented in
-\cite{guhrRandommatrixTheoriesQuantum1998a}. Practically, the unfolding process
-can be viewed as a smoothing and rescaling procedure where the originally
-observed spectrum \(\lambda_1 \le \dots \le \lambda_n\) is smoothly mapped to
-an unfolded spectrum \(e_1, \dots, e_n\), such that \(\sum d_i/n \approx 1\),
-if \(d_i = e_{i+1} - e_i \). For most empirical data, the true smoothing
-function is not known, and so must be approximated
+details and motivation behind the unfolding procedure are well documented
+elsewhere\cite{guhrRandommatrixTheoriesQuantum1998a}. Practically, the
+unfolding process can be viewed as a smoothing and rescaling procedure where
+the originally observed spectrum \(\lambda_1 \le \dots \le \lambda_n\) is
+smoothly mapped to an unfolded spectrum \(e_1, \dots, e_n\), such that \(\sum
+d_i/n \approx 1\), if \(d_i = e_{i+1} - e_i \). For most empirical data, the
+true smoothing function is not known, and so must be approximated
 \cite{guhrRandommatrixTheoriesQuantum1998a,mehtaRandomMatrices2004}. Typically,
 a polynomial is chosen \cite{abul-magdUnfoldingSpectrumChaotic2014}.
 
@@ -777,23 +703,24 @@ can be found in Appendix \ref{sec:trimming}, or the
 code}.
 
 \textit{Unfolding Variants}. Following any trimming, the eigenvalues are fit
-with a polynomial. Because the choice of degree has been known to dramatically impact
-certain analyses involving the spectral rigidity or level
+with a polynomial. Because the choice of degree has been known to dramatically
+impact certain analyses involving the spectral rigidity or level
 variance\cite{abul-magdUnfoldingSpectrumChaotic2014,
 moralesImprovedUnfoldingDetrending2011, abueleninSpectralUnfoldingChaotic2018,
 fossionRandommatrixSpectraTime2013, abueleninEffectUnfoldingSpectral2012}, we
-compute the rigidity and level variance with all possible combinations of
-trimming and unfolding polynomial degrees of 3, 5, 7, and 9.
+compute the rigidity and level variance with all possible combinations of our
+trimming procedures, and unfolding polynomial degrees of 3, 5, 7, and 9.
 
-\textit{Software Release}. Because the computation of these statistics is non-trivial, and to make the
-unfolding procedure more transparent and reproducible, we developed and release
-the separate, open-source Python library
+\textit{Software Release}. Because the computation of these statistics is
+non-trivial, and to make the unfolding procedure more transparent and
+reproducible, we developed and release a separate, open-source Python library
 \code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
 allows for efficient, parallel computation of the spectral rigidity and level
 variance via Monte Carlo methods, and automatically ensures convergence of the
 statistics to user-specified tolerances. The library also makes available
 various other functions useful for empirical RMT analyses, such as unfolding
 and trimming functions, and plotting facilities for classic RMT ensembles.
+
 
 \subsubsection{Smoothed Eigenfeatures}
 \label{sec:eigs-only}
@@ -807,6 +734,7 @@ eigenvalues as predictive features: the sorted eigenvalues are smoothed with
 either a uniform (moving average) filter or Savitsky-Golay, using window sizes
 of 3, 5, 7, and 9 to yield 8 total features (\code{eigs\_smooth} and
 \code{eigs\_savgol} in Table \ref{tab:features}).
+
 
 \subsubsection{Feature Combinations}
 
@@ -824,7 +752,7 @@ found in Table \ref{tab:features}, where the "\code{+}" symbol indicates concate
 \subsubsection{Slicing Variants}
 
 The largest, middle, or smallest eigenvalues could be most useful in
-characterizing some system. E.g. if the smallest eigenvalues correspond to
+characterizing any given system. E.g. if the smallest eigenvalues correspond to
 random / noise aspects of a system, but differences in the nature of the system
 noise most differentiate between systems, then the smallest eigenvalues may
 have the most predictive utility.  Likewise, the \(L\) value in each RMT
@@ -851,7 +779,6 @@ elements of \(f_i\), and the combined sliced feature is  \([\hat{f}_1;\;
 %\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source code}}.
 
 
-
 \subsubsection{Baseline Features}
 \label{sec:baselines}
 
@@ -869,7 +796,7 @@ measures of scale (standard deviation and the range—\code{T-rng} in Table
 \ref{tab:features}); and robust measures of scale (interquartile range and
 difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
 percentile—\code{T-rrng} in Table \ref{tab:features}). Each statistic reduces
-the fMRI data along the voxel dimension, yielding a feature of \(T\) dimensions
+the fMRI data along the voxel dimension, yielding a feature of \(t\) dimensions
 (e.g. the ``mean'' feature, \code{T-mean}, is the usual global mean signal).
 % Exact details can be found in the
 % \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
@@ -895,14 +822,16 @@ hyperparameter values. We originally also attempted to test a simple logistic
 regression classifier, but found that this model frequently failed to converge
 for a number of features, even after increasing iterations significantly.
 
+
 \subsection{Preprocessing Levels}
 
 Each preprocessing intermediate in the (1) brain extraction, (2) slice time
 correction, (3) motion correction, and (4) template registration pipeline was
 saved and used for entirely separate feature analyses. E.g. all features were
 extracted from an fMRI image prepared with one of four levels or degrees of
-preprocessing, where preprocessing level \(k\) includes preprocessing steps 1 to \(k\),
-inclusive, and starting at \(k = 1\).
+preprocessing, where preprocessing level \(k\) includes preprocessing steps 1
+to \(k\), inclusive, and starting at \(k = 1\).
+
 
 \subsection{Normalization}
 
@@ -912,9 +841,6 @@ ineffective. We instead first apply a logarithm to all eigenfeatures, and then
 test each classifier with un-normalized or min-max normalized versions of the
 log-features. Baseline features are also tested with un-normalized and min-max
 normalized versions, but without any log transform.
-
-
-
 
 
 \subsection{Multiverse Analysis}
@@ -938,16 +864,18 @@ samples in the entire dataset largest class minus accuracy), and the F1 score.
 A complete table with these additional metrics is available with the
 \hyperref[sec:data-and-code]{data for this study}.
 
-Each non-baseline feature is thus evaluated, for each classification task and
-classifier, exactly 1280 times: there are 4 preprocessing levels \(\times\) 2
-normalization methods \(\times\) 4 trimming choices \(\times\) 4 unfolding
-degrees  \(\times\) 10 slice choices. Each baseline feature is evaluated
-exactly 40 times for each comparison task and classifier: 4 preprocessing
-levels \(\times\) 2 normalization methods \(\times\) 5 smoothing window sizes.
-In total, with all the datasets examined in this study, this yields 2 053 920
-mAUROC values to summarize, with 5 main \textit{analytic factors}—
-preprocessing, normalization, trimming, unfolding/smoothing degree, and
-slicing—to consider.
+Each non-baseline feature is thus evaluated, for each dataset classification
+task and each classifier, exactly 1280 times: there are 4 preprocessing levels
+\(\times\) 2 normalization methods \(\times\) 4 trimming choices \(\times\) 4
+unfolding degrees  \(\times\) 10 slice choices. Each baseline feature is
+evaluated exactly 40 times for each comparison task and classifier: 4
+preprocessing levels \(\times\) 2 normalization methods \(\times\) 5 smoothing
+window sizes. In total, with all the datasets and features examined in this
+study, this yields 2,053,920 mAUROC values to summarize, with 5 main
+\textit{analytic factors}— preprocessing, normalization, trimming,
+unfolding/smoothing degree, and slicing—to consider.
+
+
 
 \section{Results}
 \label{sec:results}
@@ -1026,7 +954,7 @@ To aid in summarizing the performances of the large number of different
 features, we also summarize patterns of results across two abstract groupings
 of similar features ("coarse", and "fine") shown in Table \ref{tab:features}.
 Thus, for example, figures depicting the coarse feature grouping "eigs" in fact
-depict all observed mAUROC values for the the fine feature groupings of raw,
+depict all observed mAUROC values for the fine feature groupings of raw,
 max, middle, and smoothed eigenvalues, and the fine feature grouping "eigs
 smooth", for example, depicts all observed mAUROC values for both the
 \code{eigs\_savgol} and \code{eigs\_smooth} features.
@@ -1049,20 +977,27 @@ AUROC distributions across gross feature groupings and comparison tasks.}
 
 It is important, to reduce figure clutter and complexity, to exclude a
 classification task or an analytic factor from summaries if there is no
-evidence that the classification task is solvable in general, or for that
-factor. We take as lack of evidence of solvability an mAUROC distribution that
-is either (1) roughly symmetric and has mean and median close to 0.5, i.e.
-performance appears random, or (2) with median and mode less than 0.5.
+evidence that the classification task is solvable in general, or if, when
+restricting the analytic factor to a particular instance, there is no evidence
+of solvability. E.g. if a particular trimming procedure were to render all
+classification tasks unsolvable, it would be better to note this and exclude
+the associated mAUROCs from further visualizations, rather than to have the
+mAUROC distributions diluted by the bad procedure.
 
-Based on the mAUROC distributions for either coarsely-grouped (Figure
+We take as lack of evidence of solvability an mAUROC distribution that is
+either (1) roughly symmetric and has mean and median close to 0.5, i.e.
+performance appears random, or (2) with median and mode less than 0.5. Based on
+the mAUROC distributions for either coarsely-grouped (Figure
 \ref{fig:main-results}) or finely-grouped features (Figure
 S\ref{S-fig:feature-group-all}), neither bilinguality nor depression were
 predictable by either baseline or eigenfeatures. Additionally, the \code{pain v
 duloxetine} comparison in the \textit{Osteo} dataset, and the
 \code{trait\_attend v trait\_nonattend} conditions ("WeeklyAttend" in Figures
-\ref{fig:main-results} and S\ref{S-fig:feature-group-all}) in the \textit{Attention}
-dataset were also not meaningfully predictable by any feature. As such, we exclude
-these classification tasks from further figures and discussion.
+\ref{fig:main-results} and S\ref{S-fig:feature-group-all}) in the
+\textit{Attention} dataset were also not meaningfully predictable by any
+feature. As such, we exclude these classification tasks from further figures
+and discussion. We did not, however, find that any analytic factor resulted in
+unsolvability.
 
 
 \subsubsection{Predictable Comparisons}
@@ -1084,9 +1019,9 @@ maximum predictive potential of the eigenfeatures. In this case, it is clear
 that eigenfeatures using RMT features almost always had the highest potential
 predictive utility (Figure \ref{fig:largest}). Figure S\ref{S-fig:fine-largest}
 shows that this was primarily due to either the "rmt only" or "rmt + eigs"
-features (see Table \ref{tab:features}). However, RMT eigenfeatures were also most
-likely to cause poor performance and overfitting (indicated by an mAUROC \(<\)
-0.5; Figure S\ref{S-fig:fine-smallest}).
+features (see Table \ref{tab:features}). However, RMT eigenfeatures were also
+most likely to cause poor performance and overfitting (indicated by an mAUROC
+\(<\) 0.5; Figure S\ref{S-fig:fine-smallest}).
 
 Examining these RMT features more closely, it is clear these features'
 performance distributions differ mostly due to the unfolding procedure. That
@@ -1169,7 +1104,7 @@ S\ref{S-fig:fine-degree}). Overall, Figure S\ref{S-fig:fine-degree} weakly
 suggests that either smaller (degree = 3) or larger (degree = 9) unfolding
 degrees tend to yield the most predictively useful RMT features. However, when
 restricting to the most predictive RMT features (those including the unfolded
-eigenvalues), it seems clear from Figure S\ref{S-fig:fine-degree} the the
+eigenvalues), it seems clear from Figure S\ref{S-fig:fine-degree} that the
 largest unfolding degree of 9 produces the most favourable mAUROC
 distributions.
 
@@ -1203,19 +1138,19 @@ predictive utility across a wide variety of phenomena and analytic choices.
 Compared to simple baseline reductions of the fMRI data, these eigenfeatures
 had more consistent predictive utility, and a higher maximum predictive
 potential (Figures \ref{fig:main-results}-\ref{fig:largest}). In addition to
-evidence from previous studies
-\cite{sebaRandomMatrixAnalysis2003,wangRandomMatrixTheory2016,matharooSpontaneousBackpainAlters2020}
-this suggests RMT may be a useful analytic and theoretical tool for
-understanding functional connectivity.
+evidence from previous studies \cite{sebaRandomMatrixAnalysis2003,
+wangRandomMatrixTheory2016, matharooSpontaneousBackpainAlters2020}, this
+suggests RMT may be a useful analytic and theoretical tool for understanding
+functional connectivity.
 
 However, eigenfeature mAUROC values observed in this study were highly
 sensitive to the overall analytic procedure, and there was no single analytic
 choice (e.g. choice of trimming procedure, unfolding polynomial degree, number
 of preprocessing steps, or feature slicing) that ensured, for any combination
-of feature and classification task, that all all other analytic choices
-resulted in mAUROC values greater than 0.5. In addition, the mean, median and
-modal mAUROCs were generally close to 0.5, and adjusted mean and median
-accuracies also tended to be close to zero. Thus we find limited evidence that
+of feature and classification task, that all other analytic choices resulted in
+mAUROC values greater than 0.5. In addition, the mean, median and modal mAUROCs
+were generally close to 0.5, and adjusted mean and median accuracies also
+tended to be close to zero. Thus we find limited evidence that
 functional-connectivity-based eigenfeatures have general, "out of the box"
 predictive utility, with general utility likely requiring either careful
 tuning, or different preprocessing decisions and analytic choices than those
@@ -1230,7 +1165,7 @@ Top three robust maximum (\(95^{\text{th}}\) percentile) mAUROC and adjusted
 accuracy (acc+) values for each predictable classification task and fine
 feature grouping, sorted by mAUROC. A dash indicates that the fine feature
 grouping for that row was not in the top three, i.e., that the top three
-performing features differed depending the performance metric. }
+performing features differed depending on the performance metric. }
 \small
 \centering
 \begin{tabular}{llcc}
@@ -1271,9 +1206,9 @@ Vigilance - vigilant v nonvigilant & eigs middle   &  0.733 &  0.184 \\
 
 
 Nevertheless, in all datasets, there were combinations of analytic choices that
-resulted in cross-validated mean prediction performances well beyond mere guessing
-(Figures S\ref{S-fig:fine-largest}, S\ref{S-fig:fine-largest-acc}, Table
-\ref{tab:top3-fine}). Whether or not these should be considered to have
+resulted in cross-validated mean prediction performances well beyond mere
+guessing (Figures S\ref{S-fig:fine-largest}, S\ref{S-fig:fine-largest-acc},
+Table \ref{tab:top3-fine}). Whether or not these should be considered to have
 practical relevance depends on one's goals, however, we note that with small
 datasets of rs- or task-fMRI data, binary, subject-level classification using
 whole-brain features is generally challenging.
@@ -1289,26 +1224,26 @@ result in classification accuracies well above 90\%
 custom feature extraction methods can achieve near perfect accuracies at
 classifying task vs. rest
 \cite{zhangCharacterizingDifferentiatingTaskbased2016}. However, for functional
-connectivity data and with classical machine learning algorithms (such as SVM)
+connectivity data and with classical machine learning algorithms (such as SVC)
 we in general only expect large prediction accuracies (e.g. greater than 80\%)
 when the group functional connectivities are already strongly separated (e.g.
 Cohen’s \(d > 1.0\))\cite{dansereauStatisticalPowerPrediction2017}. In this
 study, the (robust) maximum improvements upon guessing are shown in Table
-\ref{tab:top3-fine}), and vary from 3-26\%.
+\ref{tab:top3-fine}, and vary from 3-26\%.
 
 It is somewhat surprising that the eigenfeatures examined here ever have net
 cross-validated predictive utility. The reduction of the functional
-connectivity matrix to the sorted \(T - 1\) eigenvalues uses all brain voxels
+connectivity matrix to the sorted \(t - 1\) eigenvalues uses all brain voxels
 (including grey matter voxels), and destroys a large amount of information
 (radically different matrices can have identical sorted eigenvalues). The
 subsequent small-degree polynomial fit used in the unfolding procedure further
 reduces variance in the raw data, and all eigenfeatures, due to the eigenvalue
 sorting, are monotonically increasing curves (or approximately monotonic). All
 such curves could likely be fit near-perfectly with 3-5 parameters, i.e. the
-inherent dimensionality of these features is quite small. Interpreting the eigenvalues
-as the magnitudes of the principal components of the standardized data, this
-suggests that a rough summary of the magnitudes of the principal components can
-often be surprisingly predictive in fMRI.
+inherent dimensionality of these features is quite small. Interpreting the
+eigenvalues as the magnitudes of the principal components of the standardized
+data, this suggests that a rough summary of the magnitudes of the principal
+components can often be surprisingly predictive in fMRI.
 
 We speculate that the unfolded eigenvalues may have predictive utility in part
 because of their smoothing and re-scaling effect (see also Section
@@ -1333,14 +1268,15 @@ and slice time correction only. Median observed mAUROC = 0.643 (range = 0.346 -
 0.925)}
 \end{figure}
 
-% It was also sometimes the case that adding RMT-specific features (e.g. the spectral
-% rigidity, or level variance) to either the unfolded or raw
+% It was also sometimes the case that adding RMT-specific features (e.g. the
+% spectral rigidity, or level variance) to either the unfolded or raw
 % eigenvalues would allow for a higher maximum mAUROC (Tables
-% \ref{tab:numerical}-\ref{tab:top3-fine}, and Figure S\ref{S-fig:fine-largest}). One case where these
-% features yielded the largest predictions was in the \textit{Aging} dataset.
-% This is depicted in Figure \ref{fig:observables}, where it is clear that, after
-% trimming, at almost any \(L\) value, subgroups either cluster in bands, or tend to
-% generally have lower or higher rigidity of level variance curves.
+% \ref{tab:numerical}-\ref{tab:top3-fine}, and Figure
+% S\ref{S-fig:fine-largest}). One case where these features yielded the largest
+% predictions was in the \textit{Aging} dataset. This is depicted in Figure
+% \ref{fig:observables}, where it is clear that, after trimming, at almost any
+% \(L\) value, subgroups either cluster in bands, or tend to generally have
+% lower or higher rigidity of level variance curves.
 
 % \begin{figure}
 % \begin{center}
@@ -1365,7 +1301,7 @@ cannot be expected to effectively control group differences, and it is possible
 the predictive utility of the eigenfeatures was due to capitalization of such
 differences. For example, eigenfeatures were generally predictive in the
 \textit{Aging} dataset, and it is quite possible for randomization failures to
-introduce age confounding across classes.
+introduce age imbalances across classes.
 
 Likewise, one of the other more predictable classification tasks was the
 \code{duloxetine v nopain} task in the osteoarthritis dataset. An active drug
@@ -1373,9 +1309,9 @@ could introduce any number of physiological confounds relevant to
 fMRI\cite{murphyRestingstateFMRIConfounds2013}, but we could not control for
 such effects do to the absence of physiological recording in most datasets.
 
-In general, much larger fMRI datasets are needed to adequately control for and test
-\textit{what} exactly the connectivity eigenvalues actually predict, and to test
-if these predictions generalize to larger, different populations.
+In general, much larger fMRI datasets are needed to adequately control for and
+test \textit{what} exactly the connectivity eigenvalues actually predict, and
+to test if these predictions generalize to larger, different populations.
 
 
 
@@ -1387,19 +1323,22 @@ variety of datasets and classification tasks. However, the predictive utilities
 were modest, and highly dependent on preprocessing steps and other fitting and
 feature selection procedures. Future studies employing RMT should carefully
 investigate the sensitivity of any findings to such analytic decisions before
-drawing any conclusions.
+drawing any conclusions. However, this study demonstrates that the inclusion of
+RMT statistics and other eigenfeatures extracted from fMRI images could aid in
+the predictive modeling of a wide variety of phenomena.
 
 
-\section{Disclosures}
-The authors have no relevant financial interests in the manuscript and no other
-potential conflicts of interest to disclose.
 
-% Conflicts of interest should be declared under a separate header, above
-% Acknowledgments. If the authors have no competing interests to declare, then a
-% statement should be included declaring no conflicts of interest. For assistance
-% generating a disclosure statement, see the form available from  the
-% International Committee of Medical Journal Editors website:
-% \linkable{http://www.icmje.org/conflicts-of-interest/}
+\newpage
+
+
+
+\section*{Disclosures}
+JL is founder of Time Will Tell Technologies, Inc.. The authors have no
+relevant financial interests in the manuscript and no other potential conflicts
+of interest to disclose.
+
+
 
 \section*{Acknowledgments and Funding}
 This work was supported by the Natural Science and Engineering Research
@@ -1410,6 +1349,8 @@ Trust infrastructure grant (R0176004) to JL, a St. Francis Xavier University
 research startup grant to JL (grant number R0168020), and a St. Francis Xavier
 University UCR grant to JL.
 
+
+
 \section*{Data, Materials, and Code Availability}
 \label{sec:data-and-code}
 
@@ -1419,313 +1360,26 @@ platform\cite{poldrackOpenfMRIOpenSharing2017,
 markiewiczOpenNeuroResourceSharing2021}.
 
 All code used specifically to perform preprocessing and analyses for this paper
-is publicly available \href{https://github.com/DM-Berger/random-matrix-fmri/}{online} in
-the paper GitHub repository\cite{dm-bergerDMBergerRandommatrixfmriPaper2022}.
-This repository also includes all produced prediction data in a single table
+is publicly available
+\href{https://github.com/DM-Berger/random-matrix-fmri/}{online} in the paper
+GitHub repository\cite{dm-bergerDMBergerRandommatrixfmriPaper2022}. This
+repository also includes all produced prediction data in a single table
 available in the file \code{all\_produced\_prediction\_data.json.xz} available
 \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/all\_produced\_prediction\_data.json.xz}{in
 the paper repository}.
 
-Code used to compute the spectral observables and
-perform unfolding is publicly available in the
+Code used to compute the spectral observables and perform unfolding is publicly
+available in the
 \href{https://github.com/stfxecutables/empyricalRMT}\code{empyricalRMT}
 library\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}.
 
 
 
-% \subsection{Page Setup and Fonts}
+\newpage
 
-% All text and figures, including footnotes, must fit inside a text area 6.5 in.\
-% wide by 9 in.\ high (16.51 by 22.86 cm). Manuscripts must be formatted for US
-% letter paper, on which the margins should be 1 in.\ (2.54 cm) on the top, 1
-% in.\ on the bottom, and 1 in.\ on the left and right.
 
-% The Times New Roman font is used throughout the manuscript, in the sizes and
-% styles shown in Table~\ref{tab:fonts}. If this font is not available, use a
-% similar serif font. The manuscript should not contain headers or footers. Pages
-% should be numbered.
 
-% \begin{table}[ht]
-% \caption{Fonts sizes and styles.}
-% \label{tab:fonts}
-% \begin{center}
-% \begin{tabular}{|l|l|} %% this creates two columns
-% %% |l|l| to left justify each column entry
-% %% |c|c| to center each column entry
-% %% use of \rule[]{}{} below opens up each row
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Document entity & Brief description  \\
-% \hline\hline
-% \rule[-1ex]{0pt}{3.5ex}  Article title & 16 pt., bold, left justified  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Author names & 12 pt., bold, left justified   \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Author affiliations & 10 pt., left justified   \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Abstract & 10 pt.  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Keywords & 10 pt.  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Section heading & 12 pt., bold, left justified  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Subsection heading & 12 pt., italic, left justified  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Sub-subsection heading & 11 pt., italic, left justified  \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Normal text & 12 pt. \\
-% \hline
-% \rule[-1ex]{0pt}{3.5ex}  Figure and table captions &  10 pt. \\
-% \hline
-% \end{tabular}
-% \end{center}
-% \end{table}
-
-% \section{Parts of Manuscript}
-
-% This section describes the normal structure of a manuscript and how each part
-% should be handled. The appropriate vertical spacing between various parts of
-% this document is achieved in LaTeX through the proper use of defined
-% constructs, such as \verb|\section{}|.
-
-% \subsection{Title and Author Information}
-% \label{sect:title}
-% The article title appears left justified at the top of the first page. The
-% title font is 16 pt., bold. The rules for capitalizing the title are the same
-% as for sentences; only the first word, proper nouns, and acronyms should be
-% capitalized. Do not begin titles with articles (for example, a, an, the) or
-% prepositions (for example, on, by, etc.). The word ``novel'' should not appear
-% in the title, as publication will imply novelty. Avoid the use of acronyms in
-% the title, unless they are widely understood. Appendix A contains more about
-% acronyms.
-
-% The list of authors immediately follows the title, 18 points below. The font is
-% 12 pt., bold and the author names are left justified. The author affiliations
-% and addresses follow the names, in 10-pt., normal font and left justified. For
-% multiple affiliations, each affiliation should appear on a separate line.
-% Superscript letters (a, b, c, etc.) should be used to associate multiple
-% authors with their respective affiliations. The corresponding author should be
-% identified with an asterisk, and that person's email address should be provided
-% below the keywords.
-
-% \subsection{Abstract}
-% The abstract should be a summary of the paper and not an introduction. Because
-% the abstract may be used in abstracting journals, it should be self-contained
-% (i.e., no numerical references) and substantive in nature, presenting concisely
-% the objectives, methodology used, results obtained, and their significance.
-% Please note that the following journals require the use of structured abstracts
-% in manuscript submissions: \textit{Neurophotonics}, the \textit{Journal of
-% Biomedical Optics}, and the\textit{ Journal of Medical Imaging}. Structured
-% abstracts are encouraged for the \textit{Journal of Micro/Nanolithography,
-% MEMS, and MOEMS}. Helpful guidelines for structured abstracts are available on
-% the website of the journal.
-
-% \subsection{Subject terms/Keywords}
-% Keywords are required. Please provide 3-6 keywords related to your paper.
-
-% \subsection{Body of Paper}
-% The body of the paper consists of numbered sections that present the main
-% findings. These sections should be organized to best present the material.
-
-% To provide transition elements in your paper, it is important to refer back (or
-% forward) to specific sections. Such references are made by indicating the
-% section number, for example, ``In Sec.\ 2 we showed...'' or ``Section 2.1
-% contained a description...'' If the word Section, Reference, Equation, or
-% Figure starts a sentence, it is spelled out. When occurring in the middle of a
-% sentence, these words are abbreviated Sec., Ref., Eq., and Fig.
-
-% At the first occurrence of an acronym, spell it out followed by the acronym in
-% parentheses, for example, charge-coupled diode (CCD).
-
-% \subsection{Footnotes}
-% Textual footnotes should be used rarely to present important documentary or
-% explanatory material whose inclusion in the text would be
-% distracting.\footnote{Example of a footnote.} Due to problems with HTML
-% display, use of footnotes should generally be avoided. If absolutely necessary,
-% the footnote mark must come at the end of a sentence. To insert a footnote, use
-% the {\verb|\footnote{}|} command.
-
-% \subsection{Appendices}
-% Brief appendices may be included when necessary, such as derivations of
-% equations, proofs of theorems, and details of algorithms. Equations and figures
-% appearing in appendices should continue sequential numbering from earlier in
-% the paper.
-
-% \subsection{Disclosures}
-% Conflicts of interest should be declared under a separate header, above
-% Acknowledgments. If the authors have no competing interests to declare, then a
-% statement should be included declaring no conflicts of interest. For assistance
-% generating a disclosure statement, see the form available from  the
-% International Committee of Medical Journal Editors website:
-% \linkable{http://www.icmje.org/conflicts-of-interest/}
-
-% \subsection{Acknowledgments}
-% Acknowledgments and funding information should be added after the conclusion,
-% and before references. Include grant numbers and the full name of the funding
-% body. The acknowledgments section does not have a section number.
-
-% \subsection{Data, Materials, and Code Availability}
-% Availability of data, materials, and/or code used in the research results
-% reported in the manuscript may be declared under the heading ``Data, Materials,
-% and Code Availability,'' following the Acknowledgments section. As relevant,
-% provide specific access information or restrictions for data, materials, and
-% computer code (i.e., links to repository access addresses with guidance on
-% commercial or public access).
-
-% \subsection{References}
-% The References section lists books, articles, and reports that are cited in the
-% paper. This section does not have a section number. The references are numbered
-% in the order in which they are cited. Examples of the format to be followed are
-% given at the end of this document.
-
-% The reference list at the end of this document is created using BibTeX, which
-% looks through the file {\ttfamily report.bib} for the entries cited in the
-% LaTeX source file.  The format of the reference list is determined by the
-% bibliography style file {\ttfamily spiejour.bst}, as specified in the \\
-% \verb|\bibliographystyle{spiejour}| command.  Alternatively, the references may
-% be directly formatted in the LaTeX source file.
-
-% For books\citenum{Lamport94,Alred03,Goossens97} the listing includes the list
-% of authors (initials plus last name), book title (in italics), page or chapter
-% numbers, publisher, city, and year of publication.  Journal-article references
-% \citenum{Metropolis53,Harris06} include the author list, title of the article
-% (in quotes), journal name (in italics, properly abbreviated), volume number (in
-% bold), inclusive page numbers or citation identifier, and year.  A reference to
-% a proceedings paper or a chapter in an edited book\citenum{Gull89a} includes
-% the author list, title of the article (in quotes), conference name (in
-% italics), editors (if appropriate), volume title (in italics), volume number if
-% applicable (in bold), inclusive page numbers, publisher, city, and year.
-% References to an article in the SPIE Proceedings may include the conference
-% name, as shown in Ref.~\citenum{Hanson93c}.
-
-% The references are numbered in the order of their first citation. Citations to
-% the references are made using superscripts, as demonstrated in the preceding
-% paragraph. One may also directly refer to a reference within the text, for
-% example, ``as shown in Ref.~\citenum{Metropolis53} ...''  Two or more
-% references should be separated by a comma with no space between them. Multiple
-% sequential references should be displayed with a dash between the first and
-% last numbers \citenum{Alred03,Perelman97,Lamport94,Goossens97,Metropolis53}.
-
-% \subsubsection{Reference linking and DOIs}
-% A Digital Object Identifier (DOI) is a unique alphanumeric string assigned to a
-% digital object, such as a journal article or a book chapter, that provides a
-% persistent link to its location on the internet. The use of DOIs allows readers
-% to easily access cited articles. Authors should include the DOI at the end of
-% each reference in brackets if a DOI is available. See examples at the end of
-% this manuscript. A free DOI lookup service is available from CrossRef at
-% \\\linkable{http://www.crossref.org/freeTextQuery/}. The inclusion of DOIs will
-% facilitate reference linking and is highly recommended.
-
-% In the present LaTeX template, the author needs to add the DOI reference by
-% including it in a ``note'' in the bibliography file, as shown in the file
-% {\verb+report.bib+}, for example, \\ {\verb+note = "[doi:10.1117/12.154577]"+}.
-% The DOI may be used by the reader to locate that document with the link:
-% {\verb+http://dx.doi.org10.1117/12.154577+}.
-
-% \subsection{Biographies}
-% A brief professional biography of approximately 75 words may be provided for
-% each author, if available. Biographies should be placed at the end of the
-% paper, after the references. Personal information such as hobbies or
-% birthplace/birthdate should not be included. Author photographs are not
-% published.
-
-% \section{Section Formatting}
-% \label{sect:sections}
-% In LaTeX, a new section is created with the \verb|\section{}| command, which
-% automatically numbers the sections. Sections will be numbered sequentially,
-% starting with the first section after the abstract, except for the
-% acknowledgments and references. (Note that numbering of section headings is not
-% required, but the numbering must be consistent if used.) All section headings
-% should be left justified.
-
-% Main section headings are in 12-pt. bold font, left-justified and in title
-% case, where important words are capitalized.
-
-% Paragraphs that immediately follow a section heading are leading paragraphs and
-% should not be indented, according to standard publishing style. The same goes
-% for leading paragraphs of subsections and sub-subsections. Subsequent
-% paragraphs are standard paragraphs, with 0.2-in (5 mm) indentation. There is no
-% additional space between paragraphs. In LaTeX, paragraphs are separated by
-% blank lines in the source file. Indentation of the first line of a paragraph
-% may be avoided by starting it with \verb|\noindent|.
-
-% \subsection{Subsection Headings}
-% All important words in a subsection (level 1) header are capitalized.
-% Subsection numbers consist of the section number, followed by a period, and the
-% subsection number within that section, without a period at the end. The heading
-% is left justified and its font is 12 pt. italic.
-
-% \subsubsection{Sub-subsection headings}
-% The first word of a sub-subsection is capitalized. The rest of the text is not
-% capitalized, except for proper names and acronyms (the latter should only be
-% used if well known). The heading is left justified and its font is 11 pt.
-% italic.
-
-% \section{Figures and Tables}
-
-% \subsection{Figures}
-
-% Figures are numbered in the order in which they are called out in the text.
-% They should appear in the document in numerical order and as close as possible
-% to their first reference in the text. It may be necessary to move figures or
-% tables around to enhance readability. LaTeX will attempt to place figures at
-% the top or bottom of a page in which they are first referenced.
-
-% Figures, along with their captions, should be separated from the main text by
-% 0.2 in.\ or 5 mm and centered. Figure captions are centered below the figure or
-% graph. Figure captions start with the abbreviation ``Fig'' in front of the
-% figure number, followed by a period, and the text in 10-pt. font. See
-% Fig.~\ref{fig:example} for an example.
-
-% \begin{figure}
-% \begin{center}
-% \begin{tabular}{c}
-% \includegraphics[height=5.5cm]{mcr3b.eps}
-% \end{tabular}
-% \end{center}
-% \caption
-% { \label{fig:example}
-% Example of a figure caption. }
-% \end{figure}
-
-% Authors may wish to create figures consisting of two or more images, in which
-% case, they should be neatly arranged in a rectangular array.  In no case,
-% should the article's text be wrapped around a figure. Figure~\ref{fig:example2}
-% shows two side-by-side images. When a figure contains more than one image, the
-% author must submit them as a single image file. Further details about figure
-% formatting can be found in the author guidelines for each specific SPIE
-% journal: \\
-
-% \linkable {https://www.spiedigitallibrary.org/journals/journal-authors}.
-
-% \begin{figure}
-% \begin{center}
-% \begin{tabular}{c}
-% \includegraphics[height=5.5cm]{fig2.eps}  % fig2 includes two images
-% \\
-% (a) \hspace{5.1cm} (b)
-% \end{tabular}
-% \end{center}
-% \caption
-% { \label{fig:example2} Example of a figure containing multiple images: (a) sun
-% and (b) blob. Figures containing multiple images must be submitted to SPIE as a
-% single image file.}
-% \end{figure}
-
-% \subsection{Tables}
-% Tables are numbered in the order in which they are referenced. They should appear in the document in numerical order and as close as possible to their first reference in the text. It is preferable to have tables appear at the top or bottom of the page, if possible. Table captions are handled identically to those for figures, except that they appear above the table. See Table~\ref{tab:fonts} for an example.
-
-% \subsection{Multimedia}
-% Acceptable file formats, including MOV (.mov), MPEG (.mpg), and MP4 (.mp4), are playable using standard media players, such as VLC or Windows Media Player. The recommended maximum size for each multimedia file is 10-12 MB. Authors must insert a representative still image from the video file in the manuscript as a figure. The caption label will be linked by the publisher to the actual video file. The video may also be mentioned in an existing figure caption. Multimedia files are treated in the same manner as figures and they will be numbered sequentially with normal figures.  The video number, file type, and file size should be included in parentheses at the end of the figure caption. See Figure \ref{vid:satellite} for an example.
-
-% \begin{video}
-% \begin{center}
-% {\includegraphics[height=5cm]{satellite.eps}}
-% \\
-% \end{center}
-% \caption{\label{vid:satellite}This satellite is a still image from Video 1 (Video 1, MPEG, 2.5 MB).}
-% \end{video}
-
-\appendix    % this command starts appendixes
+\appendix
 
 \section{Correlation Eigenvalues via Transposition}
 \label{sec:transpose}
@@ -1737,10 +1391,10 @@ Let \(\mathbf{X}\) be a real \(n \times p\) matrix with \(n > p\). Let
 \mathbf{X}_1 - \bar{\mathbf{X}}_1 | \dots | \mathbf{X}_p - \bar{\mathbf{X}}_p
 \right)
 \]
-where \(\mathbf{X}_i\) denotes column \(i\) of \(\mathbf{X}\). Denote the (unordered) set
-of eigenvalues of \(\mathbf{X}\) as \(\text{eigs}(\mathbf{X})\), and let \(r = (p - 1)^{-1}\).
-Denote the covariance matrix of \(\mathbf{X}\) as \(\text{cov}(\mathbf{X})\).  Then:
-
+where \(\mathbf{X}_i\) denotes column \(i\) of \(\mathbf{X}\). Denote the
+(unordered) set of eigenvalues of \(\mathbf{X}\) as
+\(\text{eigs}(\mathbf{X})\), and let \(r = (p - 1)^{-1}\). Denote the
+covariance matrix of \(\mathbf{X}\) as \(\text{cov}(\mathbf{X})\).  Then:
 \begin{align*}
 \text{eigs}\left( \text{cov}(\mathbf{X})  \right)
 &= \text{eigs}(r \cdot \mathbf{Z}\mathbf{Z}^{\top}) \\
@@ -1749,16 +1403,15 @@ Denote the covariance matrix of \(\mathbf{X}\) as \(\text{cov}(\mathbf{X})\).  T
 &= r \cdot \text{eigs}(\mathbf{Z}^{\top}\mathbf{Z}) \\
 \end{align*}
 
-Denote the correlation matrix of \(\mathbf{X}\) as \(\text{corr}(\mathbf{X})\), and let
+Denote the correlation matrix of \(\mathbf{X}\) as \(\text{corr}(\mathbf{X})\),
+and let
 \[
 \mathbf{Y} = \text{standardize}(\mathbf{X}) =
 \left(
 (\mathbf{X}_1 - \bar{\mathbf{X}}_1) / \sigma_1 | \dots | (\mathbf{X}_p - \bar{\mathbf{X}}_p) / \sigma_p
 \right)
 \]
-
 Then
-
 \[
 \text{eigs}\left( \text{corr}(\mathbf{X})  \right)
 = \text{eigs}\left( \text{cov}(\mathbf{Y})  \right)
@@ -1801,40 +1454,6 @@ We chose one-dimensional k-means partly due to efficiency and simplicity, and
 because of the general relation to classical thresholding methods like the Otsu
 method\cite{liuOtsuMethodKmeans2009}.
 
-
-
-% \section{Miscellaneous Formatting Details}
-% \label{sect:misc}
-% At times it may be desired, for formatting reasons, to break a line without starting a new paragraph. In a LaTeX source file, a linebreak is created with \verb|\\|.
-
-
-% \subsection{Formatting Equations}
-% Equations may appear inline with the text, if they are simple, short, and not of major importance; for example, $\beta = b/r$.  Important equations appear on their own line.  Such equations are centered.  For example, ``The expression for the field of view is
-% \begin{equation}
-% \label{eq:fov}
-% 2 a = \frac{(b + 1)}{3c} \, ,
-% \end{equation}
-% where $a$ is the ...''  Principal equations are numbered, with the equation number placed within parentheses and right justified.
-
-% Equations are considered to be part of a sentence and should be punctuated accordingly. In the above example, a comma appears after the equation because the next line is a subordinate clause. If the equation ends the sentence, a period should follow the equation. The line following an equation should not be indented unless it is meant to start a new paragraph. Indentation after an equation is avoided in LaTeX by not leaving a blank line between the equation and the subsequent text.
-
-% References to equations include the equation number in parentheses, for example, ``Equation~(\ref{eq:fov}) shows ...'' or ``Combining Eqs.~(2) and (3), we obtain...'' Note that the word ``Equation'' is spelled out if it begins a sentence, but is abbreviated as ``Eq.'' otherwise. Using a tilde in the LaTeX source file between two characters avoids unwanted line breaks, for example between ``Eq.'' and the following equation number..
-
-% \subsection{Formatting Theorems}
-
-% To include theorems in a formal way, the theorem identification should appear in a 10-point, bold font, left justified, and followed by a period.  The text of the theorem continues on the same line in normal, 10-pt. font, achieved in LaTeX using \verb|\footnotesize|.  For example,
-
-% \vspace{2ex}\noindent{\footnotesize\textbf{Theorem 1.} For any unbiased estimator...}
-
-% \disclosures
-% \subsection*{Disclosures}
-% Conflicts of interest should be declared under a separate header. If the authors have no relevant financial interests in the manuscript and no other potential conflicts of interest to disclose, a statement to this effect should also be included in the manuscript.
-
-% \subsection* {Acknowledgments}
-% This unnumbered section is used to identify those who have aided the authors in understanding or accomplishing the work presented and to acknowledge sources of funding.
-
-\subsection* {Data, Materials, and Code Availability}
-As relevant, the availability of data, materials, and/or software code used in the research results reported in the manuscript may be declared in this section. (Note: this section is required for the \textit{Journal of Biomedical Optics} and \textit{Neurophotonics}.) Provide specific access information or restrictions for data, materials, and computer code (i.e., links to repository access addresses with guidance on commercial or public access).
 
 
 %%%%% References %%%%%
