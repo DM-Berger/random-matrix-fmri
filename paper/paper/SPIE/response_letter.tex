@@ -1,0 +1,239 @@
+\documentclass[10pt,letter]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage[british]{babel}
+\usepackage{url}
+\usepackage{graphicx}
+\graphicspath{ {figures/} }
+\usepackage{geometry}
+\geometry{
+  lmargin=2cm,
+  rmargin=2cm,
+  bmargin=2cm,
+}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[
+    backend=biber,
+    style=authoryear,
+    natbib=true,
+    sortlocale=en_US,
+    url=false,
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{report.bib}
+\usepackage{fancyhdr}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.,0.,0.4}
+\definecolor{darkred}{rgb}{0.5,0.,0.}
+\usepackage[pdftex,colorlinks=true,linkcolor=darkblue,citecolor=darkred,urlcolor=blue]{hyperref}
+\usepackage{xcolor}
+
+\newcommand{\longcomment}[1]{}
+
+\begin{document}
+% \bibliographystyle{apa}
+\fancypagestyle{nofooter}{\fancyfoot{}}
+\thispagestyle{nofooter}  %  https://tex.stackexchange.com/questions/136384/remove-footer-without-removing-the-header
+\setlength{\headheight}{30.0pt}
+\fancyhead[C]{\includegraphics[height=0.5in]{stfx_text.png}}
+\fancyhead[L]{\includegraphics[height=0.5in]{crest.png}}
+\fancyhead[R]{
+    \sffamily
+    \scriptsize
+    4130 University Avenue \\
+    B2G 2W5 \\
+    Antigonish, Nova Scotia \\
+    Canada
+}
+\normalsize
+
+\title{Cover Letter}
+% \begin{center}
+% \includegraphics[width=4in]{stfx_logo.png}
+% \end{center}
+
+\longcomment{
+Specific comments:
+
+% 1. Lines 42-45: I think it's unlikely that most readers of SPIE will be
+% familiar with RMT and so it would be a good idea to have a bit more of an
+% introduction - what's a random matrix?, what does RMT try to do (e.g.,
+% characterize systems that can be described using matrices, statistically,
+% rather than deterministically.) Later they talk about what RMT has been applied
+% to, but it would be good to orient the reader to the general idea.
+
+% 2. Line 44: "independently" should be "independent"
+
+% 3. Line 56: This is a pretty broad statement, because it would seem that it's
+% an open question whether all complex systems would lend themselves to RMT-based
+% analysis.
+
+% 4. Line 100: Do the authors really mean "eliminate" here? Do they instead mean
+% "mask", given that the information presumably doesn't disappear.
+
+% 5. Line 121: "functional connectivity". Do the authors mean "functional
+% connectivity matrix"?
+
+% 6. Line 138: This sentence is a bit garbled. Do the authors mean "often poorly
+% documented or even missing..."?
+
+% 7. Lines 143-145: I don't think these absences raise doubts about these two
+% things in general, but rather that one has to carefully document the workflows
+% and make the data and code available to the public.
+
+% 8. Line 156: Do the authors mean "allow a reasonable classification of each
+% scan without resorting to other information". Unclear what they mean by
+% "entirety".
+
+% 9. Table 1: Volumes and n_scans are not defined sufficiently. Are "Volumes" the
+% number of volumes per run? Is n_scans to total number of runs? Is there one run
+% per participant? The participant info is in Table 2, but Table 1 should be
+% independently clear.
+
+% 10. Line 180: "learning vs. rest" should be in a different font to be
+% consistent with the other dataset descriptions.
+
+% 11. Line 208: Are the "fractional anisotropy" values mentioned here the input
+% variables for BET which govern how aggressive BET is and the gradient
+% parameter?
+
+12. Section 3.2: While I understand that the authors are trying to make a
+general statement that will apply to all features, this section is unclear
+because the reader has no idea at this point what features are. Perhaps this
+could be expanded.
+
+% 13. Line 223: How about "computing time" and "storage space", assuming that is
+% what is meant.
+
+% 14. Line 267: It's not clear that this section should be here, maybe at the end
+% of the methods section?
+
+% 15. Line 292: This is a minor point, but sentences shouldn't start with an
+% abbreviation (E.g.) better "For example,". This also occurs in line 387.
+
+% 16. Line 311: I see what they mean by "voxel time series" because of lines
+% 317-318, so it might be clearer to move those lines to directly after line 311,
+% so it is clear without having to read further.
+
+17. The authors do a nice job of presenting the relevant results, but the
+conclusions were rather general, being along the lines of "investigate the
+sensitivity of choices made in the processing and analysis". That's an
+important result, given previous work and shows that RMT might not "work" with
+different data sets and processing workflows. The question is: what's the
+takeaway: that the method is not one in which you can have a default set of
+parameters that will generally give good results (like say, the recon-all
+pipeline for FreeSurfer)? If RMT so sensitive to preprocessing and choice of
+parameters, is this a useful method to be applied widely on fMRI data? It would
+be good for this to be discussed and perhaps some recommendations given.
+}
+
+\noindent
+\today, \\
+Dear Dr. Gimi, \\
+
+Thank you for your careful consideration and comments on our manuscript
+\emph{Random Matrix Theory Tools for the Predictive Analysis of Functional
+Magnetic Resonance Imaging Examinations} submitted for publication in SPIE
+Journal of Medical Imaging.
+
+In response to reviewer comments, we have made a number of changes to the
+manuscript. Minor changes relating to wording or for which an edit is
+straightforward (changing or adding a word or two) are identified in
+\textcolor{orange}{orange} in the updated \.pdf manuscript (or with
+\verb|\textcolor{orange}{text}| in the \.tex file). Other more significant
+changes requiring the addition (or movement) of 1-3 sentences are identified
+in \textcolor{cyan}{cyan} (\verb|\textcolor{cyan}{text}|).
+
+\begin{description}
+\item[Comment 1]: An introduction to the basics of Random Matrix Theory (RMT) has been
+added to the introduction, to improve the basic accessibility of RMT to readers
+\end{description}
+
+
+Reviewer comments 2, 4, 5, 6, 10, 11, 13, 15, 16 noted easily-correctable
+issues relating to phrasing and clarity, and we have made changes in line with
+those comments. Reviewer comments 3 and 7 noted some overly-broad or
+insufficiently specific claims on our part. We agree these need qualification,
+and have altered these statements to be avoid implying anything overly-broad.
+Reviewer comments 8, 9 noted some issues with vagueness involving descriptions
+of the fMRI scans in the text and tables. Both the text and table captions have
+been improved to make these details clear. Comment 14 also suggested moving some
+material to methods, and this was also done.
+
+Comment 1 suggested expanding the introduction to Random Matrix Theory (RMT)
+somewhat to better cover the basic aspects of RMT, and help with orienting
+readers unfamiliar with the area. We have done this expansion, and hope that it
+covers the basics both in a way that presumes neither too little nor too much
+from readers (always a very difficult balance to strike with something like
+RMT, unfortunately).
+
+Our reviewer's final comment suggested perhaps strengthening our conclusions
+re: the utility of RMT, given sensitivity to preprocessing.
+
+
+
+
+Please address all correspondence concerning this manuscript to me at \href{jlevman@stfx.ca}{jlevman@stfx.ca}.
+
+
+
+
+
+
+
+\bigskip
+
+\noindent
+Sincerely, \\
+
+\small
+\noindent
+\textbf{Corresponding Author}\\
+Jacob Levman, PhD (jlevman@stfx.ca) \\
+\footnotesize
+\hspace*{0.25cm}St. Francis Xavier University, Department of Computer Science  \\
+\hspace*{0.25cm}Martinos Center for Biomedical Imaging, Massachusetts General Hospital \\
+\hspace*{0.25cm}Harvard Medical School, Department of Radiology (jlevman@mgh.harvard.edu) \\
+\hspace*{0.25cm}Nova Scotia Health Authority, Research Affiliate (jacob.levman@nshealth.ca) \\
+\normalsize
+
+\small
+\noindent
+\textbf{Additional Contacts} [should the corresponding author be unavailable]\\
+Derek Berger (dberger@stfx.ca)\\
+\footnotesize
+\hspace*{0.25cm} St. Francis Xavier University, Department of Computer Science \\
+\small
+Gurpreet S. Matharoo (gmatharo@stfx.ca) \\
+\footnotesize
+\hspace*{0.25cm} St. Francis Xavier University, Department of Physics \\
+\hspace*{0.25cm} St. Francis Xavier University, ACENET
+\normalsize
+
+
+
+% \affil[b]{St. Francis Xavier University, ACENET, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+% \affil[c]{St. Francis Xavier University, Department of Physics, 4130 University Avenue, Antigonish, Nova Scotia, Canada, B2G 2W5}
+
+% \affil[d]{Martinos Center for Biomedical Imaging, 149 Thirteenth Street, Suite 2301, Charlestown, Massachusetts, United States, 02129}
+% \affil[e]{Harvard Medical School, Department of Radiology, 25 Shattuck Street Boston, Massachusetts 02115, United States, 02129}
+% \affil[f]{Nova Scotia Health Authority, Research Affiliate, Nova Scotia, Canada}
+
+% \printbibliography % biblatex
+% \renewcommand{\bibsection}{}  % https://tex.stackexchange.com/questions/132646/how-to-remove-the-references-title
+% \smallskip
+% \bibliographystyle{mystyle}
+% \bibliography{cover}  % natbib
+
+\footnotesize
+\begin{center}
+\noindent\rule{6cm}{0.4pt}
+\end{center}
+
+\AtNextBibliography{\footnotesize}
+\printbibliography[heading=none]
+
+\end{document}
