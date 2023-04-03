@@ -102,14 +102,15 @@ eigenvalues—also often called levels—of a number of classes of random
 matrices\cite{andersonIntroductionRandomMatrices2010,
 akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. A random matrix is,
 simplifying somewhat, a matrix in which the entries are drawn from
-independently and identically distributed (\textit{iid}) distributions. Though
-first developed to describe the fluctuation of nuclei energy levels in quantum
-physics \cite{mehtaRandomMatrices2004, guhrRandommatrixTheoriesQuantum1998a},
-RMT has been shown to have extremely broad potential. In small-scale physical
-systems, RMT universalities have been observed in quantum chaotic systems,
-complex nuclei, atoms, molecules and disordered mesoscopic systems
-\cite{guhrRandommatrixTheoriesQuantum1998a, mehtaRandomMatrices2004,
-brodyRandommatrixPhysicsSpectrum1981, beenakkerRandommatrixTheoryQuantum1997,
+\textcolor{orange}{independent} and identically distributed (\textit{iid})
+distributions. Though first developed to describe the fluctuation of nuclei
+energy levels in quantum physics \cite{mehtaRandomMatrices2004,
+guhrRandommatrixTheoriesQuantum1998a}, RMT has been shown to have extremely
+broad potential. In small-scale physical systems, RMT universalities have been
+observed in quantum chaotic systems, complex nuclei, atoms, molecules and
+disordered mesoscopic systems \cite{guhrRandommatrixTheoriesQuantum1998a,
+mehtaRandomMatrices2004, brodyRandommatrixPhysicsSpectrum1981,
+beenakkerRandommatrixTheoryQuantum1997,
 bohigasHigherOrderCorrelationsSpectra1985, wintgenLevelStatisticsQuantized1988,
 pandeySkewOrthogonalPolynomialsUniversality2001}, and at larger scales, RMT has
 been applied to atmospheric physics
@@ -222,10 +223,11 @@ wangRandomMatrixTheory2016} are the \textit{spectral rigidity} and
 \textit{level number variance} (``rigidity'' and ``level variance'' for short;
 details in Section \ref{sec:methods}).
 
-However, from a predictive standpoint, these summary statistics may eliminate
-predictively-useful information. If the basic RMT insight is that the
-eigenvalues alone can provide understanding of a system, then those eigenvalues
-(or other simple transformations of them) ought also to be predictively useful.
+However, from a predictive standpoint, these summary statistics may
+\textcolor{orange}{mask} predictively-useful information. If the basic RMT
+insight is that the eigenvalues alone can provide understanding of a system,
+then those eigenvalues (or other simple transformations of them) ought also to
+be predictively useful.
 We examine a number of such features in this study, and refer to both
 RMT-derived features like the rigidity and level variance, and non-RMT-derived
 features collectively as \textit{eigenfeatures} in this study.
@@ -254,10 +256,10 @@ priori}, sensitive to the choice of ROIs, and, in the case of anatomical
 atlases / parcellations for ROIs, may also lack theoretical justification.
 
 RMT suggests a potentially useful reduction in the form of the eigenvalues of
-the voxelwise functional connectivity. An \(N \times t\) matrix of
-\(N\) time series of length \(t\), and where \(t \ll N\) will have a symmetric
-correlation (or covariance) matrix with \(t - 1\) non-zero, positive
-real-valued eigenvalues. These eigenvalues can be computed highly
+the voxelwise functional connectivity \textcolor{orange}{matrix}. An \(N \times
+t\) matrix of \(N\) time series of length \(t\), and where \(t \ll N\) will
+have a symmetric correlation (or covariance) matrix with \(t - 1\) non-zero,
+positive real-valued eigenvalues. These eigenvalues can be computed highly
 efficiently via transposition of the voxelwise correlation or covariance
 matrix.
 
@@ -285,9 +287,10 @@ non-trivial, and additionally requires an \textit{unfolding}
 procedure\cite{guhrRandommatrixTheoriesQuantum1998a, mehtaRandomMatrices2004}.
 Unfolding is an exponential fitting procedure that involves a number of highly
 subjective decisions regarding outliers and the flexibility of the fitting
-function. These decisions are, unfortunately, often poorly or even entirely
-undocumented, but are known to often dramatically impact RMT conclusions
-\cite{abul-magdUnfoldingSpectrumChaotic2014,
+function. These decisions are, unfortunately, often poorly
+\textcolor{orange}{documented} or even entirely \textcolor{orange}{missing from
+method descriptions, despite being} known to often dramatically impact RMT
+conclusions \cite{abul-magdUnfoldingSpectrumChaotic2014,
 abueleninSpectralUnfoldingChaotic2018, fossionRandommatrixSpectraTime2013,
 abueleninEffectUnfoldingSpectral2012, moralesImprovedUnfoldingDetrending2011}.
 
@@ -477,7 +480,7 @@ classification task for our analysis.  The task is complex and difficult to
 summarize here adequately, but involved multiple phases where subjects were
 presented with various related abstract images, and then later tested for their
 memory of certain aspects of the learned images. Thus, the classification task
-might also be considered learning vs. rest.
+might also be considered \textcolor{orange}{\texttt{learning v rest}}.
 
 The \textit{Osteo} dataset\cite{tetreaultBrainConnectivityPredicts2016}
 includes whole-brain rs-fMRI scans of healthy, pain-free controls
@@ -537,8 +540,9 @@ Brain extraction was performed first with BET
 \cite{smithFastRobustAutomated2002}, and then with
 ANTs\cite{avantsReproducibleEvaluationANTs2011} to clean up residue left behind
 by BET. BET results were visually inspected for each image in each dataset, and
-BET fractional anisotropy values were modified to ensure brain extraction was
-acceptable. Motion-correction was performed with FSL's MCFLIRT
+BET fractional \textcolor{orange}{intensity threshold (\texttt{-f}
+argument)} values were modified to ensure brain extraction was acceptable.
+Motion-correction was performed with FSL's MCFLIRT
 \cite{jenkinsonImprovedOptimizationRobust2002}, and slice time correction
 with FSL's slicetimer\cite{jenkinsonFSL2012} tool. Finally, functional
 images were registered directly to the MNI152 template via
@@ -618,13 +622,14 @@ tseries        & location      & \tcode{T-max}                          \\
 \subsubsection{Raw Eigenvalues}
 \label{sec:raw-eigs}
 
-The time and space complexities of computing the full \(N \times N\)
-\(\mathbf{M}\) matrix of Pearson correlation coefficients (and subsequent
-eigenvalues) are too large to be tractable. However, since transposition does
-not change the eigenvalues, we can use the transpose to efficiently compute
-these eigenvalues (see Appendix \ref{sec:transpose}). These raw eigenvalues
-(feature \code{eigs} in Table \ref{tab:features}), most directly test the idea
-that eigenvalues alone are useful functional connectivity features.
+The \textcolor{orange}{computing} time and \textcolor{orange}{memory
+requirements} for calculating the full \(N \times N\) \(\mathbf{M}\) matrix of
+Pearson correlation coefficients (and subsequent eigenvalues) are too large to
+be tractable. However, since transposition does not change the eigenvalues, we
+can use the transpose to efficiently compute these eigenvalues (see Appendix
+\ref{sec:transpose}). These raw eigenvalues (feature \code{eigs} in Table
+\ref{tab:features}), most directly test the idea that eigenvalues alone are
+useful functional connectivity features.
 
 However, not all eigenvalues may have predictive utility. We also examine as
 features the central eigenvalues (defined as the middle 10\%, 20\%, or 40\% of
@@ -753,15 +758,15 @@ found in Table \ref{tab:features}, where the "\code{+}" symbol indicates concate
 \subsubsection{Slicing Variants}
 
 The largest, middle, or smallest eigenvalues could be most useful in
-characterizing any given system. E.g. if the smallest eigenvalues correspond to
-random / noise aspects of a system, but differences in the nature of the system
-noise most differentiate between systems, then the smallest eigenvalues may
-have the most predictive utility.  Likewise, the \(L\) value in each RMT
-eigenfeature defines the degree of locality at which we summarize the spectrum:
-with small \(L\)-values, the spectral rigidity summarizes the non-linearity of
-eigenvalues that are relatively close to each other in magnitude. At large
-values of \(L\), the rigidity summarizes the long-range non-linearity of the
-spectrum.
+characterizing any given system. \textcolor{orange}{For example,} if the
+smallest eigenvalues correspond to random / noise aspects of a system, but
+differences in the nature of the system noise most differentiate between
+systems, then the smallest eigenvalues may have the most predictive utility.
+Likewise, the \(L\) value in each RMT eigenfeature defines the degree of
+locality at which we summarize the spectrum: with small \(L\)-values, the
+spectral rigidity summarizes the non-linearity of eigenvalues that are
+relatively close to each other in magnitude. At large values of \(L\), the
+rigidity summarizes the long-range non-linearity of the spectrum.
 
 Since predictive utility may vary with summary locality, or with the region of
 the original spectrum, we investigate various front, middle, and end contiguous
@@ -788,7 +793,9 @@ that are simple summary statistics of the fMRI data, it is difficult to justify
 the greater computational and interpretational complexities of the former. We
 compute ten simple statistical reductions of the voxel time series ( "tseries"
 features in Table \ref{tab:features}) to help assess the relative value of RMT
-features.
+features.  \textcolor{orange}{That is, each statistic reduces the fMRI data along
+the voxel dimension, yielding a feature of \(t\) dimensions (e.g. the ``mean''
+feature, \code{T-mean}, is the usual global mean signal).}
 
 The baseline reductions used as statistical summaries were: robust measures of
 location (mean, max, min); non-robust measures of location (median,
@@ -796,9 +803,8 @@ location (mean, max, min); non-robust measures of location (median,
 measures of scale (standard deviation and the range—\code{T-rng} in Table
 \ref{tab:features}); and robust measures of scale (interquartile range and
 difference between \(95^{\text{th}}\) percentile and \(5^{\text{th}}\)
-percentile—\code{T-rrng} in Table \ref{tab:features}). Each statistic reduces
-the fMRI data along the voxel dimension, yielding a feature of \(t\) dimensions
-(e.g. the ``mean'' feature, \code{T-mean}, is the usual global mean signal).
+percentile—\code{T-rrng} in Table \ref{tab:features}).
+
 % Exact details can be found in the
 % \href{https://github.com/DM-Berger/random-matrix-fmri/blob/master/code/rmt/enumerables.py#L51-L69}{paper
 % source code}.
@@ -980,10 +986,11 @@ It is important, to reduce figure clutter and complexity, to exclude a
 classification task or an analytic factor from summaries if there is no
 evidence that the classification task is solvable in general, or if, when
 restricting the analytic factor to a particular instance, there is no evidence
-of solvability. E.g. if a particular trimming procedure were to render all
-classification tasks unsolvable, it would be better to note this and exclude
-the associated mAUROCs from further visualizations, rather than to have the
-mAUROC distributions diluted by the bad procedure.
+of solvability. \textcolor{orange}{For example,} if a particular trimming
+procedure were to render all classification tasks unsolvable, it would be
+better to note this and exclude the associated mAUROCs from further
+visualizations, rather than to have the mAUROC distributions diluted by the bad
+procedure.
 
 We take as lack of evidence of solvability an mAUROC distribution that is
 either (1) roughly symmetric and has mean and median close to 0.5, i.e.
