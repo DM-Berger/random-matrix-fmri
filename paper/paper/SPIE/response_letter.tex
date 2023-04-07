@@ -66,9 +66,9 @@ Specific comments:
 
 %%%%%% 2. Line 44: "independently" should be "independent"
 
-% 3. Line 56: This is a pretty broad statement, because it would seem that it's
-% an open question whether all complex systems would lend themselves to RMT-based
-% analysis.
+%%%%%%% 3. Line 56: This is a pretty broad statement, because it would seem that it's
+%%%%%%% an open question whether all complex systems would lend themselves to RMT-based
+%%%%%%% analysis.
 
 %%%%%% 4. Line 100: Do the authors really mean "eliminate" here? Do they instead mean
 %%%%%% "mask", given that the information presumably doesn't disappear.
@@ -79,18 +79,18 @@ Specific comments:
 %%%%%% 6. Line 138: This sentence is a bit garbled. Do the authors mean "often poorly
 %%%%%% documented or even missing..."?
 
-% 7. Lines 143-145: I don't think these absences raise doubts about these two
-% things in general, but rather that one has to carefully document the workflows
-% and make the data and code available to the public.
+%%%%%% 7. Lines 143-145: I don't think these absences raise doubts about these two
+%%%%%% things in general, but rather that one has to carefully document the workflows
+%%%%%% and make the data and code available to the public.
 
-% 8. Line 156: Do the authors mean "allow a reasonable classification of each
-% scan without resorting to other information". Unclear what they mean by
-% "entirety".
+%%%%%% 8. Line 156: Do the authors mean "allow a reasonable classification of each
+%%%%%% scan without resorting to other information". Unclear what they mean by
+%%%%%% "entirety".
 
-% 9. Table 1: Volumes and n_scans are not defined sufficiently. Are "Volumes" the
-% number of volumes per run? Is n_scans to total number of runs? Is there one run
-% per participant? The participant info is in Table 2, but Table 1 should be
-% independently clear.
+%%%%%% 9. Table 1: Volumes and n_scans are not defined sufficiently. Are "Volumes" the
+%%%%%% number of volumes per run? Is n_scans to total number of runs? Is there one run
+%%%%%% per participant? The participant info is in Table 2, but Table 1 should be
+%%%%%% independently clear.
 
 %%%%%% 10. Line 180: "learning vs. rest" should be in a different font to be
 %%%%%% consistent with the other dataset descriptions.
@@ -99,16 +99,16 @@ Specific comments:
 %%%%%% variables for BET which govern how aggressive BET is and the gradient
 %%%%%% parameter?
 
-12. Section 3.2: While I understand that the authors are trying to make a
-general statement that will apply to all features, this section is unclear
-because the reader has no idea at this point what features are. Perhaps this
-could be expanded.
+%%%%%% 12. Section 3.2: While I understand that the authors are trying to make a
+%%%%%% general statement that will apply to all features, this section is unclear
+%%%%%% because the reader has no idea at this point what features are. Perhaps this
+%%%%%% could be expanded.
 
 %%%%%% 13. Line 223: How about "computing time" and "storage space", assuming that is
 %%%%%% what is meant.
 
-% 14. Line 267: It's not clear that this section should be here, maybe at the end
-% of the methods section?
+%%%%%% 14. Line 267: It's not clear that this section should be here, maybe at the end
+%%%%%% of the methods section?
 
 %%%%%% 15. Line 292: This is a minor point, but sentences shouldn't start with an
 %%%%%% abbreviation (E.g.) better "For example,". This also occurs in line 387.
@@ -152,15 +152,32 @@ added to the introduction, to improve the basic accessibility of RMT to readers
 \end{description}
 
 
-Reviewer comments 2, 4, 5, 6, 10, 11, 13, 15, 16 noted easily-correctable
-issues relating to phrasing and clarity, and we have made changes in line with
-those comments. Reviewer comments 3 and 7 noted some overly-broad or
-insufficiently specific claims on our part. We agree these need qualification,
-and have altered these statements to be avoid implying anything overly-broad.
+Reviewer comments 2, 4, 5, 6, 10, 11, 13, 14, 15, 16 noted easily-correctable
+and uncontroversial issues relating to phrasing, clarity or ordering, and we
+have made changes in line with those comments.
+
+Comment 3 interprets our statement as making a broad claim, but the statement was
+in fact intended to qualify or limit the scope of applicability of RMT. This has been
+made clearer. Likewise, we don't think there is any disagreement between our
+intended meaning and the sentiment in comment 7, but have made it clearer that
+our doubts are confined to \textit{past} studies (e.g. with poorly documentation,
+as mentioned in that paragraph). Of course we don't think poor past studies mean no
+future for RMT in general.
+
+
 Reviewer comments 8, 9 noted some issues with vagueness involving descriptions
-of the fMRI scans in the text and tables. Both the text and table captions have
-been improved to make these details clear. Comment 14 also suggested moving some
-material to methods, and this was also done.
+of the fMRI scans and runs in the text and tables. We hope these descriptions are now
+unambiguous.
+
+In response to comment 12, while we did, and still do take as given that our
+reviewer and a reader of SPIE:JMI knows what features and feature extraction
+are, we can see how at this point in the paper, it may not be clear
+\textit{why} we are extracting features. We have added a short paragraph here
+that we hope resolves this, and makes it clear we are comparing the predictive
+utility of different features / feature extraction methods (and that "feature"
+has the usual meaning in this context).
+
+
 
 Comment 1 suggested expanding the introduction to Random Matrix Theory (RMT)
 somewhat to better cover the basic aspects of RMT, and help with orienting

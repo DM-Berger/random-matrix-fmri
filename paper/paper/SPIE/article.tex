@@ -97,13 +97,49 @@ prediction performances across a wide variety of phenomena.
 \section{Introduction}
 \label{sect:intro}
 
-At its most rudimentary, RMT describes the expected behavior of the
-eigenvalues—also often called levels—of a number of classes of random
-matrices\cite{andersonIntroductionRandomMatrices2010,
-akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. A random matrix is,
-simplifying somewhat, a matrix in which the entries are drawn from
-\textcolor{orange}{independent} and identically distributed (\textit{iid})
-distributions. Though first developed to describe the fluctuation of nuclei
+\color{cyan}
+
+At its most rudimentary, the basic insight of Random Matrix Theory (RMT) is
+that matrices can be described by their eigenvalues, and that
+large matrices (or large collections of matrices) can be
+well-described by the statistical behaviour of those eigenvalues. Such a
+description is obtained by assuming that the large matrix (or collection
+of matrices) is sampled from a \textit{class} or \textit{ensemble} of random
+matrices.
+
+Simplifying somewhat, a random matrix is a matrix that has entries that can be
+well-described as being drawn from a particular independent and identically
+distributed (\textit{iid}) distribution, or, equivalently, is a matrix where
+each entry is itself a random variable. A \textit{class} or \textit{ensemble}
+of random matrices is generally defined by the shape of the \textit{iid}
+distribution involved. For example, the Gaussian Orthogonal Ensemble (GOE) is a
+\textit{class} or \textit{ensemble} of random matrices that comprises
+orthogonal matrices with each entry being sampled from a standard Gaussian, and
+the Marchenko-Pastur distribution describes the limiting behaviour of the
+singular values of \textit{iid} rectangular random matrices where the
+\textit{iid} distribution is arbitrary\cite{mehtaRandomMatrices2004}. Of
+course, given a single particular matrix, one can only estimate a
+\textiit{probability} that it is a member of a certain class, since certain RMT
+classes can yield arbitrary matrices (albeit with extremely low probability).
+
+
+and eigenvalue distributions of GOE random matrices have a
+number of well-understood properties\cite{mehtaRandomMatrices2004,
+guhrRandommatrixTheoriesQuantum1998a}. Even more generally,
+
+
+
+Specifically, RMT finds that often, in the infinite limit, that the expected
+distribution of the eigenvalues of a number of classes of random matrices can
+be described quite precisely.\cite{andersonIntroductionRandomMatrices2010,
+akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. Although these
+assumptions are quite specific and restrictive, nevertheless, RMT-predicted
+eigenvalue distributions have appeared in diverse natural phenomena.
+
+\color{black}
+
+
+\textcolor{cyan}{Thus, while} first developed to describe the fluctuation of nuclei
 energy levels in quantum physics \cite{mehtaRandomMatrices2004,
 guhrRandommatrixTheoriesQuantum1998a}, RMT has been shown to have extremely
 broad potential. In small-scale physical systems, RMT universalities have been
@@ -136,12 +172,15 @@ more recently, has provided insights into the behaviors of deep neural
 networks\cite{martinImplicitSelfRegularizationDeep2021,
 martinPredictingTrendsQuality2021}.
 
-RMT likely has the most real-world explanatory potential when dealing with a
-complex system of many (hundreds or more\cite{mehtaRandomMatrices2004})
-interacting components. If such a system has a matrix representation, and the
-eigenvalues of this representation have a distribution similar to one predicted
-by RMT, it suggests the system is either highly random or chaotic. By contrast,
-if the observed spectra deviate significantly from RMT-predicted spectra, this
+\textcolor{orange}{When or if RMT has} real-world explanatory potential,
+\textcolor{orange}{this will most likely be} when dealing with a complex system
+of many (hundreds or more\cite{mehtaRandomMatrices2004}) interacting
+components, \textcolor{orange}{rather than a system that is too small for
+statistical regularities ro reliably surface}. If such a system has a matrix
+representation, and the eigenvalues of this representation have a distribution
+similar to one predicted by RMT, it suggests the system is either highly random
+or chaotic. By contrast, if the observed spectra deviate significantly from
+RMT-predicted spectra, this
 suggests otherwise. A number of studies have used RMT to make such
 interpretations and comparisons between
 systems\cite{santhanamStatisticsAtmosphericCorrelations2001,
@@ -300,8 +339,8 @@ in the complex preprocessing pipelines of
 fMRI\cite{parkerBenefitSliceTiming2019}. These "researcher degrees of
 freedom"\cite{simmonsFalsePositivePsychologyUndisclosed2011b}, in combination
 with the absence of reproducible code and data availability, and predominance
-of descriptive and explanatory approaches, raise doubts about the basic
-robustness and practical utility of RMT-based functional connectivity analyses.
+of descriptive and explanatory approaches, \textcolor{orange}{may} raise doubts about the basic
+robustness and practical utility of \textcolor{orange}{past} RMT-based functional connectivity analyses.
 
 What is missing is a rigorous, systematic, reproducible investigation of the
 predictive value of RMT metrics across a wide variety of data, analytic
@@ -319,12 +358,15 @@ We selected fMRI data publicly available on the
 \href{https://openneuro.org/}{OpenNeuro}
 platform\cite{markiewiczOpenNeuroResourceSharing2021}. Selection criteria was
 somewhat subjective, but we required each dataset to (1) comprise 10 or more
-human subjects, (2) have all fMRI scans have the same spatial and temporal
-resolutions, (3) have fMRI images that can be split into various classes for a
-number of binary classification tasks, and (4), allow reasonably classifying
-each scan in its entirety (i.e. neither task nor event timings are needed to
-determine class membership, nor do any scan volumes need to be removed to make
-the scan classifiable). This yielded seven datasets total.
+human subjects, (2) have all fMRI \textcolor{orange}{runs} have the same
+spatial and temporal resolutions, (3) have fMRI images that can be split into
+various classes for a number of binary classification tasks, and (4), allow
+reasonably classifying each run \textcolor{orange}{using all of the run 4D
+voxel data only.} \textcolor{cyan}{That is, for this last point, classification
+of a run should be reasonable in the absence of run-specific task or event
+timings or details, and should not require using only some subset of the total
+set of 3D volumes (e.g. those associated only with some task or event
+timings)}. This yielded seven datasets total.
 
 
 \begin{table}[h!]
@@ -334,7 +376,8 @@ the scan classifiable). This yielded seven datasets total.
     Name = Identifier for paper.
     Dimensions listed as M x N x P, indicate P axial slices each with dimensions M x N.
     TR = Time of Repetition (seconds).
-    n\_scans = Total number of images in dataset.
+    \textcolor{orange}{Volumes = Number of 3D volumes per run.}
+    n\_scans = Total number of \textcolor{orange}{4D images in dataset (number of subjects times number of runs per subject)}.
 }
 \small
 \centering
@@ -560,11 +603,22 @@ computational costs and comparisons.
 
 \subsection{Feature Extraction}
 
-For each preprocessing degree and fMRI image, features were extracted from all
-\(N\) non-constant brain voxels, where \(N\) may differ for each image. After
-this process, each scan yields an \(N \times t\) matrix \(\mathbf{M}\), where
-\(t\) is the number of volumes acquired. All features extracted summarize
-this matrix \(\mathbf{M}\).
+\textcolor{cyan}{When dealing with large inputs, any predictive analysis must
+reduce that input into predictively-useful features. Any method that reduces a
+larger set of data is potentially valid as a feature extraction method, and RMT,
+which summarizes matrix data by summarizing the eigenvalue distributions, may
+may be useful for feature extraction. However, different feature
+extraction methods may have different advantages and disadvantages in terms of
+the computational complexity, amount of summary or selection involved, and in
+interpretability. RMT is both mathematically and computationally complex, and
+thus RMT-based features should be compared to alternate features that may be
+easier to understand or compute.}
+
+Thus, for each preprocessing degree and fMRI image, features were extracted
+from all \(N\) non-constant brain voxels, where \(N\) may differ for each
+image. After this process, each scan yields an \(N \times t\) matrix
+\(\mathbf{M}\), where \(t\) is the number of volumes acquired. All features
+extracted summarize this matrix \(\mathbf{M}\).
 
 \begin{table}[h!]
 \caption{
@@ -716,17 +770,6 @@ moralesImprovedUnfoldingDetrending2011, abueleninSpectralUnfoldingChaotic2018,
 fossionRandommatrixSpectraTime2013, abueleninEffectUnfoldingSpectral2012}, we
 compute the rigidity and level variance with all possible combinations of our
 trimming procedures, and unfolding polynomial degrees of 3, 5, 7, and 9.
-
-\textit{Software Release}. Because the computation of these statistics is
-non-trivial, and to make the unfolding procedure more transparent and
-reproducible, we developed and release a separate, open-source Python library
-\code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
-allows for efficient, parallel computation of the spectral rigidity and level
-variance via Monte Carlo methods, and automatically ensures convergence of the
-statistics to user-specified tolerances. The library also makes available
-various other functions useful for empirical RMT analyses, such as unfolding
-and trimming functions, and plotting facilities for classic RMT ensembles.
-
 
 \subsubsection{Smoothed Eigenfeatures}
 \label{sec:eigs-only}
@@ -882,6 +925,17 @@ study, this yields 2,053,920 mAUROC values to summarize, with 5 main
 \textit{analytic factors}— preprocessing, normalization, trimming,
 unfolding/smoothing degree, and slicing—to consider.
 
+\subsection{Software Release}
+
+\textcolor{cyan}{Because the computation of these statistics is
+non-trivial, and to make the unfolding procedure more transparent and
+reproducible, we developed and release a separate, open-source Python library
+\code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
+allows for efficient, parallel computation of the spectral rigidity and level
+variance via Monte Carlo methods, and automatically ensures convergence of the
+statistics to user-specified tolerances. The library also makes available
+various other functions useful for empirical RMT analyses, such as unfolding
+and trimming functions, and plotting facilities for classic RMT ensembles.}
 
 
 \section{Results}
