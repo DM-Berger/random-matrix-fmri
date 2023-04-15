@@ -97,56 +97,15 @@ prediction performances across a wide variety of phenomena.
 \section{Introduction}
 \label{sect:intro}
 
-\color{cyan}
 
-At its most rudimentary, the basic insight of Random Matrix Theory (RMT) is
-that matrices can be described by their eigenvalues, and that
-large matrices (or large collections of matrices) can be
-well-described by the statistical behaviour of those eigenvalues. Such a
-description is obtained by assuming that the large matrix (or collection
-of matrices) is sampled from a \textit{class} or \textit{ensemble} of random
-matrices.
-
-Simplifying somewhat, a random matrix is a matrix that has entries that can be
-well-described as being drawn from a particular independent and identically
-distributed (\textit{iid}) distribution, or, equivalently, is a matrix where
-each entry is itself a random variable. A \textit{class} or \textit{ensemble}
-of random matrices is generally defined by the shape of the \textit{iid}
-distribution involved. For example, the Gaussian Orthogonal Ensemble (GOE) is a
-\textit{class} or \textit{ensemble} of random matrices that comprises
-orthogonal matrices with each entry being sampled from a standard Gaussian, and
-the Marchenko-Pastur distribution describes the limiting behaviour of the
-singular values of \textit{iid} rectangular random matrices where the
-\textit{iid} distribution is arbitrary\cite{mehtaRandomMatrices2004}. Of
-course, given a single particular matrix, one can only estimate a
-\textit{probability} that it is a member of a certain class, since certain RMT
-classes can yield arbitrary matrices (albeit with extremely low probability).
-
-
-and eigenvalue distributions of GOE random matrices have a
-number of well-understood properties\cite{mehtaRandomMatrices2004,
-guhrRandommatrixTheoriesQuantum1998a}. Even more generally,
-
-
-
-Specifically, RMT finds that often, in the infinite limit, that the expected
-distribution of the eigenvalues of a number of classes of random matrices can
-be described quite precisely.\cite{andersonIntroductionRandomMatrices2010,
-akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}. Although these
-assumptions are quite specific and restrictive, nevertheless, RMT-predicted
-eigenvalue distributions have appeared in diverse natural phenomena.
-
-\color{black}
-
-
-\textcolor{cyan}{Thus, while} first developed to describe the fluctuation of nuclei
-energy levels in quantum physics \cite{mehtaRandomMatrices2004,
-guhrRandommatrixTheoriesQuantum1998a}, RMT has been shown to have extremely
-broad potential. In small-scale physical systems, RMT universalities have been
-observed in quantum chaotic systems, complex nuclei, atoms, molecules and
-disordered mesoscopic systems \cite{guhrRandommatrixTheoriesQuantum1998a,
-mehtaRandomMatrices2004, brodyRandommatrixPhysicsSpectrum1981,
-beenakkerRandommatrixTheoryQuantum1997,
+Though first developed to describe the fluctuation of nuclei energy levels in
+quantum physics \cite{mehtaRandomMatrices2004,
+guhrRandommatrixTheoriesQuantum1998a}, Random Matrix Theory (RMT) has been
+shown to have extremely broad potential. In small-scale physical systems, RMT
+universalities have been observed in quantum chaotic systems, complex nuclei,
+atoms, molecules and disordered mesoscopic systems
+\cite{guhrRandommatrixTheoriesQuantum1998a, mehtaRandomMatrices2004,
+brodyRandommatrixPhysicsSpectrum1981, beenakkerRandommatrixTheoryQuantum1997,
 bohigasHigherOrderCorrelationsSpectra1985, wintgenLevelStatisticsQuantized1988,
 pandeySkewOrthogonalPolynomialsUniversality2001}, and at larger scales, RMT has
 been applied to atmospheric physics
@@ -172,17 +131,58 @@ more recently, has provided insights into the behaviors of deep neural
 networks\cite{martinImplicitSelfRegularizationDeep2021,
 martinPredictingTrendsQuality2021}.
 
+\color{cyan}
+At its most rudimentary, RMT describes the expected behaviour of the
+eigenvalues—also often called \textcolor{orange}{the \textit{spectra} or}
+\textit{levels}—of a number of classes of random
+matrices\cite{andersonIntroductionRandomMatrices2010,
+akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}.  A random matrix is
+a matrix where each entry is a random variable. Typically, each random variable
+is \textcolor{orange}{independent} and identically distributed (\textit{iid}), however, modern
+extensions allow for some
+dependence\cite{bouchaudFinancialApplicationsRandom2009}. A \textit{class} or
+\textit{ensemble} of random matrices can be defined by the type of
+\textit{iid} distribution involved. For example, the Gaussian Orthogonal
+Ensemble (GOE\cite{mehtaRandomMatrices2004,
+guhrRandommatrixTheoriesQuantum1998a}) is a \textit{class} or \textit{ensemble}
+of random matrices that comprises orthogonal matrices with each entry being
+sampled from a standard Gaussian, and the Marchenko-Pastur distribution
+describes the limiting behaviour of the singular values of \textit{iid}
+rectangular random matrices where the \textit{iid} distribution is
+arbitrary\cite{mehtaRandomMatrices2004}. RMT often finds that in the infinite
+limit, the expected eigenvalue distribution of a number of classes of random
+matrices can be described quite
+precisely\cite{andersonIntroductionRandomMatrices2010,
+akemannOxfordHandbookRandom2011, mehtaRandomMatrices2004}.
+
+Of course, given a particular non-random matrix or instantiation of a random
+matrix, one can, in general, only estimate the likelihood that it is a member
+of a certain class or ensemble, since certain RMT ensembles (such as the GOE)
+can yield arbitrary matrices with extremely low probability. Thus, RMT also
+includes statistical measures ("spectral observables") and tools to help
+compare empirical observations to theory\cite{mehtaRandomMatrices2004,
+guhrRandommatrixTheoriesQuantum1998a}.
+
+% At its most rudimentary, the basic insight of Random Matrix Theory (RMT) is
+% that matrices can be described by their eigenvalues, and that
+% large matrices (or large collections of matrices) can be
+% well-described by the statistical behaviour of those eigenvalues.
+
+\color{black}
+
+
+
 \textcolor{orange}{When or if RMT has} real-world explanatory potential,
 \textcolor{orange}{this will most likely be} when dealing with a complex system
 of many (hundreds or more\cite{mehtaRandomMatrices2004}) interacting
 components, \textcolor{orange}{rather than a system that is too small for
 statistical regularities ro reliably surface}. If such a system has a matrix
-representation, and the eigenvalues of this representation have a distribution
-similar to one predicted by RMT, it suggests the system is either highly random
-or chaotic. By contrast, if the observed spectra deviate significantly from
-RMT-predicted spectra, this
-suggests otherwise. A number of studies have used RMT to make such
-interpretations and comparisons between
+representation, and the eigenvalues \textcolor{orange}{and spectral
+observables} of this representation have distributions similar to
+\textcolor{orange}{those} predicted by RMT, it suggests the system is either
+highly random or chaotic. By contrast, if the observed spectra deviate
+significantly from RMT-predicted spectra, this suggests otherwise. A number of
+studies have used RMT to make such interpretations and comparisons between
 systems\cite{santhanamStatisticsAtmosphericCorrelations2001,
 jalanUncoveringRandomnessSuccess2014,
 bandyopadhyayUniversalityComplexNetworks2007,
@@ -677,7 +677,7 @@ tseries        & location      & \tcode{T-max}                          \\
 \label{sec:raw-eigs}
 
 The \textcolor{orange}{computing} time and \textcolor{orange}{memory
-requirements} for calculating the full \(N \times N\) \(\mathbf{M}\) matrix of
+requirements} for calculating the full \(N \times N\) matrix \(\mathbf{M}\) of
 Pearson correlation coefficients (and subsequent eigenvalues) are too large to
 be tractable. However, since transposition does not change the eigenvalues, we
 can use the transpose to efficiently compute these eigenvalues (see Appendix
@@ -819,13 +819,14 @@ non-middle slices, or the middle 10\%, 20\%, or 40\% of the full eigenfeature fo
 the middle eigenvalues.
 
 For combined features, slicing variants are also computed, with slicing
-performed first on each feature to be combined. E.g. if we have features \(f_1,
-\dots,  f_n\) with dimensions \(p_1, \dots, p_n\), then the sliced max 25\%
-feature for each component feature, \(\hat{f}_i\) is the last \(p_i / 4\)
-elements of \(f_i\), and the combined sliced feature is  \([\hat{f}_1;\;
-\dots;\; \hat{f}_n]\).
+performed first on each feature to be combined. \textcolor{orange}{For example}
+if we have features \(f_1, \dots,  f_n\) with dimensions \(p_1, \dots, p_n\),
+then the sliced max 25\% feature for each component feature, \(\hat{f}_i\) is
+the last \(p_i / 4\) elements of \(f_i\), and the combined sliced feature is
+\([\hat{f}_1;\; \dots;\; \hat{f}_n]\).
 % \footnote{Exact implementation can be found in the
-%\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source code}}.
+%\href{https://github.com/DM-Berger/random-matrix-fmri/blob/7c9e4187f582dedee728cd7193b8894d928c2f00/code/rmt/updated\_predict.py\#L182-L213}{source
+%code}}.
 
 
 \subsubsection{Baseline Features}
@@ -927,7 +928,7 @@ unfolding/smoothing degree, and slicing—to consider.
 
 \subsection{Software Release}
 
-\textcolor{cyan}{Because the computation of these statistics is
+\textcolor{orange}{Because the computation of these statistics is
 non-trivial, and to make the unfolding procedure more transparent and
 reproducible, we developed and release a separate, open-source Python library
 \code{empyricalRMT}\cite{dm-bergerStfxecutablesEmpyricalRMTV12022}. The library
@@ -1385,24 +1386,30 @@ variety of datasets and classification tasks. However, the predictive utilities
 were modest, and highly dependent on preprocessing steps and other fitting and
 feature selection procedures.
 
-\color{cyan}
-Previous studies have not explored the sensitivity of RMT-based analyses to
-analytic decisions. It is far too early to say whether RMT may prove fruitful
-for understanding fMRI, however, we hope our analyses show that, when RMT has
-such potential, that potential must be contextualized by the analytic decisions
-involved. Absent this analytical context, we advise considerable caution with
-regard to claims that RMT offers insights into fMRI analyses.
-
+\textcolor{cyan}{Given the sensitivity to these decisions observed in this
+study, and considering the lack of consensus regarding the preprocessing of
+fMRI or other complex biological signal data, RMT should probably not be
+currently considered a tool with "out-of-the-box" utility in these domains.
+While RMT likely still has potential to yield insights in a variety of
+contexts, our results suggest that, absent strong evidence otherwise, it is not
+safe to assume that these insights will generalize broadly beyond the specific
+preprocessing and analytic pipelines involved.}
 
 \color{black}
 
-
-Future studies employing RMT should carefully
-investigate the sensitivity of any findings to such analytic decisions before
-drawing any conclusions. However, this study demonstrates that the inclusion of
-RMT statistics and other eigenfeatures extracted from fMRI images could aid in
-the predictive modeling of a wide variety of phenomena.
-
+\textcolor{cyan}{Further research might establish specific sets of analytic
+choices that allow RMT to consistently extract useful information in a wide
+variety of contexts. However, it is also possible that each unique context
+might require a specific combination of choices. In this latter case, there
+should be \textit{strong} theoretical justification for the use of
+RMT, and for each of the various analytic choices involved in its use: the
+variability of results seen in this study suggests that there may often be a
+set of analytic choices that provide favourable results, and which can be
+weakly justified by plausible, but ultimately \textit{post hoc} justifications.}
+\textcolor{cyan}{Provided that these precautions are followed, and that} future
+studies employing RMT \textcolor{orange}{also} carefully investigate the
+sensitivity of any findings to such analytic decisions, \textcolor{cyan}{then
+there is likely considerable untapped potential for RMT in the analysis of fMRI.}
 
 
 \newpage
