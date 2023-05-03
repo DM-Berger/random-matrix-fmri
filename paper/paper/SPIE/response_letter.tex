@@ -1,6 +1,7 @@
 \documentclass[10pt,letter]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{csquotes}
+\MakeOuterQuote{"}
 \usepackage[british]{babel}
 \usepackage{url}
 \usepackage{graphicx}
@@ -136,8 +137,8 @@ Dear Dr. Gimi, \\
 Thank you for your careful consideration of our manuscript
 \emph{Random Matrix Theory Tools for the Predictive Analysis of Functional
 Magnetic Resonance Imaging Examinations} submitted for publication in SPIE
-Journal of Medical Imaging. We especially thank our anonymous reviewer,
-who and offered especially constructive and specific comments on this manuscript.
+Journal of Medical Imaging. We also thank our anonymous reviewer,
+who offered highly constructive and helpful comments on the manuscript.
 
 The updated manuscript indicates changes with coloration, as suggested by
 SPIE:JMI. Minor wording or other uncontroversial changes are identified in
@@ -146,7 +147,7 @@ SPIE:JMI. Minor wording or other uncontroversial changes are identified in
 changes are identified in \textcolor{cyan}{cyan} (\verb|\textcolor{cyan}{text}|).
 
 \begin{itemize}
-\item Reviewer comments 2, 4, 5, 6, 10, 11, 13, 14, 15, 16 noted easily-correctable
+\item Reviewer comments 2, 4, 5, 6, 10, 11, 13, 14, 15, 16 (see \hyperref[comments]{below}) noted easily-correctable
 and uncontroversial issues relating to phrasing, clarity or ordering, and we
 have made changes in line with those comments on lines 55, 115, 136, 153,
 196, 224, 247, 381-387, 413 and 309, and 329-331, respectively.
@@ -186,9 +187,6 @@ to more strongly imply a need for caution and/or carefulness in the
 presentation and interpretation of RMT-fMRI-related findings.
 
 
-Please address all correspondence concerning this manuscript to \href{jlevman@stfx.ca}{jlevman@stfx.ca}.
-
-
 
 
 \bigskip
@@ -202,8 +200,7 @@ Sincerely, \\
 Jacob Levman, PhD (jlevman@stfx.ca) \\
 \footnotesize
 \hspace*{0.25cm}St. Francis Xavier University, Department of Computer Science  \\
-\hspace*{0.25cm}Martinos Center for Biomedical Imaging, Massachusetts General Hospital \\
-\hspace*{0.25cm}Harvard Medical School, Department of Radiology (jlevman@mgh.harvard.edu) \\
+\hspace*{0.25cm}Martinos Center for Biomedical Imaging, Massachusetts General Hospital, Harvard Medical School (jlevman@mgh.harvard.edu) \\
 \hspace*{0.25cm}Nova Scotia Health Authority, Research Affiliate (jacob.levman@nshealth.ca) \\
 \normalsize
 
@@ -243,5 +240,79 @@ Gurpreet S. Matharoo (gmatharo@stfx.ca) \\
 
 \AtNextBibliography{\footnotesize}
 \printbibliography[heading=none]
+
+\section*{Reviewer Comments} \label{comments}
+\begin{enumerate}
+\item Lines 42-45: I think it's unlikely that most readers of SPIE will be
+familiar with RMT and so it would be a good idea to have a bit more of an
+introduction - what's a random matrix?, what does RMT try to do (e.g.,
+characterize systems that can be described using matrices, statistically,
+rather than deterministically.) Later they talk about what RMT has been applied
+to, but it would be good to orient the reader to the general idea.
+
+\item Line 44: "independently" should be "independent"
+
+\item Line 56: This is a pretty broad statement, because it would seem that it's
+an open question whether all complex systems would lend themselves to RMT-based
+analysis.
+
+\item Line 100: Do the authors really mean "eliminate" here? Do they instead mean
+"mask", given that the information presumably doesn't disappear.
+
+\item Line 121: "functional connectivity". Do the authors mean "functional
+connectivity matrix"?
+
+\item Line 138: This sentence is a bit garbled. Do the authors mean "often poorly
+documented or even missing..."?
+
+\item Lines 143-145: I don't think these absences raise doubts about these two
+things in general, but rather that one has to carefully document the workflows
+and make the data and code available to the public.
+
+\item Line 156: Do the authors mean "allow a reasonable classification of each
+scan without resorting to other information". Unclear what they mean by
+"entirety".
+
+\item Table 1: Volumes and n\_scans are not defined sufficiently. Are "Volumes"
+the number of volumes per run? Is n\_scans to total number of runs? Is there
+one run per participant? The participant info is in Table 2, but Table 1 should
+be independently clear.
+
+\item Line 180: "learning vs.\ rest" should be in a different font to be
+consistent with the other dataset descriptions.
+
+\item Line 208: Are the "fractional anisotropy" values mentioned here the input
+variables for BET which govern how aggressive BET is and the gradient
+parameter?
+
+\item Section 3.2: While I understand that the authors are trying to make a
+general statement that will apply to all features, this section is unclear
+because the reader has no idea at this point what features are. Perhaps this
+could be expanded.
+
+\item Line 223: How about "computing time" and "storage space", assuming that is
+what is meant.
+
+\item Line 267: It's not clear that this section should be here, maybe at the end
+of the methods section?
+
+\item Line 292: This is a minor point, but sentences shouldn't start with an
+abbreviation (E.g.) better "For example,". This also occurs in line 387.
+
+\item Line 311: I see what they mean by "voxel time series" because of lines
+317-318, so it might be clearer to move those lines to directly after line 311,
+so it is clear without having to read further.
+
+\item The authors do a nice job of presenting the relevant results, but the
+conclusions were rather general, being along the lines of "investigate the
+sensitivity of choices made in the processing and analysis". That's an
+important result, given previous work and shows that RMT might not "work" with
+different data sets and processing workflows. The question is: what's the
+takeaway: that the method is not one in which you can have a default set of
+parameters that will generally give good results (like say, the recon-all
+pipeline for FreeSurfer)? If RMT so sensitive to preprocessing and choice of
+parameters, is this a useful method to be applied widely on fMRI data? It would
+be good for this to be discussed and perhaps some recommendations given.
+\end{enumerate}
 
 \end{document}
